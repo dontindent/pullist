@@ -1,3 +1,5 @@
+@import url('releases-comic-list.css');
+
 #releases {
     height: 100%;
     position: relative;
@@ -12,190 +14,17 @@
     overflow: hidden;
 }
 
-#comic-list-wrapper {
+div#comic-details {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 400px;
-    border-right: 1px solid #DDDDDD;
+    flex: 1;;
+}
+
+div#details-background {
+    position: relative;
+    height: 100%
+}
+
+div#details-container {
     padding-top: 40px;
-    margin: 0 2px;
-    overflow: hidden;
-}
-
-#comic-list-header {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    box-sizing: content-box;
-    padding: 0 10px 2px 20px;
-    border-bottom: 1px solid #DDDDDD;
-}
-
-#comic-list-search {
-    padding: 10px;
-    flex: 1;
-    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
-}
-
-.comic-list-search-container {
-    display: flex;
-    flex-direction: row;
-}
-
-.comic-list-header-container {
-    display: flex;
-    flex-direction: row;
-}
-
-#comic-list-header h1 {
-    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
-    font-size: 14pt;
-    font-weight: 600;
-    margin: 10px 0;
-    line-height: 32px;
-    vertical-align: middle;
-    flex: 1;
-    min-height: 32px;
-}
-
-a.comic-list-refresh-button {
-    width: 42px;
-    height: 42px;
-    margin: 0 5px;
-    line-height: 40px;
-    text-align: center;
-    vertical-align: middle;
-    font-size: 18pt;
-    cursor: default;
-}
-
-a.comic-list-refresh-button.disabled {
-    color: #BBBBBB;
-}
-
-a.comic-list-refresh-button:hover {
-    background: #F1F1F1;
-}
-
-a.comic-list-refresh-button.disabled:hover {
-    background: inherit !important;
-}
-
-a.comic-list-refresh-button:active {
-    background: #EEEEEE;
-}
-
-a.comic-list-refresh-button.disabled:active {
-    background: inherit !important;
-}
-
-#comic-details {
-    position: relative;
-    box-sizing: content-box;
-    flex: 1;
-    padding-top: 40px;
-}
-
-#comic-list-container {
-    position: relative;
-    box-sizing: content-box;
-    overflow-x: hidden;
-    overflow-y: auto;
-    flex: 1;
-    height: auto !important;
-}
-
-#comic-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.publisher-group {
-
-}
-
-.publisher-heading {
-    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
-    font-size: 10pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin: 0;
-    padding: 5px 20px;
-    background: #F8F8F8;
-    border-bottom: 1px solid #DDDDDD;
-}
-
-.publisher-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.publisher-list li {
-    list-style: none;
-    margin: 0;
-    padding: 0 20px;
-}
-
-li.list-comic {
-    padding: 5px 20px;
-    cursor: default;
-}
-
-li.list-comic:hover {
-    background: #F1F1F1;
-}
-
-li.list-comic:active, li.list-comic:focus {
-    background: #EEEEEE;
-}
-
-li.selected-comic {
-    background: #F1F1F1;
-}
-
-h3.comic-title-list {
-    margin: 0;
-    font-size: 11pt;
-    font-weight: 600;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-div.comic-details-list-container {
-    display: flex;
-    flex-direction: row;
-}
-
-div.comic-details-list {
-    display: flex;
-    flex-direction: row;
-    font-size: 10pt;
-    color: #AAAAAA;
-    min-height: 13pt;
-    line-height: 13pt;
-}
-
-p.comic-writer-list {
-    margin: 0;
-    display: block;
-    overflow: hidden;
-    white-space: nowrap;
-    vertical-align: middle;
-}
-
-p.comic-artist-list {
-    margin: 0;
-    display: block;
-    overflow: hidden;
-    white-space: nowrap;
-    vertical-align: middle;
-}
-
-span.comic-detail-spacer-list {
-    margin: 0;
-    padding: 0;
-    width: 10px;
+    height: 100%
 }

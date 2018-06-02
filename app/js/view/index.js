@@ -10,43 +10,88 @@ const ComicCollection = require('../model/comic-collection');
 const ReleasesView = require('./releases');
 const storageWindow = remote.getGlobal ('storageWindow');
 
-let comicController = null;
-let $splashscreen = null;
-let $windowTitle = null;
+let indexView = null;
 
 $(function() {
-    const $mainContainer = $('#main-container');
-    const $links = $('a.nav');
-    $splashscreen = $('#splashscreen');
-    $windowTitle = $('#electron-titlebar-title');
-
-    $windowTitle.hide();
-
-    $links.on('click', function(event) {
-        event.preventDefault();
-
-        let href = $(this).attr('href');
-
-        $mainContainer.load(href, function() {
-            if (href === 'releases.html'){
-                comicController._view.init();
-            }
-        });
-    });
-
-    $($links[0]).trigger('click');
-
-    init();
+    indexView = new IndexView();
 });
 
-function init() {
-    Injector.register('comicDataService', ComicDataService);
-    let comicCollection = new ComicCollection(Injector.resolve('comicDataService'));
-    let releasesView = new ReleasesView(comicCollection);
-    comicController = new ComicController(comicCollection, releasesView);
+class IndexView {
+    constructor () {
+        this._currentController = null;
 
-    ipcRenderer.on ('storageReady', function () {
-        $splashscreen.hide();
-        $windowTitle.show();
-    });
+        this.init();
+    }
+
+    init() {
+        this.createChildren();
+        this.setupHandlers();
+        this.enable();
+    }
+
+    createChildren() {
+        this.$mainContainer = $('#main-container');
+        this.$links = $('a.nav');
+        this.$navItems = $('li.nav-item');
+        this.$splashscreen = $('#splashscreen');
+        this.$windowTitle = $('#electron-titlebar-title');
+
+        return this;
+    }
+
+    setupHandlers() {
+        this.storageReadyHandler = this.storageReady.bind(this);
+        this.linkClickedHandler = this.linkClicked.bind(this);
+
+        return this;
+    }
+
+    enable() {
+        this.$windowTitle.hide();
+
+        ipcRenderer.on ('storageReady', this.storageReadyHandler);
+        this.$links.on('click', this.linkClickedHandler);
+
+        this.initMVC();
+
+        $(this.$links[0]).trigger('click');
+
+        return true;
+    }
+
+    initMVC () {
+        Injector.register('comicDataService', ComicDataService);
+        let comicCollection = new ComicCollection(Injector.resolve('comicDataService'));
+        let releasesView = new ReleasesView(comicCollection);
+        this.comicController = new ComicController(comicCollection, releasesView);
+    }
+
+    storageReady (event, message) {
+        this.$splashscreen.hide();
+        this.$windowTitle.show();
+    }
+
+    linkClicked (event) {
+        event.preventDefault();
+
+        let link = event.delegateTarget;
+        let indexView = this;
+        let href = $(link).attr('href');
+
+        indexView.$mainContainer.load(href, function() {
+            let oldController = indexView._currentController;
+
+            if (href === 'releases.html'){
+                indexView._currentController = indexView.comicController;
+            }
+            else {
+                indexView._currentController = null;
+            }
+
+            if (oldController) oldController._view.navigatingFrom();
+
+            if (indexView._currentController) indexView._currentController._view.navigatedTo();
+
+        });
+    }
 }

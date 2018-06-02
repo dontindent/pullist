@@ -5,7 +5,17 @@ class Event {
     }
 
     attach (listener) {
-        this._listeners.push(listener);
+        if (this._listeners.indexOf(listener) === -1) {
+            this._listeners.push(listener);
+        }
+    }
+
+    unattach (listener) {
+        let index = this._listeners.indexOf(listener);
+
+        if (index !== -1) {
+            this._listeners.splice(index, 1);
+        }
     }
 
     notify (args) {

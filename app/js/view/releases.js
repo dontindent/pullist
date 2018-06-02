@@ -1,6 +1,4 @@
 const $ = require('jquery');
-const Store = require('../model/store');
-const Comic = require('../model/comic');
 const Event = require('../misc/event-dispatcher');
 
 let selectedComic = null;
@@ -13,13 +11,14 @@ class ReleasesView {
         this.retrieveActive = true;
 
         this.retrieveComicsEvent = new Event(this);
-
     }
 
     init() {
         this.createChildren();
         this.setupHandlers();
         this.enable();
+
+        this._initialized = true;
     }
 
     createChildren() {
@@ -66,6 +65,22 @@ class ReleasesView {
         if (this._comicCollection.latestDate) {
             this.$releasesDate.text('Releases for ' + this._comicCollection.latestDate.toLocaleDateString("en-US"));
         }
+    }
+
+    navigatedTo() {
+        this.init();
+        if (this._initialized) {
+            this.retrievedComics();
+        }
+    }
+
+    navigatingFrom() {
+        this.$retrieveButton.off('click', this.retrieveComicsButtonHandler);
+
+        this._comicCollection.retrievedComicsEvent.unattach(this.retrievedComicsHandler);
+        this._comicCollection.comicListProcessedEvent.unattach(this.comicListProcessedHandler);
+        this._comicCollection.comicProcessedEvent.unattach(this.comicProcessedHandler);
+        this._comicCollection.comicsStableEvent.unattach(this.comicsStableHandler);
     }
 
     comicListProcessed (sender, args) {

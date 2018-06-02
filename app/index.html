@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pullist</title>
+    <link rel="stylesheet" type="text/css" href="css/global.css"/>
+    <link rel="stylesheet" type="text/css" href="css/index.css"/>
+
+
+    <!--<link rel="import" href="releases.html">-->
+</head>
+<body>
+<div id="electron-titlebar" class="drag" platform="win32">
+    <div id="electron-titlebar-title">Pullist</div>
+</div>
+<div id="wrapper">
+    <div id="splashscreen"></div>
+    <div id="nav-container">
+        <nav class="interface">
+            <ul>
+                <li class="nav-item"><a class="nav" href="releases.html">
+                    <i class="icons8-comments nav-icon"></i>
+                    <span class="nav-item-text">Releases</span>
+                </a></li>
+                <li class="nav-item"><a class="nav" href="rules.html">
+                    <i class="icons8-checked-2 nav-icon"></i>
+                    <span class="nav-item-text">Rules</span>
+                </a></li>
+                <li class="nav-item"><a class="nav" href="lists.html">
+                    <i class="icons8-box nav-icon"></i>
+                    <span class="nav-item-text">Lists</span>
+                </a></li>
+            </ul>
+        </nav>
+    </div>
+    <div id="main-container"></div>
+</div>
+<script>require('./js/view/index')</script>
+</body>
+</html>

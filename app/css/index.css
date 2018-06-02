@@ -1,0 +1,92 @@
+@import url('releases.css');
+@import url('../font/icons8-win10/styles.min.css');
+
+#wrapper {
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+#splashscreen {
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    z-index: 1000;
+    background: #415A77;
+}
+
+#electron-titlebar {
+    z-index: 900;
+}
+
+#electron-titlebar-title {
+    color: #FFFFFF;
+    padding-top: 10px;
+    padding-left: 15px;
+    font-size: 9pt;
+}
+
+#nav-container {
+    background: #415A77;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-basis: 260px;
+    flex-shrink: 0;
+    min-width: 1px;
+    box-sizing: content-box;
+    padding-top: 40px;
+}
+
+#main-container {
+    background: #FFFFFF;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 1px;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    vertical-align: middle;
+    color: #FFFFFF;
+    margin-bottom: 10px;
+}
+
+.nav-item a {
+    padding: 10px 0;
+    cursor: default;
+    display: block;
+    margin: 0;
+}
+
+.nav-item a:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.nav-item a:active {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.nav-icon {
+    font-size: 18pt;
+    margin: 15px;
+    vertical-align: middle;
+    font-weight: 100;
+}
+
+.nav-item-text {
+    font-size: 14pt;
+    vertical-align: middle;
+}

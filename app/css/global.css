@@ -1,0 +1,68 @@
+/**, *::after, *::before {*/
+    /*-webkit-user-select: none;*/
+    /*-webkit-user-drag: none;*/
+    /*-webkit-app-region: no-drag;*/
+    /*cursor: default;*/
+/*}*/
+
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+}
+
+.button-unstyled {
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    margin: 0;
+    line-height: inherit;
+    overflow: initial;
+    padding: 0;
+    text-align: initial;
+    vertical-align: initial;
+    cursor: default;
+}
+
+#content {
+    margin: 0 200px 0 0;
+}
+
+#content .inner {
+    padding-top: 1px;
+    margin: 0 10px 10px 10px;
+}
+
+#side {
+    float: right;
+    width: 180px;
+    margin: 0;
+}
+
+#side .inner {
+    padding-top: 1px;
+    margin: 0 10px 10px 10px;
+}
+
+#footer {
+    margin-top: 10px;
+    clear: both;
+}
+
+#footer .inner {
+    margin: 10px;
+}
+
+a, a:hover, a:visited {
+    color: inherit; /* blue colors for links too */
+    text-decoration: inherit; /* no underline */
+}
+
+.interface, .interface * {
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-app-region: no-drag;
+    cursor: default;
+}

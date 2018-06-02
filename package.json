@@ -1,0 +1,26 @@
+{
+  "name": "pullist",
+  "productName": "Pullist",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "bootstrap": "^4.1.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "electron-titlebar": "0.0.3",
+    "express": "~4.16.0",
+    "http-errors": "~1.6.2",
+    "jquery": "^3.3.1",
+    "morgan": "~1.9.0",
+    "popper": "^1.0.1",
+    "pug": "2.0.0-beta11",
+    "sql.js": "^0.5.0",
+    "windows-10-icons": "^1.0.1"
+  },
+  "devDependencies": {
+    "electron": "^2.0.2"
+  }
+}

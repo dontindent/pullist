@@ -108,8 +108,6 @@ class IndexView {
     static updateColors (event, message) {
         if (!message) return;
 
-        console.log(new Color('#415A77'));
-
         let accentObject = new Color(message);
         let accentColor = accentObject.base.hex;
         let accentColorLight1 = accentObject.tint1.hex;

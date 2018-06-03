@@ -2,7 +2,10 @@ div#comic-list-wrapper {
     position: relative;
     display: flex;
     flex-direction: column;
+    min-width: 300px;
+    max-width: 50%;
     width: 400px;
+    border-right: 1px solid #DDDDDD;
     padding-top: 40px;
     margin: 0 0 0 2px;
     overflow: hidden;
@@ -111,6 +114,7 @@ ul#comic-list.disabled {
     margin: 0;
     padding: 5px 20px;
     background: #F8F8F8;
+    border-top: 1px solid #DDDDDD;
     border-bottom: 1px solid #DDDDDD;
 }
 

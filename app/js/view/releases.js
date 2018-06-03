@@ -134,6 +134,7 @@ class ReleasesView {
         this.$retrieveButton = $('a.comic-list-refresh-button');
         this.$releasesDate = $('div#comic-list-header h1');
         this.$comicList = $('ul#comic-list');
+        this.$comicListWrapper = $('div#comic-list-wrapper');
 
         return this;
     }
@@ -159,6 +160,10 @@ class ReleasesView {
         this._comicCollection.comicsUnstableEvent.attach(this.comicsUnstableHandler);
         this._comicCollection.comicsStableEvent.attach(this.comicsStableHandler);
 
+        this.$comicListWrapper.resizable({
+            containment: 'parent',
+            handles: 'e, w',
+        });
         return true;
     }
 

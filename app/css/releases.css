@@ -1,6 +1,3 @@
-@import url('../../node_modules/jquery-ui/themes/base/core.css');
-@import url('../../node_modules/jquery-ui/themes/base/theme.css');
-@import url('../../node_modules/jquery-ui/themes/base/resizable.css');
 @import url('releases-comic-list.css');
 
 section#releases {

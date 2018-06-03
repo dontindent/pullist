@@ -3,9 +3,8 @@ div#comic-list-wrapper {
     display: flex;
     flex-direction: column;
     width: 400px;
-    border-right: 1px solid #DDDDDD;
     padding-top: 40px;
-    margin: 0 2px;
+    margin: 0 0 0 2px;
     overflow: hidden;
     z-index: 2;
     background: #FFFFFF;
@@ -61,6 +60,7 @@ a.comic-list-refresh-button {
 
 a.comic-list-refresh-button.disabled {
     color: #BBBBBB;
+    pointer-events: none;
 }
 
 a.comic-list-refresh-button:hover {

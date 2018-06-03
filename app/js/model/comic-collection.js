@@ -21,6 +21,7 @@ class ComicCollection {
         this.retrievedComicsEvent = new Event(this);
         this.comicListProcessedEvent = this._comicService.comicListProcessedEvent;
         this.comicProcessedEvent = this._comicService.comicProcessedEvent;
+        this.comicsUnstableEvent = new Event(this);
         this.comicsStableEvent = new Event(this);
 
         this.init();
@@ -43,12 +44,15 @@ class ComicCollection {
         this.storageReadyHandler = this.storageReady.bind(this);
         this.storageResponseHandler = this.storageResponse.bind(this);
         this.loadResponseHandler = this.loadResponse.bind(this);
+        this.deleteResponseHandler = this.deleteResponse.bind(this);
+        this.needsStorageHandler = this.sendStorageRequest.bind(this);
     }
 
     enable() {
         ipcRenderer.on ('storageReady', this.storageReadyHandler);
         ipcRenderer.on ('storageResponse', this.storageResponseHandler);
         ipcRenderer.on ('loadResponse', this.loadResponseHandler);
+        ipcRenderer.on ('deleteResponse', this.deleteResponseHandler);
 
         let dateValue = new Date(userPrefs['latestReleaseDate']);
 
@@ -68,13 +72,21 @@ class ComicCollection {
     }
 
     sendStorageRequest(comic) {
+        this.comicsUnstableEvent.notify();
         storageWindow.webContents.send('storageRequest', comic);
         this._storageQueue.push(comic);
     }
 
+    // noinspection JSMethodCanBeStatic
     sendLoadRequest(date) {
         console.log('Sending load request for comics from:', date);
         storageWindow.webContents.send('loadRequest', date);
+    }
+
+    // noinspection JSMethodCanBeStatic
+    sendDeleteRequest(date) {
+        console.log('Sending delete request for comics not from:', date);
+        storageWindow.webContents.send('deleteRequest', date);
     }
 
     loadLatestComics() {
@@ -97,6 +109,9 @@ class ComicCollection {
 
         this.createSortedLists(publishers);
 
+        if (this.latestDate !== this._comicService.retrievalDate) {
+            this.sendDeleteRequest(this._comicService.retrievalDate);
+        }
         this.latestDate = this._comicService.retrievalDate;
         this.storeLatestDate();
         this.latestDateUpdatedEvent.notify();
@@ -176,6 +191,12 @@ class ComicCollection {
         this.retrievedComicsEvent.notify();
     }
 
+    deleteResponse (event, message) {
+        if (!message) {
+            this.sendDeleteRequest(this.latestDate);
+        }
+    }
+
     createSortedLists (publishers) {
         let collection = this;
         publishers = publishers.sort();
@@ -190,6 +211,7 @@ class ComicCollection {
             this._comicsByOriginal[comic.originalString] = comic;
             let publisher = comic.publisher;
             collection.comicsByPublisher[publisher].push(comic);
+            comic.needsStorageEvent.attach(this.needsStorageHandler);
         }.bind(this));
 }
 

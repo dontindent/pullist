@@ -221,7 +221,6 @@ class ComicDatabase {
         if (this.db) {
             let query = 'SELECT * FROM `Comic` WHERE `OriginalString` IS ?';
             let statement = this.db.prepare(query, [originalString]);
-
             try {
                 let result = null;
 
@@ -252,7 +251,6 @@ class ComicDatabase {
         if (this.db) {
             let query = 'SELECT * FROM `Comic` WHERE `ReleaseDate` IS ?';
             let statement = this.db.prepare(query, [date]);
-
             try {
                 let results = [];
 
@@ -270,6 +268,38 @@ class ComicDatabase {
             } finally {
                 this.closeDB();
             }
+        } else {
+            this.storageError.notify();
+            console.log ('Couldn\'t open database for select');
+        }
+    }
+
+    deleteOldUnpulled (date, callback) {
+        if (!this.db) {
+            this.db = SQL.dbOpen(this.dbPath);
+        }
+
+        if (this.db) {
+
+            let query = 'DELETE FROM `Comic` WHERE ( ReleaseDate != ? ) AND ( Pulled != 1)';
+            let statement = this.db.prepare(query, [date]);
+            try {
+                let result = false;
+
+                if (statement.run()) {
+                    statement.free();
+                    result = true;
+                }
+
+                if (typeof callback === 'function') {
+                    callback(result);
+                }
+            } catch (error) {
+                console.log('ComicDatabase.getComicsByDate', 'No data found for ReleaseDate =', date);
+            } finally {
+                this.closeDB();
+            }
+
         } else {
             this.storageError.notify();
             console.log ('Couldn\'t open database for select');

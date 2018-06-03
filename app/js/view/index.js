@@ -73,7 +73,7 @@ class IndexView {
     }
 
     storageReady () {
-        this.$splashscreen.hide();
+        this.$splashscreen.fadeOut(400);
         this.$windowTitle.show();
     }
 

@@ -1,6 +1,5 @@
 const { remote, ipcRenderer } = require('electron');
 const ComicDatabase = require('../misc/database-manager');
-const Comic = require('./comic');
 
 const mainWindow = remote.getGlobal ('mainWindow');
 
@@ -8,8 +7,6 @@ class StorageWindow {
     constructor () {
         this.dbManager = new ComicDatabase();
         this.storeQueue = [];
-        // this.processingStore = false;
-        this.loadQueue = [];
         this.dbCloseTimer = null;
         this.init();
     }
@@ -18,11 +15,13 @@ class StorageWindow {
         this.storageReadyHandler = StorageWindow.storageReady.bind(this);
         this.storageRequestHandler = this.storageRequest.bind(this);
         this.loadRequestHandler = this.loadRequest.bind(this);
+        this.deleteRequestHandler = this.deleteRequest.bind(this);
 
         this.dbManager.storageReady.attach(this.storageReadyHandler);
 
         ipcRenderer.on ('storageRequest', this.storageRequestHandler );
         ipcRenderer.on ('loadRequest', this.loadRequestHandler );
+        ipcRenderer.on ('deleteRequest', this.deleteRequestHandler );
 
         this.dbManager.initDB();
     }
@@ -42,6 +41,7 @@ class StorageWindow {
         StorageWindow.sendMessage('storageResponse', comic);
     }
 
+    // noinspection JSUnusedLocalSymbols
     static storageReady (sender, args) {
         StorageWindow.sendMessage('storageReady', null);
     }
@@ -104,9 +104,27 @@ class StorageWindow {
         this.dbManager.getComicsByDate(date, this.loadComplete.bind(this));
     }
 
+    // noinspection JSMethodCanBeStatic
     loadComplete (comics) {
         StorageWindow.sendMessage('loadResponse', comics);
     }
+
+    deleteRequest (event, message) {
+        let date;
+
+        if(typeof message === 'number') date = message;
+        else date = new Date(message).valueOf();
+
+        console.log('Got delete request for all except:', date);
+
+        this.dbManager.deleteOldUnpulled(date, this.deleteComplete.bind(this));
+    }
+
+    // noinspection JSMethodCanBeStatic
+    deleteComplete (status) {
+        StorageWindow.sendMessage('deleteResponse', status);
+    }
 }
 
+// noinspection JSUnusedLocalSymbols
 let storageWindow = new StorageWindow();

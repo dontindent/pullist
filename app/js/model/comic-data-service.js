@@ -43,7 +43,6 @@ class ComicDataService {
                 }
                 console.log('Parsed ' + service.comicCount + ' comics');
 
-                // createSortedLists(service);
                 deferred.resolve([service.comicDict, service.publishers]);
             });
         });
@@ -70,6 +69,14 @@ function processList(comicService, rawList) {
             if(dateMatch) {
                 date = new Date(dateMatch[1]);
                 dateFound = true;
+
+                // We need to clear all the comics not related to the current release date
+                if (comicService.retrievalDate !== date) {
+                    comicService.comicsByOriginal = {};
+                    comicService.comicDict = {};
+                    comicService.publishers = [];
+                }
+
                 continue;
             }
         }

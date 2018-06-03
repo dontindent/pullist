@@ -22,6 +22,41 @@ div#releases-wrapper {
     display: none !important;
 }
 
+div#resize-drag {
+    position: relative;
+    width: 1px;
+    background: #DDDDDD;
+    border-width: 0;
+    margin: 0;
+    padding: 0;
+    /*cursor: w-resize;*/
+    z-index: 50;
+}
+
+div#resize-drag-capture {
+    position: absolute;
+    width: 5px;
+    border-width: 0;
+    margin: 0 0 0 -2px;
+    padding: 0;
+    cursor: w-resize;
+    z-index: 50;
+    height: 100%;
+}
+
+/*div#resize-drag:hover:after {*/
+    /*position: absolute;*/
+    /*width: 5px;*/
+    /*background: #DDDDDD;*/
+    /*border-width: 0;*/
+    /*margin: 0;*/
+    /*padding: 0;*/
+    /*cursor: w-resize;*/
+    /*z-index: 50;*/
+    /*content:"";*/
+    /*height: 100%;*/
+/*}*/
+
 div#comic-details {
     position: relative;
     flex: 1;;

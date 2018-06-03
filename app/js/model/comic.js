@@ -1,4 +1,5 @@
 const Utilities = require('../misc/utilities');
+const Event = require('../misc/event-dispatcher');
 
 class Comic {
     constructor() {
@@ -9,6 +10,7 @@ class Comic {
         this.artist = "";
         this.coverArtist = "";
         this.publisher = "";
+        // noinspection JSUnusedGlobalSymbols
         this.description = "";
         this.price = 0.0;
         this.pulled = false;
@@ -22,10 +24,13 @@ class Comic {
 
         this.mainID = 0;
         this.variantList = [];
+        // noinspection JSUnusedGlobalSymbols
         this.mainComic = null;
 
         this.lastPulledNumber = -1;
         this.lastPulledDate = new Date(-8640000000000000);
+
+        this.needsStorageEvent = new Event(this);
     }
 
     get key() {
@@ -46,6 +51,18 @@ class Comic {
         return '';
     }
 
+    pull(pulled) {
+        pulled = typeof pulled === typeof true ? pulled : this.pulled;
+        this.pulled = pulled;
+        this.needsStorageEvent.notify();
+    }
+
+    watch(watched) {
+        watched = typeof watched === typeof true ? watched : this.watched;
+        this.watched = watched;
+        this.needsStorageEvent.notify();
+    }
+
     equals(comic) {
         return this.originalString === comic.originalString;
     }
@@ -63,6 +80,7 @@ class Comic {
         this.artist = comic.artist;
         this.coverArtist = comic.coverArtist;
         this.publisher = comic.publisher;
+        // noinspection JSUnusedGlobalSymbols
         this.description = comic.description;
         this.price = comic.price;
         this.pulled = comic.pulled;

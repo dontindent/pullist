@@ -44,9 +44,6 @@ class ComicContainer {
         this.$detailBackground.on('load', this.detailBackgroundLoadedFunction);
         this.$detailCover.on('load', this.detailCoverLoadedFunction);
 
-        let description = comic.description.replace(/(?:\r\n|\r|\n)/g, '<br>');
-
-
         this.$detailBackground.addClass('details-hidden');
         this.$detailBackground.attr('src', comic.coverURL);
         this.$detailTitle.text(comic.title);
@@ -69,25 +66,26 @@ class ComicContainer {
 
         this.watchFunction = function (event) {
             event.preventDefault();
-            comic.watched = true;
+            console.log('here?');
+            comic.watch(true);
             ReleasesView.updateHeaderButtons(comic);
         };
 
         this.unWatchFunction = function (event) {
             event.preventDefault();
-            comic.watched = false;
+            comic.watch(false);
             ReleasesView.updateHeaderButtons(comic);
         };
 
         this.pullFunction = function (event) {
             event.preventDefault();
-            comic.pulled = true;
+            comic.pull(true);
             ReleasesView.updateHeaderButtons(comic);
         };
 
         this.unPullFunction = function (event) {
             event.preventDefault();
-            comic.pulled = false;
+            comic.pull(false);
             ReleasesView.updateHeaderButtons(comic);
         };
 
@@ -117,6 +115,7 @@ class ReleasesView {
         this._comicCollection = comicCollection;
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
+        // noinspection JSUnusedGlobalSymbols
         this.numComics = 0;
         this.retrieveActive = true;
 
@@ -145,6 +144,7 @@ class ReleasesView {
         this.retrievedComicsHandler = this.retrievedComics.bind(this);
         this.comicListProcessedHandler = this.comicListProcessed.bind(this);
         this.comicProcessedHandler = this.comicProcessed.bind(this);
+        this.comicsUnstableHandler = this.comicsUnstable.bind(this);
         this.comicsStableHandler = this.comicsStable.bind(this);
 
         return this;
@@ -156,6 +156,7 @@ class ReleasesView {
         this._comicCollection.retrievedComicsEvent.attach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.attach(this.comicListProcessedHandler);
         this._comicCollection.comicProcessedEvent.attach(this.comicProcessedHandler);
+        this._comicCollection.comicsUnstableEvent.attach(this.comicsUnstableHandler);
         this._comicCollection.comicsStableEvent.attach(this.comicsStableHandler);
 
         return true;
@@ -166,8 +167,9 @@ class ReleasesView {
 
         if (this.retrieveActive) {
             this.retrieveComicsEvent.notify();
-            this.retrieveActive = false;
-            this.$retrieveButton.addClass('disabled');
+            this.comicsUnstable();
+            // this.retrieveActive = false;
+            // this.$retrieveButton.addClass('disabled');
             this.$comicList.addClass('disabled');
         }
     }
@@ -187,7 +189,7 @@ class ReleasesView {
         this.init();
         if (wasInitialized) {
             this.retrievedComics();
-            this._selectedComicContainer.select(this._selectedComicElement);
+            // this._selectedComicContainer.select(this._selectedComicElement);
         }
     }
 
@@ -201,6 +203,7 @@ class ReleasesView {
     }
 
     comicListProcessed (sender, args) {
+        // noinspection JSUnusedGlobalSymbols
         this.numComics = args;
     }
 
@@ -208,6 +211,13 @@ class ReleasesView {
 
     }
 
+    // noinspection JSUnusedLocalSymbols
+    comicsUnstable (sender, args) {
+        this.retrieveActive = false;
+        this.$retrieveButton.addClass('disabled')
+    }
+
+    // noinspection JSUnusedLocalSymbols
     comicsStable (sender, args) {
         this.retrieveActive = true;
         this.$retrieveButton.removeClass('disabled');

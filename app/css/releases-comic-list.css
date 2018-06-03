@@ -5,12 +5,12 @@ div#comic-list-wrapper {
     min-width: 300px;
     max-width: 50%;
     width: 400px;
-    border-right: 1px solid #DDDDDD;
+    border-right: var(--app-border-style);
     padding-top: 40px;
     margin: 0 0 0 2px;
     overflow: hidden;
     z-index: 2;
-    background: #FFFFFF;
+    background: var(--app-background-color);
 }
 
 div#comic-list-header {
@@ -19,7 +19,7 @@ div#comic-list-header {
     position: relative;
     box-sizing: content-box;
     padding: 0 10px 2px 20px;
-    border-bottom: 1px solid #DDDDDD;
+    border-bottom: var(--app-border-style);
 }
 
 div.comic-list-search-container {
@@ -31,7 +31,7 @@ input#comic-list-search  {
     padding: 0 0 0 10px;
     height: 38px;
     flex: 1;
-    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--app-font);
 }
 
 div.comic-list-header-container {
@@ -40,7 +40,7 @@ div.comic-list-header-container {
 }
 
 div#comic-list-header h1 {
-    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--app-font);
     font-size: 14pt;
     font-weight: 600;
     margin: 10px 0;
@@ -107,15 +107,15 @@ ul#comic-list.disabled {
 }
 
 .publisher-heading {
-    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--app-font);
     font-size: 10pt;
     font-weight: 700;
     text-transform: uppercase;
     margin: 0;
     padding: 5px 20px;
     background: #F8F8F8;
-    border-top: 1px solid #DDDDDD;
-    border-bottom: 1px solid #DDDDDD;
+    border-top: var(--app-border-style);
+    border-bottom: var(--app-border-style);
 }
 
 .publisher-list {

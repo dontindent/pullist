@@ -1,0 +1,9 @@
+:root {
+    /* Colors */
+    --app-background-color: #FFFFFF;
+    --app-border-color: #DDDDDD;
+    --app-font-color: #000000;
+
+    /* Styles */
+    --app-border-style: 1px solid var(--app-border-color);
+}

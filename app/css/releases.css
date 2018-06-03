@@ -1,4 +1,5 @@
 @import url('releases-comic-list.css');
+@import url('releases-detail-view.css');
 
 section#releases {
     height: 100%;
@@ -22,219 +23,22 @@ div#releases-wrapper {
     display: none !important;
 }
 
-div#resize-drag {
-    position: relative;
-    width: 1px;
-    background: #DDDDDD;
-    border-width: 0;
-    margin: 0;
-    padding: 0;
-    /*cursor: w-resize;*/
-    z-index: 50;
-}
-
-div#resize-drag-capture {
+div#comic-details-none {
     position: absolute;
-    width: 5px;
-    border-width: 0;
-    margin: 0 0 0 -2px;
-    padding: 0;
-    cursor: w-resize;
-    z-index: 50;
-    height: 100%;
-}
-
-/*div#resize-drag:hover:after {*/
-    /*position: absolute;*/
-    /*width: 5px;*/
-    /*background: #DDDDDD;*/
-    /*border-width: 0;*/
-    /*margin: 0;*/
-    /*padding: 0;*/
-    /*cursor: w-resize;*/
-    /*z-index: 50;*/
-    /*content:"";*/
-    /*height: 100%;*/
-/*}*/
-
-div#comic-details {
-    position: relative;
-    flex: 1;;
-}
-
-div#details-background {
-    content: "";
-    position: absolute;
+    top: 0;
     left: 0;
     right: 0;
-    z-index: 0;
-    display: block;
-    height: 100%;
-    /*margin-top: 40px;*/
-}
-
-img#details-background-img {
-    position: absolute;
-    width: 200%;
-    z-index: 0;
-    filter: blur(20px);
-    opacity: 0.50;
-    margin-top: -200px;
-    margin-left: -300px;
-}
-
-div#details-container {
-    position: relative;
-    height: 100%;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    z-index: 50;
+    bottom: 0;
+    background: #FFFFFF;
+    z-index: 51;
     padding-top: 40px;
-}
-
-div#header-container {
-    grid-row: 1;
-    padding: 0 60px 0 30px;
     display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: center;
 }
 
-a.detail-header-button {
-    padding: 6px;
-    cursor: default;
-    display: block;
-    color: rgba(0, 0, 0, 1.0);
-    font-weight: 100;
-    /*color: rgba(255, 255, 255, 0.7);*/
-}
-
-a.detail-header-button:hover {
-    background: rgba(65, 90, 119, 0.3);
-}
-
-a.detail-header-button:active {
-    background: rgba(65, 90, 119, 0.5);
-}
-
-i.detail-header-icon {
+div#comic-details-none p {
+    margin: 40px 0 0 0;
+    padding: 0;
     font-size: 14pt;
-    margin: 5px 0 5px 5px;
-    vertical-align: middle;
-    font-weight: 100;
-}
-
-i.icon-overlay {
-    font-size: 12pt;
-    margin: 0 5px -10pt -12pt;
-}
-
-span.detail-header-text {
-    font-size: 12pt;
-    vertical-align: middle;
-    margin-right: 6px;
-}
-
-
-div#details-content {
-    grid-row: 2;
-    overflow-x: hidden;
-    overflow-y: auto;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    grid-template-columns: auto 1fr;
-    padding: 0 20px 2px 30px;
-}
-
-div#details-content h1 {
-    grid-row: 1;
-    grid-column-start: 1;
-    grid-column-end: 3;
-    margin: 0 30px 8px 0;
-    font-weight: 100;
-    font-size: 24pt;
-}
-
-img#placeholder {
-    grid-row: 2;
-    grid-column: 1;
-    height: 300px;
-    margin: 0 12px 24px 0;
-    opacity: 0.0;
-    position: absolute;
-}
-
-img#detail-cover {
-    grid-row: 2;
-    grid-column: 1;
-    width: 200px;
-    margin: 0 12px 24px 0;
-}
-
-div#comic-remaining-details {
-    grid-row: 2;
-    grid-column: 2;
-    display: grid;
-    grid-template-rows: repeat(6, auto);
-    grid-template-columns: 1fr 1fr;
-    grid-row-gap: 8px;
-    grid-column-gap: 16px;
-    height: fit-content;
-}
-
-div#writer-div {
-    grid-row: 1;
-    grid-column: 1;
-}
-
-div#artist-div {
-    grid-row: 1;
-    grid-column: 2;
-}
-
-div#publisher-div {
-    grid-row: 2;
-    grid-column: 1;
-}
-
-div#distributor-code-div {
-    grid-row: 2;
-    grid-column: 2;
-}
-
-div#price-div {
-    grid-row: 3;
-    grid-column: 1
-}
-
-div#description-div {
-    grid-row: 4;
-    grid-column-start: 1;
-    grid-column-end: 3;
-}
-
-div#last-pulled-div {
-    grid-row: 5;
-    grid-column-start: 1;
-    grid-column-end: 3;
-}
-
-p.detail-label {
-    margin: 0;
-    font-size: 10pt;
-    font-weight: bold;
-    font-variant: small-caps;
-}
-
-p.detail {
-    margin: 0;
-    font-size: 10pt;
-    white-space: pre-wrap;
-}
-
-p.last-pulled-text {
-    margin: 0;
-    font-size: 10pt;
-    color: #000000;
-    opacity: 0.5;
 }

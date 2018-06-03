@@ -1,5 +1,6 @@
 const $ = require('jquery');
 const Event = require('../misc/event-dispatcher');
+const shell = require('electron').shell;
 
 class ComicContainer {
     constructor() {
@@ -9,7 +10,8 @@ class ComicContainer {
         this.$detailWriter = $('div#writer-div p.detail');
         this.$detailArtist = $('div#artist-div p.detail');
         this.$detailPublisher = $('div#publisher-div p.detail');
-        this.$detailCode = $('div#distributor-code-div p.detail');
+        this.$detailCode = $('div#distributor-code-div a p.detail');
+        this.$detailCodeLink = $('div#distributor-code-div a');
         this.$detailPrice = $('div#price-div p.detail');
         this.$detailDescription = $('div#description-div p.detail');
         this.$watchButton = $('a#watch-button');
@@ -41,6 +43,11 @@ class ComicContainer {
             container.$detailCover.removeClass('details-hidden');
         };
 
+        this.openInBrowserFunction = function(event) {
+            event.preventDefault();
+            shell.openExternal(this['href']);
+        };
+
         this.$detailBackground.on('load', this.detailBackgroundLoadedFunction);
         this.$detailCover.on('load', this.detailCoverLoadedFunction);
 
@@ -53,6 +60,7 @@ class ComicContainer {
         this.$detailArtist.text(comic.artist);
         this.$detailPublisher.text(comic.publisher);
         this.$detailCode.text(comic.code);
+        this.$detailCodeLink.attr('href', global.detailUrlBase + comic.code);
         this.$detailPrice.text('$' + comic.price.toFixed(2));
         this.$detailDescription.text(comic.description);
 
@@ -93,6 +101,7 @@ class ComicContainer {
         this.$unWatchButton.on('click', this.unWatchFunction);
         this.$pullButton.on('click', this.pullFunction);
         this.$unPullButton.on('click', this.unPullFunction);
+        this.$detailCodeLink.on('click', this.openInBrowserFunction);
 
         ReleasesView.updateHeaderButtons(comic);
     }
@@ -135,6 +144,7 @@ class ReleasesView {
         this.$releasesDate = $('div#comic-list-header h1');
         this.$comicList = $('ul#comic-list');
         this.$comicListWrapper = $('div#comic-list-wrapper');
+        this.$comicDetailsNone = $('div#comic-details-none');
 
         return this;
     }
@@ -277,6 +287,8 @@ class ReleasesView {
         }
 
         this._selectedComicContainer.select(this._selectedComicElement);
+
+        this.$comicDetailsNone.hide();
     }
 
     static updateHeaderButtons(comic) {

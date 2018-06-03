@@ -8,6 +8,8 @@ const newReleasesUrl = 'https://www.previewsworld.com/shipping/newreleases.txt';
 const detailUrlBase = 'http://www.previewsworld.com/Catalog/';
 const previewsWorldBase = "http://www.previewsworld.com";
 
+global.detailUrlBase = detailUrlBase;
+
 const userPrefs = remote.getGlobal('userPrefs');
 
 class ComicDataService {

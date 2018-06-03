@@ -116,6 +116,7 @@ class ComicContainer {
         this.$unWatchButton.off('click', this.unWatchFunction);
         this.$pullButton.off('click', this.pullFunction);
         this.$unPullButton.off('click', this.unPullFunction);
+        this.$detailCodeLink.off('click', this.openInBrowserFunction);
     }
 }
 

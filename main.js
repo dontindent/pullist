@@ -29,21 +29,21 @@ global.userPrefs = store.data;
 
 ipcMain.on ('prefGet', function(event, message) {
     let key = message;
-    console.log('Getting preferences for:  ' + key);
     let value = store.get(key);
+    console.log('Getting preferences for: \'' + key + '\': ' + value);
     event.sender.send('prefGetSuccess', { key: key, value: value });
 }.bind(this));
 
 ipcMain.on ('prefSet', function(event, message) {
     let { key, value } = message;
-    console.log('Setting preferences for \'' + key + '\':' +  value);
+    console.log('Setting preferences for \'' + key + '\': ' +  value);
     store.set(key, value);
     event.sender.send('prefSetSuccess', store.get(key));
 }.bind(this));
 
 ipcMain.on ('prefDelete', function(event, message) {
     let key = message;
-    console.log('Deleting preferences for:  ' + key);
+    console.log('Deleting preferences for: ' + key);
     let value = store.delete(key);
     event.sender.send('prefDeleteSuccess', { key: key, value: value });
 }.bind(this));

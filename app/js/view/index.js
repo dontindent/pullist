@@ -10,6 +10,7 @@ const ComicDataService = require('../model/comic-data-service');
 const ComicCollection = require('../model/comic-collection');
 const ReleasesView = require('./releases');
 const storageWindow = remote.getGlobal ('storageWindow');
+const userPrefs = remote.getGlobal('userPrefs');
 
 let indexView = null;
 
@@ -18,7 +19,7 @@ $(function() {
 });
 
 class IndexView {
-    constructor () {
+    constructor() {
         this._currentController = null;
 
         this.init();
@@ -41,7 +42,7 @@ class IndexView {
     }
 
     setupHandlers() {
-        this.accentColorChangedHandler = IndexView.updateColors.bind(this);
+        this.accentColorChangedHandler = updateColors.bind(this);
         this.storageReadyHandler = this.storageReady.bind(this);
         this.linkClickedHandler = this.linkClicked.bind(this);
 
@@ -50,10 +51,10 @@ class IndexView {
 
     enable() {
         this.$windowTitle.hide();
-        // this.updateColors();
+        updateColors(null, userPrefs['accentColor']);
 
         ipcRenderer.on('accentColorChanged', this.accentColorChangedHandler);
-        ipcRenderer.on ('storageReady', this.storageReadyHandler);
+        ipcRenderer.on('storageReady', this.storageReadyHandler);
         this.$links.on('click', this.linkClickedHandler);
 
         ipcRenderer.send('getAccentColor', null);
@@ -65,30 +66,30 @@ class IndexView {
         return true;
     }
 
-    initMVC () {
+    initMVC() {
         Injector.register('comicDataService', ComicDataService);
         let comicCollection = new ComicCollection(Injector.resolve('comicDataService'));
         let releasesView = new ReleasesView(comicCollection);
         this.comicController = new ComicController(comicCollection, releasesView);
     }
 
-    storageReady () {
+    storageReady() {
         this.$splashscreen.fadeOut(400);
         this.$windowTitle.show();
     }
 
-    linkClicked (event) {
+    linkClicked(event) {
         event.preventDefault();
 
         let link = event.delegateTarget;
         let indexView = this;
         let href = $(link).attr('href');
-        let $navItem =  $(link).parent();
+        let $navItem = $(link).parent();
 
-        indexView.$mainContainer.load(href, function() {
+        indexView.$mainContainer.load(href, function () {
             let oldController = indexView._currentController;
 
-            if (href === 'releases.html'){
+            if (href === 'releases.html') {
                 indexView._currentController = indexView.comicController;
             }
             else {
@@ -104,25 +105,31 @@ class IndexView {
         this.$navItems.removeClass('selected');
         $navItem.addClass('selected');
     }
+}
 
-    static updateColors (event, message) {
-        if (!message) return;
+function updateColors(event, message) {
+    if (!message) return;
 
-        let accentObject = new Color(message);
-        let accentColor = accentObject.base.hex;
-        let accentColorLight1 = accentObject.tint1.hex;
-        let accentColorLight2 = accentObject.tint2.hex;
-        let accentColorLight3 = accentObject.tint3.hex;
-        let accentColorDark1 = accentObject.shade1.hex;
-        let accentColorDark2 = accentObject.shade2.hex;
-        let accentColorDark3 = accentObject.shade3.hex;
+    let accentObject = new Color(message);
+    let accentColor = accentObject.base.hex;
+    let accentColorLight1 = accentObject.tint1.hex;
+    let accentColorLight2 = accentObject.tint2.hex;
+    let accentColorLight3 = accentObject.tint3.hex;
+    let accentColorDark1 = accentObject.shade1.hex;
+    let accentColorDark2 = accentObject.shade2.hex;
+    let accentColorDark3 = accentObject.shade3.hex;
 
-        document.documentElement.style.setProperty('--accent-color', accentColor);
-        document.documentElement.style.setProperty('--accent-color-light-1', accentColorLight1);
-        document.documentElement.style.setProperty('--accent-color-light-2', accentColorLight2);
-        document.documentElement.style.setProperty('--accent-color-light-3', accentColorLight3);
-        document.documentElement.style.setProperty('--accent-color-dark-1', accentColorDark1);
-        document.documentElement.style.setProperty('--accent-color-dark-2', accentColorDark2);
-        document.documentElement.style.setProperty('--accent-color-dark-3', accentColorDark3);
-    }
+    document.documentElement.style.setProperty('--accent-color', accentColor);
+    document.documentElement.style.setProperty('--accent-color-light-1', accentColorLight1);
+    document.documentElement.style.setProperty('--accent-color-light-2', accentColorLight2);
+    document.documentElement.style.setProperty('--accent-color-light-3', accentColorLight3);
+    document.documentElement.style.setProperty('--accent-color-dark-1', accentColorDark1);
+    document.documentElement.style.setProperty('--accent-color-dark-2', accentColorDark2);
+    document.documentElement.style.setProperty('--accent-color-dark-3', accentColorDark3);
+
+    storeAccentColor(accentColor);
+}
+
+function storeAccentColor(color) {
+    ipcRenderer.send('prefSet', {key: 'accentColor', value: color});
 }

@@ -1,4 +1,4 @@
-#comic-list-wrapper {
+div#comic-list-wrapper {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -7,9 +7,11 @@
     padding-top: 40px;
     margin: 0 2px;
     overflow: hidden;
+    z-index: 2;
+    background: #FFFFFF;
 }
 
-#comic-list-header {
+div#comic-list-header {
     display: flex;
     flex-direction: column;
     position: relative;
@@ -18,23 +20,24 @@
     border-bottom: 1px solid #DDDDDD;
 }
 
-#comic-list-search {
-    padding: 10px;
+div.comic-list-search-container {
+    display: flex;
+    flex-direction: row;
+}
+
+input#comic-list-search  {
+    padding: 0 0 0 10px;
+    height: 38px;
     flex: 1;
     font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
-.comic-list-search-container {
+div.comic-list-header-container {
     display: flex;
     flex-direction: row;
 }
 
-.comic-list-header-container {
-    display: flex;
-    flex-direction: row;
-}
-
-#comic-list-header h1 {
+div#comic-list-header h1 {
     font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
     font-size: 14pt;
     font-weight: 600;
@@ -48,7 +51,7 @@
 a.comic-list-refresh-button {
     width: 42px;
     height: 42px;
-    margin: 0 5px;
+    margin: 0;
     line-height: 40px;
     text-align: center;
     vertical-align: middle;
@@ -76,7 +79,7 @@ a.comic-list-refresh-button.disabled:active {
     background: inherit !important;
 }
 
-#comic-list-container {
+div#comic-list-container {
     position: relative;
     box-sizing: content-box;
     overflow-x: hidden;
@@ -85,10 +88,15 @@ a.comic-list-refresh-button.disabled:active {
     height: auto !important;
 }
 
-#comic-list {
+ul#comic-list {
     list-style: none;
     padding: 0;
     margin: 0;
+}
+
+ul#comic-list.disabled {
+    opacity: 0.25;
+    pointer-events: none;
 }
 
 .publisher-group {

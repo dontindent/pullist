@@ -1,5 +1,7 @@
 @import url('releases.css');
 @import url('../font/icons8-win10/styles.min.css');
+@import url('../font/line-awesome/css/line-awesome-font-awesome.min.css');
+@import url('../font/line-awesome/css/line-awesome.min.css');
 
 div#wrapper {
     display: flex;
@@ -60,27 +62,32 @@ nav ul {
 
 li.nav-item {
     vertical-align: middle;
-    color: #FFFFFF;
     margin-bottom: 10px;
 }
 
-li.nav-item.selected {
-    border-left: 10px solid #FFFFFF;
+li.nav-item:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+li.nav-item:active {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 li.nav-item a {
     padding: 10px 0;
     cursor: default;
     display: block;
-    margin: 0;
+    margin: 0 0 0 6px;
+    color: rgba(255, 255, 255, 1.0);
+    font-weight: 300;
+    /*color: rgba(255, 255, 255, 0.7);*/
 }
 
-li.nav-item a:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-li.nav-item a:active {
-    background: rgba(255, 255, 255, 0.5);
+li.nav-item.selected a {
+    border-left: 4px solid #FFFFFF;
+    margin: 0 0 0 2px;
+    color: rgba(255, 255, 255, 1.0);
+    font-weight: 500;
 }
 
 i.nav-icon {

@@ -31,6 +31,7 @@ class Comic {
     }
 
     get title() {
+        if (this.number === -1.0) return this.series;
         return this.series + ' #' + this.number;
     }
 

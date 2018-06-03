@@ -77,6 +77,7 @@ class IndexView {
         let link = event.delegateTarget;
         let indexView = this;
         let href = $(link).attr('href');
+        let $navItem =  $(link).parent();
 
         indexView.$mainContainer.load(href, function() {
             let oldController = indexView._currentController;
@@ -93,5 +94,8 @@ class IndexView {
             if (indexView._currentController) indexView._currentController._view.navigatedTo();
 
         });
+
+        this.$navItems.removeClass('selected');
+        $navItem.addClass('selected');
     }
 }

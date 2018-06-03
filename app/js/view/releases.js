@@ -16,6 +16,8 @@ class ComicContainer {
         this.$unWatchButton = $('a#un-watch-button');
         this.$pullButton = $('a#pull-button');
         this.$unPullButton = $('a#un-pull-button');
+        this.$lastPulledDiv = $('div#last-pulled-div');
+        this.$lastPulledText = $('p.last-pulled-text');
 
         this.watchFunction = null;
         this.unWatchFunction = null;
@@ -42,6 +44,9 @@ class ComicContainer {
         this.$detailBackground.on('load', this.detailBackgroundLoadedFunction);
         this.$detailCover.on('load', this.detailCoverLoadedFunction);
 
+        let description = comic.description.replace(/(?:\r\n|\r|\n)/g, '<br>');
+
+
         this.$detailBackground.addClass('details-hidden');
         this.$detailBackground.attr('src', comic.coverURL);
         this.$detailTitle.text(comic.title);
@@ -53,6 +58,14 @@ class ComicContainer {
         this.$detailCode.text(comic.code);
         this.$detailPrice.text('$' + comic.price.toFixed(2));
         this.$detailDescription.text(comic.description);
+
+        if (comic.lastPulled) {
+            this.$lastPulledDiv.removeClass('details-hidden');
+            this.$lastPulledText.text(comic.lastPulled);
+        }
+        else {
+            this.$lastPulledDiv.addClass('details-hidden');
+        }
 
         this.watchFunction = function (event) {
             event.preventDefault();

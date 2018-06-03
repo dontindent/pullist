@@ -23,6 +23,9 @@ class Comic {
         this.mainID = 0;
         this.variantList = [];
         this.mainComic = null;
+
+        this.lastPulledNumber = -1;
+        this.lastPulledDate = new Date(-8640000000000000);
     }
 
     get key() {
@@ -33,6 +36,14 @@ class Comic {
     get title() {
         if (this.number === -1.0) return this.series;
         return this.series + ' #' + this.number;
+    }
+
+    get lastPulled() {
+        if (this.lastPulledNumber !== -1) {
+            return 'Issue ' + this.lastPulledNumber + ' pulled on ' + this.lastPulledDate.toLocaleDateString("en-US")
+        }
+
+        return '';
     }
 
     equals(comic) {

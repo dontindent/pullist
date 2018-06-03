@@ -1,4 +1,4 @@
-const {app, ipcMain, BrowserWindow} = require('electron');
+const {app, ipcMain, BrowserWindow, systemPreferences } = require('electron');
 const path = require('path');
 const url = require('url');
 const Store = require('./app/js/misc/store');
@@ -6,6 +6,15 @@ const config = require(path.join(__dirname, 'package.json'));
 
 let mainWindow = null;
 let storageWindow = null;
+
+const isWindows = global.isWindows = (process.platform === 'win32');
+const isMac = global.isMac = (process.platform === 'darwin');
+// noinspection JSUnusedLocalSymbols
+const isLinux = global.isLinux = (process.platform === 'linux');
+// noinspection JSUnusedLocalSymbols
+const isBSD = global.isBSD = (process.platform === 'freebsd');
+// noinspection JSUnusedLocalSymbols
+const isSun = global.isSun = (process.platform === 'sunos');
 
 const store = new Store({
     configName: 'user-preferences',
@@ -38,6 +47,17 @@ ipcMain.on ('prefDelete', function(event, message) {
     let value = store.delete(key);
     event.sender.send('prefDeleteSuccess', { key: key, value: value });
 }.bind(this));
+
+
+ipcMain.on ('getAccentColor', function (event) {
+    event.sender.send('accentColorChanged', systemPreferences.getAccentColor());
+}.bind(this));
+
+if (isWindows) {
+    systemPreferences.on('accent-color-changed', function (event, newColor) {
+        mainWindow.webContents.send('accentColorChanged', newColor);
+    });
+}
 
 app.setName(config.productName);
 
@@ -100,10 +120,17 @@ function createWindow (width, height) {
 app.on('ready', function () {
     let { width, height } = store.get('windowBounds');
     createWindow(width, height);
+
+    if (isWindows) {
+        console.log(systemPreferences.getColor('window-frame'));
+        console.log(systemPreferences.getColor('active-border'));
+
+        mainWindow.webContents.send('accentColorChanged', systemPreferences.getAccentColor());
+    }
 });
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (!isMac) {
         app.quit();
     }
 });

@@ -5,11 +5,22 @@
     /*cursor: default;*/
 /*}*/
 
+:root {
+    --accent-color-light-3: #A0ACBB;
+    --accent-color-light-2: #708399;
+    --accent-color-light-1: #586E88;
+    --accent-color: #415A77;
+    --accent-color-dark-1: #384E68;
+    --accent-color-dark-2: #304359;
+    --accent-color-dark-3: #202D3B;
+}
+
 html, body {
     padding: 0;
     margin: 0;
     height: 100%;
     font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
 }
 
 .button-unstyled {

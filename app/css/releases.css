@@ -178,6 +178,12 @@ div#description-div {
     grid-column-end: 3;
 }
 
+div#last-pulled-div {
+    grid-row: 5;
+    grid-column-start: 1;
+    grid-column-end: 3;
+}
+
 p.detail-label {
     margin: 0;
     font-size: 10pt;
@@ -188,4 +194,12 @@ p.detail-label {
 p.detail {
     margin: 0;
     font-size: 10pt;
+    white-space: pre-wrap;
+}
+
+p.last-pulled-text {
+    margin: 0;
+    font-size: 10pt;
+    color: #000000;
+    opacity: 0.5;
 }

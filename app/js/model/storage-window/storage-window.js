@@ -1,7 +1,10 @@
 const { remote, ipcRenderer } = require('electron');
-const ComicDatabase = require('../misc/database-manager');
+const ComicDatabase = require('./database-manager');
+let ipcChannels = require('../../misc/ipc-channels');
 
+const logger = require('../../misc/logger');
 const mainWindow = remote.getGlobal ('mainWindow');
+const caller = 'StorageWindow';
 
 class StorageWindow {
     constructor () {
@@ -19,31 +22,16 @@ class StorageWindow {
 
         this.dbManager.storageReady.attach(this.storageReadyHandler);
 
-        ipcRenderer.on ('storageRequest', this.storageRequestHandler );
-        ipcRenderer.on ('loadRequest', this.loadRequestHandler );
-        ipcRenderer.on ('deleteRequest', this.deleteRequestHandler );
+        ipcRenderer.on (ipcChannels.storeRequest, this.storageRequestHandler);
+        ipcRenderer.on (ipcChannels.loadRequest, this.loadRequestHandler);
+        ipcRenderer.on (ipcChannels.deleteRequest, this.deleteRequestHandler);
 
         this.dbManager.initDB();
     }
 
-    static sendMessage (channel, message) {
-        try {
-            if (mainWindow) {
-                mainWindow.webContents.send(channel, message);
-            }
-        } catch (error) {
-            console.log('storageWindow: Error sending message');
-            StorageWindow.sendMessage(channel, message);
-        }
-    }
-
-    static sendStorageResponse (comic) {
-        StorageWindow.sendMessage('storageResponse', comic);
-    }
-
     // noinspection JSUnusedLocalSymbols
     static storageReady (sender, args) {
-        StorageWindow.sendMessage('storageReady', null);
+        sendMessage(ipcChannels.storageReady, null);
     }
 
     storageRequest (event, comic) {
@@ -51,7 +39,7 @@ class StorageWindow {
 
         this.storeQueue.push(comic);
 
-        // console.log('storageWindow storing: ' + comic.originalString);
+        // console.log('StorageWindow storing: ' + comic.originalString);
 
         if (this.storeQueue.length === 1) {
             this.processStoreQueue();
@@ -66,10 +54,10 @@ class StorageWindow {
             this.dbManager.getComicByOriginal(comic.originalString, function (result) {
                 if (result) {
                     comic.id = result['Id'];
-                    console.log('storageWindow updating: ' + comic.originalString);
+                    logger.log(['StorageWindow updating:', comic.originalString], caller);
                     storageWindow.dbManager.updateComic(comic, storageWindow.storeComplete.bind(storageWindow));
                 } else {
-                    console.log('storageWindow inserting: ' + comic.originalString);
+                    logger.log(['StorageWindow inserting:',comic.originalString], caller);
                     storageWindow.dbManager.insertComic(comic, storageWindow.storeComplete.bind(storageWindow));
                 }
             });
@@ -86,9 +74,9 @@ class StorageWindow {
     }
 
     storeComplete (comic) {
-        StorageWindow.sendStorageResponse(comic);
+        sendMessage(ipcChannels.storeResponse, comic);
 
-        console.log('\tstorageWindow stored:', comic.originalString);
+        logger.log(['\tStorageWindow stored:', comic.originalString], caller);
 
         this.processStoreQueue();
     }
@@ -99,14 +87,14 @@ class StorageWindow {
         if(typeof message === 'number') date = message;
         else date = new Date(message).valueOf();
 
-        console.log('Got load request for:', date);
+        logger.log(['Got load request for:', date], caller);
 
         this.dbManager.getComicsByDate(date, this.loadComplete.bind(this));
     }
 
     // noinspection JSMethodCanBeStatic
     loadComplete (comics) {
-        StorageWindow.sendMessage('loadResponse', comics);
+        sendMessage(ipcChannels.loadResponse, comics);
     }
 
     deleteRequest (event, message) {
@@ -115,16 +103,28 @@ class StorageWindow {
         if(typeof message === 'number') date = message;
         else date = new Date(message).valueOf();
 
-        console.log('Got delete request for all except:', date);
+        logger.log(['Got delete request for all except:', date], caller);
 
         this.dbManager.deleteOldUnpulled(date, this.deleteComplete.bind(this));
     }
 
     // noinspection JSMethodCanBeStatic
     deleteComplete (status) {
-        StorageWindow.sendMessage('deleteResponse', status);
+        sendMessage(ipcChannels.deleteResponse, status);
     }
 }
+
+function sendMessage (channel, message) {
+    try {
+        if (mainWindow) {
+            mainWindow.webContents.send(channel, message);
+        }
+    } catch (error) {
+        logger.log('StorageWindow: Error sending IPC message', caller);
+        sendMessage(channel, message);
+    }
+}
+
 
 // noinspection JSUnusedLocalSymbols
 let storageWindow = new StorageWindow();

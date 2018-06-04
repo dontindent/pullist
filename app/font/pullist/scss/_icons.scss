@@ -1,0 +1,16 @@
+// Icons
+// -------------------------
+
+
+[data-icons8]:before,
+.icons8-magazine:before,
+.icons8-magazine-2:before,
+.icons8-speech-bubble:before,
+{ @include icons8-font; }
+
+[data-icons8]:before { content: attr(data-icons8); }
+
+.icons8-magazine:before { content: $icons8-var-magazine; }
+.icons8-magazine-2:before { content: $icons8-var-magazine-2; }
+.icons8-speech-bubble:before { content: $icons8-var-speech-bubble; }
+

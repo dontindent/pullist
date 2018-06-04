@@ -2,7 +2,7 @@ const electron = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-class Store {
+class PrefStore {
     constructor (opts) {
         const userDataPath = (electron.app || electron.remote.app).getPath('userData');
         this.path = path.join(userDataPath, opts.configName + '.json');
@@ -34,4 +34,4 @@ function parseDataFile(filePath, defaults) {
     }
 }
 
-exports = module.exports = Store;
+exports = module.exports = PrefStore;

@@ -1,0 +1,21 @@
+// Font paths
+// -------------------------
+
+@font-face {
+  font-family: "Pullist";
+  src: url("../fonts/Pullist.eot");
+  src: url("../fonts/Pullist.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/Pullist.woff2") format("woff2"),
+       url("../fonts/Pullist.woff") format("woff"),
+       url("../fonts/Pullist.ttf") format("truetype"),
+       url("../fonts/Pullist.svg#Pullist") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: "Pullist";
+    src: url("../fonts/Pullist.svg#Pullist") format("svg");
+  }
+}

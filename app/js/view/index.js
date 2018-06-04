@@ -6,11 +6,12 @@ const $ = require('jquery');
 const { Color } = require('../misc/color.js');
 const Injector = require('../misc/injector');
 const ComicController = require('../controller/comic-controller');
-const ComicDataService = require('../model/comic-data-service');
-const ComicCollection = require('../model/comic-collection');
+const ComicDataService = require('../model/main-window/comic-data-service');
+const ComicCollection = require('../model/main-window/comic-collection');
 const ReleasesView = require('./releases');
 const storageWindow = remote.getGlobal ('storageWindow');
 const userPrefs = remote.getGlobal('userPrefs');
+const storageInterface = require('../model/main-window/storage-interface');
 
 let indexView = null;
 
@@ -53,8 +54,9 @@ class IndexView {
         this.$windowTitle.hide();
         updateColors(null, userPrefs['accentColor']);
 
+        storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
+
         ipcRenderer.on('accentColorChanged', this.accentColorChangedHandler);
-        ipcRenderer.on('storageReady', this.storageReadyHandler);
         this.$links.on('click', this.linkClickedHandler);
 
         ipcRenderer.send('getAccentColor', null);
@@ -74,8 +76,9 @@ class IndexView {
     }
 
     storageReady() {
+        // this.$splashscreen.hide();
         this.$splashscreen.fadeOut(400);
-        this.$windowTitle.show();
+        // this.$windowTitle.show();
     }
 
     linkClicked(event) {

@@ -1,8 +1,8 @@
 const { remote } = require('electron');
 const $ = require('jquery');
-const Event = require('../misc/event-dispatcher');
+const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
-const Utilities = require('../misc/utilities');
+const Utilities = require('../../misc/utilities');
 
 const newReleasesUrl = 'https://www.previewsworld.com/shipping/newreleases.txt';
 const detailUrlBase = 'http://www.previewsworld.com/Catalog/';
@@ -60,6 +60,8 @@ function processList(comicService, rawList) {
     let publisher = '';
     let count = 0;
     let comicsByOriginal = {};
+    let variantPool = {};
+    let variantKeys = [];
 
     for(let i = 0; i < lines.length; i++) {
         let line = lines[i];
@@ -155,23 +157,43 @@ function processList(comicService, rawList) {
             comicService.comicDict[key] = comic;
         }
         else {
-            let oldComic = comicService.comicDict[key];
-
-            if (oldComic.equals(comic)) {
-                oldComic.copyDetails(comic);
+            if (!(key in variantPool)) {
+                variantPool[key] = [comic];
+                variantKeys.push(key)
             }
-            else {
-                let oldVariants = oldComic.variantList;
-                oldComic.variantList = [];
+            else variantPool[key].push(comic);
+            // let oldComic = comicService.comicDict[key];
+            //
+            // if (oldComic.equals(comic)) {
+            //     oldComic.copyDetails(comic);
+            // }
+            // else {
+            //     let oldVariants = oldComic.variantList;
+            //     oldComic.variantList = [];
+            //
+            //     let variantList = [ comic, oldComic ];
+            //     oldVariants.forEach((variant)=> {
+            //         variantList.push(variant);
+            //
+            //     });
+            //
+            //     comicService.comicDict[key] = Comic.assembleVariants(variantList);
+            // }
+        }
+    }
 
-                let variantList = [ comic, oldComic ];
-                oldVariants.forEach((variant)=> {
-                    variantList.push(variant);
+    for (let variantKey of variantKeys) {
+        variantPool[variantKey].push(comicService.comicDict[variantKey]);
 
-                });
+        let variants = variantPool[variantKey].sort(Comic.compareByPrice);
 
-                comicService.comicDict[key] = Comic.assembleVariants(variantList);
-            }
+        let main = variants[0];
+        main.mainComic = null;
+        main.mainID = 0;
+        main.variant = false;
+        
+        for (let i = 1; i < variants.length; i++) {
+            main.addVariant(variants[i]);
         }
     }
 

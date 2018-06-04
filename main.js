@@ -1,11 +1,14 @@
 const {app, ipcMain, BrowserWindow, systemPreferences } = require('electron');
 const path = require('path');
 const url = require('url');
-const Store = require('./app/js/misc/store');
+const Store = require('./app/js/misc/pref-store');
 const config = require(path.join(__dirname, 'package.json'));
+const logger = require('./app/js/misc/logger');
 
 let mainWindow = null;
 let storageWindow = null;
+
+const sender = 'main';
 
 const isWindows = global.isWindows = (process.platform === 'win32');
 const isMac = global.isMac = (process.platform === 'darwin');
@@ -30,20 +33,20 @@ global.userPrefs = store.data;
 ipcMain.on ('prefGet', function(event, message) {
     let key = message;
     let value = store.get(key);
-    console.log('Getting preferences for: \'' + key + '\': ' + value);
+    logger.log('Getting preferences for: \'' + key + '\': ' + value, sender);
     event.sender.send('prefGetSuccess', { key: key, value: value });
 }.bind(this));
 
 ipcMain.on ('prefSet', function(event, message) {
     let { key, value } = message;
-    console.log('Setting preferences for \'' + key + '\': ' +  value);
+    logger.log('Setting preferences for \'' + key + '\': ' + value, sender);
     store.set(key, value);
     event.sender.send('prefSetSuccess', store.get(key));
 }.bind(this));
 
 ipcMain.on ('prefDelete', function(event, message) {
     let key = message;
-    console.log('Deleting preferences for: ' + key);
+    logger.log('Deleting preferences for: \'' + key + '\'', sender);
     let value = store.delete(key);
     event.sender.send('prefDeleteSuccess', { key: key, value: value });
 }.bind(this));
@@ -77,7 +80,7 @@ function createWindow (width, height) {
 
     global.storageWindow = storageWindow = new BrowserWindow({
         title: 'Storage',
-        show: true
+        show: false
     });
 
     mainWindow.setMenuBarVisibility(false);
@@ -90,13 +93,13 @@ function createWindow (width, height) {
     }));
 
     storageWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'app/storageWindow.html'),
+        pathname: path.join(__dirname, 'app/storage_window.html'),
         protocol: 'file',
         slashes: true
     }));
 
-    mainWindow.webContents.openDevTools();
-    storageWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools({mode: 'undocked'});
+    storageWindow.webContents.openDevTools({mode: 'undocked'});
 
     mainWindow.on('close', function(event) {
 
@@ -122,8 +125,8 @@ app.on('ready', function () {
     createWindow(width, height);
 
     if (isWindows) {
-        console.log(systemPreferences.getColor('window-frame'));
-        console.log(systemPreferences.getColor('active-border'));
+        logger.log(systemPreferences.getColor('window-frame'), sender);
+        logger.log(systemPreferences.getColor('active-border'), sender);
 
         mainWindow.webContents.send('accentColorChanged', systemPreferences.getAccentColor());
     }

@@ -1,5 +1,5 @@
-const Utilities = require('../misc/utilities');
-const Event = require('../misc/event-dispatcher');
+const Utilities = require('../../misc/utilities');
+const Event = require('../../misc/event-dispatcher');
 
 class Comic {
     constructor() {
@@ -168,6 +168,21 @@ class Comic {
         if (aName > bName) return 1;
 
         return 0;
+    }
+
+    static compareByPrice(a, b) {
+        let aOriginal = (a.originalString).toLowerCase();
+        let bOriginal = (b.originalString).toLowerCase();
+
+        let difference = a.price - b.price;
+
+        if (difference === 0) {
+            if (aOriginal < bOriginal) return -1;
+            if (aOriginal > bOriginal) return 1;
+            return 0;
+        }
+
+        return difference;
     }
 }
 

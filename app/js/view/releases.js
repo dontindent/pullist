@@ -1,6 +1,11 @@
 const $ = require('jquery');
 const Event = require('../misc/event-dispatcher');
+
 const shell = require('electron').shell;
+const logger = require('../misc/logger');
+const storageInterface = require('../model/main-window/storage-interface');
+
+const caller = 'ReleasesView';
 
 class ComicContainer {
     constructor() {
@@ -74,7 +79,6 @@ class ComicContainer {
 
         this.watchFunction = function (event) {
             event.preventDefault();
-            console.log('here?');
             comic.watch(true);
             ReleasesView.updateHeaderButtons(comic);
         };
@@ -168,8 +172,8 @@ class ReleasesView {
         this._comicCollection.retrievedComicsEvent.attach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.attach(this.comicListProcessedHandler);
         this._comicCollection.comicProcessedEvent.attach(this.comicProcessedHandler);
-        this._comicCollection.comicsUnstableEvent.attach(this.comicsUnstableHandler);
-        this._comicCollection.comicsStableEvent.attach(this.comicsStableHandler);
+        storageInterface.storageUnstableEvent.attach(this.comicsUnstableHandler);
+        storageInterface.storageStableEvent.attach(this.comicsStableHandler);
 
         this.$comicListWrapper.resizable({
             containment: 'parent',
@@ -215,7 +219,8 @@ class ReleasesView {
         this._comicCollection.retrievedComicsEvent.unattach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.unattach(this.comicListProcessedHandler);
         this._comicCollection.comicProcessedEvent.unattach(this.comicProcessedHandler);
-        this._comicCollection.comicsStableEvent.unattach(this.comicsStableHandler);
+        storageInterface.storageUnstableEvent.unattach(this.comicsUnstableHandler);
+        storageInterface.storageStableEvent.unattach(this.comicsStableHandler);
     }
 
     comicListProcessed (sender, args) {
@@ -235,6 +240,8 @@ class ReleasesView {
 
     // noinspection JSUnusedLocalSymbols
     comicsStable (sender, args) {
+        logger.log('Storage stable', caller);
+
         this.retrieveActive = true;
         this.$retrieveButton.removeClass('disabled');
         this.$comicList.removeClass('disabled');

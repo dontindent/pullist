@@ -16,6 +16,7 @@
     --accent-color-dark-2: #304359;
     --accent-color-dark-3: #202D3B;
     --app-font: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+    --system-symbol-font: "Segoe MDL2 Assets";
 }
 
 html, body {

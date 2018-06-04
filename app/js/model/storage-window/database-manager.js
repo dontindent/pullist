@@ -1,8 +1,13 @@
 const electron = require('electron');
-const SQL = require('sql.js');
+const SQL = require('../../../../node_modules/sql.js/js/sql');
 const path = require('path');
 const fs = require('fs');
-const Event = require('./event-dispatcher');
+const Event = require('../../misc/event-dispatcher');
+
+const logger = require('../../misc/logger');
+
+const sender = 'ComicDatabase';
+
 
 function _rowsFromSqlDataObject(object) {
     let data = {};
@@ -44,17 +49,17 @@ let _updatePlaceHolderString = function (columns) {
 
 SQL.dbOpen = function (databaseFileName) {
     try {
-        console.log ('Opening database');
+        logger.log ('Opening database', sender);
         return new SQL.Database(fs.readFileSync(databaseFileName));
     } catch (error) {
-        console.log('Can\'t open database file.', error.message);
+        logger.log('Can\'t open database file.\n' + error.message, sender);
         return null;
     }
 };
 
 SQL.dbClose = function (databaseHandle, databaseFileName) {
     try {
-        console.log ('Closing database');
+        logger.log ('Closing database', sender);
         let data = databaseHandle.export();
         let buffer = Buffer.alloc(data.length, data);
         fs.writeFileSync(databaseFileName, buffer);
@@ -62,7 +67,7 @@ SQL.dbClose = function (databaseHandle, databaseFileName) {
         databaseHandle = null;
         return true;
     } catch (error) {
-        console.log('Can\'t close database file.', error);
+        logger.log('Can\'t close database file.\n' + error, sender);
         return null
     }
 };
@@ -97,10 +102,10 @@ class ComicDatabase {
 
             let tableCount = parseInt(row[0].values);
             if (tableCount === 0) {
-                console.log ('The file is an empty SQLite3 database.');
+                logger.log ('The file is an empty SQLite3 database.', sender);
                 this.createDB();
             } else {
-                console.log ('The database has', tableCount, 'tables');
+                logger.log (['The database has', tableCount, 'tables'], sender);
                 this.storageReady.notify();
             }
 
@@ -115,17 +120,17 @@ class ComicDatabase {
 
     createDB () {
         this.db = new SQL.Database();
-        let query = fs.readFileSync(path.join(__dirname, '../../db/schema.sql'), 'utf8');
+        let query = fs.readFileSync(path.join(__dirname, '../../../db/schema.sql'), 'utf8');
         let result = this.db.exec(query);
         if (Object.keys(result).length === 0 &&
             typeof result.constructor === 'function' &&
             this.closeDB()) {
             // SQL.dbClose(this.dbManager, this.dbPath)) {
             this.storageReady.notify();
-            console.log('Created a new database;');
+            logger.log('Created a new database', sender);
         } else {
             this.storageError.notify();
-            console.log ('ComicDatabase.createDB failed');
+            logger.log ('ComicDatabase.createDB failed', sender);
         }
     }
 
@@ -161,7 +166,7 @@ class ComicDatabase {
             }
         } else {
             this.storageError.notify();
-            console.log ('Couldn\'t open database for insert');
+            logger.log ('Couldn\'t open database for insert', sender);
         }
     }
 
@@ -175,7 +180,7 @@ class ComicDatabase {
                 return _rowsFromSqlDataObject({values: values, columns: columns});
             }
         } catch (error) {
-            console.log('ComicDatabase.getLastInsertId', error.message);
+            logger.log(['ComicDatabase.getLastInsertId', error.message], sender);
         }
     }
 
@@ -209,7 +214,7 @@ class ComicDatabase {
             }
         } else {
             this.storageError.notify();
-            console.log ('Couldn\'t open database for insert');
+            logger.log ('Couldn\'t open database for insert', sender);
         }
     }
 
@@ -234,12 +239,12 @@ class ComicDatabase {
                     callback(result);
                 }
             } catch (error) {
-                console.log('ComicDatabase.getComicByOriginal', 'No data found for OriginalString =', originalString);
+                logger.log(['ComicDatabase.getComicByOriginal', 'No data found for OriginalString =', originalString], sender);
                 throw (error);
             }
         } else {
             this.storageError.notify();
-            console.log ('Couldn\'t open database for select');
+            logger.log ('Couldn\'t open database for select', sender);
         }
     }
 
@@ -264,13 +269,13 @@ class ComicDatabase {
                     callback(results);
                 }
             } catch (error) {
-                console.log('ComicDatabase.getComicsByDate', 'No data found for ReleaseDate =', date);
+                logger.log(['ComicDatabase.getComicsByDate', 'No data found for ReleaseDate =', date], sender);
             } finally {
                 this.closeDB();
             }
         } else {
             this.storageError.notify();
-            console.log ('Couldn\'t open database for select');
+            logger.log ('Couldn\'t open database for select', sender);
         }
     }
 
@@ -295,14 +300,14 @@ class ComicDatabase {
                     callback(result);
                 }
             } catch (error) {
-                console.log('ComicDatabase.getComicsByDate', 'No data found for ReleaseDate =', date);
+                logger.log(['ComicDatabase.getComicsByDate', 'No data found for ReleaseDate =', date], sender);
             } finally {
                 this.closeDB();
             }
 
         } else {
             this.storageError.notify();
-            console.log ('Couldn\'t open database for select');
+            logger.log ('Couldn\'t open database for select', sender);
         }
     }
 }

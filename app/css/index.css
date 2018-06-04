@@ -2,6 +2,7 @@
 @import url('../font/icons8-win10/styles.min.css');
 @import url('../font/line-awesome/css/line-awesome-font-awesome.min.css');
 @import url('../font/line-awesome/css/line-awesome.min.css');
+@import url("../font/pullist/css/styles.min.css");
 
 div#wrapper {
     display: flex;
@@ -26,6 +27,14 @@ div#splashscreen {
     right: 0;
     z-index: 899;
     background: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+div#splashscreen img {
+    max-height: 25%;
+    object-fit: contain;
 }
 
 div#electron-titlebar {

@@ -162,23 +162,6 @@ function processList(comicService, rawList) {
                 variantKeys.push(key)
             }
             else variantPool[key].push(comic);
-            // let oldComic = comicService.comicDict[key];
-            //
-            // if (oldComic.equals(comic)) {
-            //     oldComic.copyDetails(comic);
-            // }
-            // else {
-            //     let oldVariants = oldComic.variantList;
-            //     oldComic.variantList = [];
-            //
-            //     let variantList = [ comic, oldComic ];
-            //     oldVariants.forEach((variant)=> {
-            //         variantList.push(variant);
-            //
-            //     });
-            //
-            //     comicService.comicDict[key] = Comic.assembleVariants(variantList);
-            // }
         }
     }
 

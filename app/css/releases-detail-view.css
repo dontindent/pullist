@@ -5,14 +5,14 @@ div#comic-details {
 }
 
 div#details-background {
-    content: "";
     position: absolute;
     left: 0;
     right: 0;
     z-index: 0;
     display: block;
     height: 100%;
-    /*margin-top: 40px;*/
+    pointer-events: none;
+    user-select: none;
 }
 
 img#details-background-img {
@@ -23,6 +23,7 @@ img#details-background-img {
     opacity: 0.50;
     margin-top: -200px;
     margin-left: -300px;
+    pointer-events: none;
 }
 
 div#details-container {
@@ -30,6 +31,7 @@ div#details-container {
     height: 100%;
     display: grid;
     grid-template-rows: auto 1fr;
+    /*z-index: 0;*/
     z-index: 50;
     padding-top: 40px;
 }

@@ -32,6 +32,9 @@ div#splashscreen img {
 
 div#electron-titlebar {
     z-index: 900;
+    background: none;
+    border: none;
+    outline: none;
 }
 
 div#electron-titlebar-title {

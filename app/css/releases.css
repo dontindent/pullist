@@ -23,6 +23,10 @@ div#releases-wrapper {
     display: none !important;
 }
 
+.hidden {
+    display: none !important;
+}
+
 div#comic-details-none {
     position: absolute;
     top: 0;

@@ -1,5 +1,6 @@
 const $ = require('jquery');
 const Event = require('../misc/event-dispatcher');
+const Utilities = require('../misc/utilities');
 
 const shell = require('electron').shell;
 const logger = require('../misc/logger');
@@ -129,6 +130,7 @@ class ReleasesView {
         this._comicCollection = comicCollection;
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
+        this._filtered = false;
         // noinspection JSUnusedGlobalSymbols
         this.numComics = 0;
         this.retrieveActive = true;
@@ -145,7 +147,10 @@ class ReleasesView {
     }
 
     createChildren() {
-        this.$retrieveButton = $('a.comic-list-refresh-button');
+        this.$retrieveButton = $('a#comic-list-refresh-button');
+        this.$searchButton = $('a#comic-list-search-button');
+        this.$cancelSearchButton = $('a#comic-list-clear-search-button');
+        this.$searchInput = $('input#comic-list-search');
         this.$releasesDate = $('div#comic-list-header h1');
         this.$comicList = $('ul#comic-list');
         this.$comicListWrapper = $('div#comic-list-wrapper');
@@ -156,6 +161,9 @@ class ReleasesView {
 
     setupHandlers() {
         this.retrieveComicsButtonHandler = this.retrieveComicsButton.bind(this);
+        this.$searchInputKeyHandler = this.searchInputKey.bind(this);
+        this.searchButtonHandler = this.search.bind(this);
+        this.searchCancelHandler = this.clearSearch.bind(this);
 
         this.retrievedComicsHandler = this.retrievedComics.bind(this);
         this.comicListProcessedHandler = this.comicListProcessed.bind(this);
@@ -168,6 +176,9 @@ class ReleasesView {
 
     enable() {
         this.$retrieveButton.on('click', this.retrieveComicsButtonHandler);
+        this.$searchInput.on('keyup', this.$searchInputKeyHandler);
+        this.$searchButton.on('click', this.searchButtonHandler);
+        this.$cancelSearchButton.on('click', this.searchCancelHandler);
 
         this._comicCollection.retrievedComicsEvent.attach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.attach(this.comicListProcessedHandler);
@@ -188,10 +199,87 @@ class ReleasesView {
         if (this.retrieveActive) {
             this.retrieveComicsEvent.notify();
             this.comicsUnstable();
-            // this.retrieveActive = false;
-            // this.$retrieveButton.addClass('disabled');
             this.$comicList.addClass('disabled');
         }
+    }
+
+    searchInputKey(event) {
+        if (event.which === 13) {
+            this.search(event);
+        }
+        else if (this.$searchInput[0].value) {
+            this.$cancelSearchButton.removeClass('button-hidden');
+            this.$searchInput.addClass('in-use');
+            // console.log(this.$searchInput[0].value);
+        }
+        else if (!this._filtered) {
+            this.$cancelSearchButton.addClass('button-hidden');
+            this.$searchInput.removeClass('in-use');
+        }
+    }
+
+    search(event) {
+        event.preventDefault();
+
+        let text = this.$searchInput[0].value;
+        let textFilter = /^\W*$/gmi;
+
+        if (textFilter.exec(text)) {
+            return;
+        }
+
+        for (let group of this.$comicList[0].childNodes) {
+            let comicViews = $(group).find('ul.publisher-list')[0];
+            let numComics = comicViews.childNodes.length - 1;
+            let hiddenComics = 0;
+
+            for (let comicView of comicViews.childNodes) {
+                // console.log(comicView.comic);
+                if (!comicView.hasOwnProperty('comic')) continue;
+
+                $(comicView).removeClass('hidden');
+
+                let comic = comicView.comic;
+                let lowerText = text.toLowerCase();
+
+                let comicMatch = comic.title.toLowerCase().includes(lowerText) ||
+                                    comic.description.toLowerCase().includes(lowerText) ||
+                                    comic.writer.toLowerCase().includes(lowerText) ||
+                                    comic.artist.toLowerCase().includes(lowerText) ||
+                                    comic.coverArtist.toLowerCase().includes(lowerText);
+
+                if (!comicMatch) {
+                    $(comicView).addClass('hidden');
+                    hiddenComics++;
+                }
+            }
+
+            $(group).removeClass('hidden');
+
+            if (hiddenComics === numComics) {
+                $(group).addClass('hidden');
+            }
+        }
+
+        this._filtered = true;
+    }
+
+    clearSearch(event) {
+        event.preventDefault();
+
+        for (let group of this.$comicList[0].childNodes) {
+            let comicViews = $(group).find('ul.publisher-list')[0];
+            for (let comicView of comicViews.childNodes) {
+                $(comicView).removeClass('hidden');
+            }
+
+            $(group).removeClass('hidden');
+        }
+
+        this.$searchInput[0].value = '';
+        this._filtered = false;
+        this.$cancelSearchButton.addClass('button-hidden');
+        this.$searchInput.removeClass('in-use');
     }
 
     retrievedComics() {

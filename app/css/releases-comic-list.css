@@ -23,15 +23,87 @@ div#comic-list-header {
 }
 
 div.comic-list-search-container {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas: 'search buttons refresh';
 }
 
 input#comic-list-search  {
-    padding: 0 0 0 10px;
+    position: relative;
+    padding: 0 42px 0 10px;
     height: 38px;
-    flex: 1;
+    grid-column-start: search-start;
+    grid-column-end: buttons-end;
+    grid-row: 1;
     font-family: var(--app-font);
+}
+
+input#comic-list-search.in-use  {
+    padding: 0 84px 0 10px;
+}
+
+a.comic-list-header-button {
+    display: flex;
+    position: relative;
+    width: 42px;
+    height: 42px;
+    margin: 0;
+    line-height: 40px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 18pt;
+    cursor: default;
+    flex-direction: row;
+    align-content: center;
+    justify-content: center;
+}
+
+a.comic-list-header-button.disabled {
+    color: #BBBBBB;
+    pointer-events: none;
+}
+
+a.comic-list-header-button:hover {
+    background: #F1F1F1;
+}
+
+a.comic-list-header-button.disabled:hover {
+    background: inherit !important;
+}
+
+a.comic-list-header-button:active {
+    background: #EEEEEE;
+}
+
+a.comic-list-header-button.disabled:active {
+    background: inherit !important;
+}
+
+div#search-buttons {
+    grid-area: buttons;
+    -ms-grid-row: 1;
+    grid-row: 1;
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    margin: 1px 1px 0 0;
+}
+
+div#search-buttons a.comic-list-header-button {
+    height: 40px !important;
+    width: 42px;
+}
+
+a#comic-list-search-button {
+}
+
+a#comic-list-clear-search-button {
+}
+
+a#comic-list-refresh-button {
+    grid-column: 3;
+    grid-row: 1;
+    margin-left: 1px;
 }
 
 div.comic-list-header-container {
@@ -48,38 +120,6 @@ div#comic-list-header h1 {
     vertical-align: middle;
     flex: 1;
     min-height: 32px;
-}
-
-a.comic-list-refresh-button {
-    width: 42px;
-    height: 42px;
-    margin: 0;
-    line-height: 40px;
-    text-align: center;
-    vertical-align: middle;
-    font-size: 18pt;
-    cursor: default;
-}
-
-a.comic-list-refresh-button.disabled {
-    color: #BBBBBB;
-    pointer-events: none;
-}
-
-a.comic-list-refresh-button:hover {
-    background: #F1F1F1;
-}
-
-a.comic-list-refresh-button.disabled:hover {
-    background: inherit !important;
-}
-
-a.comic-list-refresh-button:active {
-    background: #EEEEEE;
-}
-
-a.comic-list-refresh-button.disabled:active {
-    background: inherit !important;
 }
 
 div#comic-list-container {

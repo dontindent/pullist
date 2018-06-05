@@ -3,13 +3,23 @@
         <div id="comic-list-wrapper">
             <div id="comic-list-header">
                 <div class="comic-list-search-container">
-                    <input title="Search" id="comic-list-search" placeholder="Search"/>
-                    <a class="comic-list-refresh-button interface" href="" title="Sync newest comic list">
+                    <input title="Search" id="comic-list-search" placeholder="Search">
+                    <div id="search-buttons">
+                        <a class="comic-list-header-button interface" id="comic-list-search-button"
+                           href="" title="Search">
+                            <i class="icons8-search"></i>
+                        </a>
+                        <a class="comic-list-header-button interface button-hidden" id="comic-list-clear-search-button"
+                           href="" title="Clear search">
+                            <i class="icons8-cancel"></i>
+                        </a>
+                    </div>
+                    <a class="comic-list-header-button interface" id="comic-list-refresh-button"
+                       href="" title="Sync newest comic list">
                         <i class="icons8-refresh"></i>
                     </a>
                 </div>
                 <div class="comic-list-header-container interface">
-                    <!--<h1>Releases for 5/30/2018</h1>-->
                     <h1></h1>
                 </div>
             </div>
@@ -17,7 +27,6 @@
                 <ul id="comic-list"></ul>
             </div>
         </div>
-        <!--<div id="resize-drag"><div id="resize-drag-capture"></div></div>-->
         <div id="comic-details">
             <div id="details-background" class="interface">
                 <img id="details-background-img" src="">

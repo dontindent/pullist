@@ -1,7 +1,7 @@
 @import url('releases.css');
 @import url('../font/icons8-win10/styles.min.css');
-@import url('../font/line-awesome/css/line-awesome-font-awesome.min.css');
-@import url('../font/line-awesome/css/line-awesome.min.css');
+/*@import url('../font/line-awesome/css/line-awesome-font-awesome.min.css');*/
+/*@import url('../font/line-awesome/css/line-awesome.min.css');*/
 @import url("../font/pullist/css/styles.min.css");
 
 div#wrapper {
@@ -16,10 +16,6 @@ div#wrapper {
 }
 
 div#splashscreen {
-    /*display: flex;*/
-    /*flex-grow: 1;*/
-    /*height: 100%;*/
-    /*width: 100%;*/
     position: absolute;
     top: 0;
     bottom: 0;
@@ -96,7 +92,9 @@ nav ul > :last-child {
 
 li.nav-item {
     vertical-align: middle;
-    /*margin-bottom: 10px;*/
+    /* margin-bottom: 10px; */
+    /* height: 52px; */
+    align-content: center;
 }
 
 li.nav-item:hover, a.hamburger-button:hover {
@@ -110,11 +108,12 @@ li.nav-item:active, a.hamburger-button:active {
 li.nav-item a {
     padding: 10px 0;
     cursor: default;
-    display: block;
+    display: flex;
     margin: 0 0 0 6px;
     color: rgba(255, 255, 255, 1.0);
     font-weight: 300;
-    /*color: rgba(255, 255, 255, 0.7);*/
+    flex-direction: row;
+    /* color: rgba(255, 255, 255, 0.7); */
 }
 
 li.nav-item.selected a {
@@ -134,13 +133,16 @@ i.nav-icon {
 span.nav-item-text {
     font-size: 14pt;
     vertical-align: middle;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 6px;
 }
 
 a.hamburger-button {
-    padding: 10px 10px;
+    padding: 10px 21px 10px 21px;
     cursor: default;
     display: flex;
-    margin: 0 0 10px 11px;
+    margin: 0 0 10px 0;
     color: rgba(255, 255, 255, 1.0);
     font-weight: 300;
     width: fit-content;

@@ -4,6 +4,7 @@ const url = require('url');
 const Store = require('./app/js/misc/pref-store');
 const config = require(path.join(__dirname, 'package.json'));
 const logger = require('./app/js/misc/logger');
+const ipcChannels = require('./app/js/misc/ipc-channels');
 
 let mainWindow = null;
 let storageWindow = null;
@@ -30,35 +31,35 @@ const store = new Store({
 
 global.userPrefs = store.data;
 
-ipcMain.on ('prefGet', function(event, message) {
+ipcMain.on (ipcChannels.prefGet, function(event, message) {
     let key = message;
     let value = store.get(key);
     logger.log('Getting preferences for: \'' + key + '\': ' + value, sender);
-    event.sender.send('prefGetSuccess', { key: key, value: value });
+    event.sender.send(ipcChannels.prefGetSuccess, { key: key, value: value });
 }.bind(this));
 
-ipcMain.on ('prefSet', function(event, message) {
+ipcMain.on (ipcChannels.prefSet, function(event, message) {
     let { key, value } = message;
     logger.log('Setting preferences for \'' + key + '\': ' + value, sender);
     store.set(key, value);
-    event.sender.send('prefSetSuccess', store.get(key));
+    event.sender.send(ipcChannels.prefSetSuccess, store.get(key));
 }.bind(this));
 
-ipcMain.on ('prefDelete', function(event, message) {
+ipcMain.on (ipcChannels.prefDelete, function(event, message) {
     let key = message;
     logger.log('Deleting preferences for: \'' + key + '\'', sender);
     let value = store.delete(key);
-    event.sender.send('prefDeleteSuccess', { key: key, value: value });
+    event.sender.send(ipcChannels.prefDeleteSuccess, { key: key, value: value });
 }.bind(this));
 
 
-ipcMain.on ('getAccentColor', function (event) {
-    event.sender.send('accentColorChanged', systemPreferences.getAccentColor());
+ipcMain.on (ipcChannels.getAccentColor, function (event) {
+    event.sender.send(ipcChannels.accentColorChanged, systemPreferences.getAccentColor());
 }.bind(this));
 
 if (isWindows) {
     systemPreferences.on('accent-color-changed', function (event, newColor) {
-        mainWindow.webContents.send('accentColorChanged', newColor);
+        mainWindow.webContents.send(ipcChannels.accentColorChanged, newColor);
     });
 }
 

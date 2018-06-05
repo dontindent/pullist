@@ -12,6 +12,7 @@ const ReleasesView = require('./releases');
 const storageWindow = remote.getGlobal ('storageWindow');
 const userPrefs = remote.getGlobal('userPrefs');
 const storageInterface = require('../model/main-window/storage-interface');
+const ipcChannels = require('../misc/ipc-channels');
 
 let indexView = null;
 
@@ -22,6 +23,7 @@ $(function() {
 class IndexView {
     constructor() {
         this._currentController = null;
+        this._navCollapsed = false;
 
         this.init();
     }
@@ -38,6 +40,8 @@ class IndexView {
         this.$navItems = $('li.nav-item');
         this.$splashscreen = $('#splashscreen');
         this.$windowTitle = $('#electron-titlebar-title');
+        this.$hamburgerButton = $('a.hamburger-button');
+        this.$navContainer = $('div#nav-container');
 
         return this;
     }
@@ -46,6 +50,7 @@ class IndexView {
         this.accentColorChangedHandler = updateColors.bind(this);
         this.storageReadyHandler = this.storageReady.bind(this);
         this.linkClickedHandler = this.linkClicked.bind(this);
+        this.hamburgerClickedHandler = this.hamburgerClicked.bind(this);
 
         return this;
     }
@@ -54,12 +59,16 @@ class IndexView {
         this.$windowTitle.hide();
         updateColors(null, userPrefs['accentColor']);
 
+        this._navCollapsed = userPrefs['navCollapsed'];
+        if (this._navCollapsed) this.$navContainer.addClass('collapsed');
+
         storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
 
-        ipcRenderer.on('accentColorChanged', this.accentColorChangedHandler);
+        ipcRenderer.on(ipcChannels.accentColorChanged, this.accentColorChangedHandler);
         this.$links.on('click', this.linkClickedHandler);
+        this.$hamburgerButton.on('click', this.hamburgerClickedHandler);
 
-        ipcRenderer.send('getAccentColor', null);
+        ipcRenderer.send(ipcChannels.getAccentColor, null);
 
         this.initMVC();
 
@@ -78,7 +87,7 @@ class IndexView {
     storageReady() {
         // this.$splashscreen.hide();
         this.$splashscreen.fadeOut(400);
-        // this.$windowTitle.show();
+        this.$windowTitle.show();
     }
 
     linkClicked(event) {
@@ -108,6 +117,17 @@ class IndexView {
         this.$navItems.removeClass('selected');
         $navItem.addClass('selected');
     }
+
+    hamburgerClicked(event) {
+        event.preventDefault();
+
+        let hamburgerButton = event.delegateTarget;
+
+        this.$navContainer.toggleClass('collapsed');
+        this._navCollapsed = !this._navCollapsed;
+
+        ipcRenderer.send(ipcChannels.prefSet, {key: 'navCollapsed', value: this._navCollapsed});
+    }
 }
 
 function updateColors(event, message) {
@@ -134,5 +154,5 @@ function updateColors(event, message) {
 }
 
 function storeAccentColor(color) {
-    ipcRenderer.send('prefSet', {key: 'accentColor', value: color});
+    ipcRenderer.send(ipcChannels.prefSet, {key: 'accentColor', value: color});
 }

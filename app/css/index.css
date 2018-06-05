@@ -53,11 +53,17 @@ div#nav-container {
     position: relative;
     display: flex;
     flex-direction: column;
-    flex-basis: 260px;
+    width: 260px;
     flex-shrink: 0;
     min-width: 1px;
-    box-sizing: content-box;
     padding-top: 40px;
+    transition: width 400ms;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+div#nav-container.collapsed {
+    width: 66px;
 }
 
 div#main-container {
@@ -69,22 +75,35 @@ div#main-container {
     min-width: 1px;
 }
 
+div#nav-container nav {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
+    flex: 1;
+}
+
+nav ul > :last-child {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 }
 
 li.nav-item {
     vertical-align: middle;
-    margin-bottom: 10px;
+    /*margin-bottom: 10px;*/
 }
 
-li.nav-item:hover {
+li.nav-item:hover, a.hamburger-button:hover {
     background: rgba(255, 255, 255, 0.3);
 }
 
-li.nav-item:active {
+li.nav-item:active, a.hamburger-button:active {
     background: rgba(255, 255, 255, 0.5);
 }
 
@@ -107,7 +126,7 @@ li.nav-item.selected a {
 
 i.nav-icon {
     font-size: 18pt;
-    margin: 15px;
+    margin: 0 15px 0 15px;
     vertical-align: middle;
     font-weight: 100;
 }
@@ -115,4 +134,21 @@ i.nav-icon {
 span.nav-item-text {
     font-size: 14pt;
     vertical-align: middle;
+}
+
+a.hamburger-button {
+    padding: 10px 10px;
+    cursor: default;
+    display: flex;
+    margin: 0 0 10px 11px;
+    color: rgba(255, 255, 255, 1.0);
+    font-weight: 300;
+    width: fit-content;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+a.hamburger-button i.nav-icon {
+    margin: 0 !important;
 }

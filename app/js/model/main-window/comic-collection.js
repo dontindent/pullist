@@ -11,7 +11,6 @@ const sender = 'ComicCollection';
 class ComicCollection {
     constructor (comicService) {
         this._comicService = comicService;
-        this._loadQueued = false;
         this._comicDict = {};
         this._comicsByPublisher = {};
         this._comicsByOriginal = {};

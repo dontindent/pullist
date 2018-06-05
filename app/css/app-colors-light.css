@@ -2,8 +2,12 @@
     /* Colors */
     --app-background-color: #FFFFFF;
     --app-border-color: #DDDDDD;
+    --app-border-active-color: #000000;
     --app-font-color: #000000;
+
+    --app-foreground-color: #000000;
 
     /* Styles */
     --app-border-style: 1px solid var(--app-border-color);
+    --app-border-active-style: 1px solid var(--app-border-active-color);
 }

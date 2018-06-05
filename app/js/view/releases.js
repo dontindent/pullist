@@ -147,6 +147,7 @@ class ReleasesView {
     }
 
     createChildren() {
+        this.$searchAndButtons = $('div#search-and-buttons');
         this.$retrieveButton = $('a#comic-list-refresh-button');
         this.$searchButton = $('a#comic-list-search-button');
         this.$cancelSearchButton = $('a#comic-list-clear-search-button');
@@ -160,8 +161,10 @@ class ReleasesView {
     }
 
     setupHandlers() {
+        this.searchInputFocusInHandler = this.searchInputFocusIn.bind(this);
+        this.searchInputFocusOutHandler = this.searchInputFocusOut.bind(this);
         this.retrieveComicsButtonHandler = this.retrieveComicsButton.bind(this);
-        this.$searchInputKeyHandler = this.searchInputKey.bind(this);
+        this.searchInputKeyHandler = this.searchInputKey.bind(this);
         this.searchButtonHandler = this.search.bind(this);
         this.searchCancelHandler = this.clearSearch.bind(this);
 
@@ -176,8 +179,12 @@ class ReleasesView {
 
     enable() {
         this.$retrieveButton.on('click', this.retrieveComicsButtonHandler);
-        this.$searchInput.on('keyup', this.$searchInputKeyHandler);
+
+        this.$searchInput.on('focusin', this.searchInputFocusInHandler);
+        this.$searchInput.on('focusout', this.searchInputFocusOutHandler);
+        this.$searchInput.on('keyup', this.searchInputKeyHandler);
         this.$searchButton.on('click', this.searchButtonHandler);
+
         this.$cancelSearchButton.on('click', this.searchCancelHandler);
 
         this._comicCollection.retrievedComicsEvent.attach(this.retrievedComicsHandler);
@@ -191,6 +198,14 @@ class ReleasesView {
             handles: 'e, w',
         });
         return true;
+    }
+
+    searchInputFocusIn(event) {
+        this.$searchAndButtons.addClass('focus');
+    }
+
+    searchInputFocusOut(event) {
+        this.$searchAndButtons.removeClass('focus');
     }
 
     retrieveComicsButton(event) {
@@ -207,14 +222,14 @@ class ReleasesView {
         if (event.which === 13) {
             this.search(event);
         }
+        else if (event.which === 27) {
+            this.clearSearch(event);
+        }
         else if (this.$searchInput[0].value) {
             this.$cancelSearchButton.removeClass('button-hidden');
-            this.$searchInput.addClass('in-use');
-            // console.log(this.$searchInput[0].value);
         }
         else if (!this._filtered) {
             this.$cancelSearchButton.addClass('button-hidden');
-            this.$searchInput.removeClass('in-use');
         }
     }
 
@@ -279,7 +294,6 @@ class ReleasesView {
         this.$searchInput[0].value = '';
         this._filtered = false;
         this.$cancelSearchButton.addClass('button-hidden');
-        this.$searchInput.removeClass('in-use');
     }
 
     retrievedComics() {

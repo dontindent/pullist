@@ -40,6 +40,9 @@
 .icons8-cancel:before,
 .icons8-checked-box:before,
 .icons8-cog-wheel:before,
+.icons8-empty-box:before,
+.icons8-eye:before,
+.icons8-eye-outline:before,
 .icons8-hamburger-menu:before,
 .icons8-magazine:before,
 .icons8-magazine-2:before,
@@ -65,6 +68,9 @@
 .icons8-cancel:before { content: "\f108"; }
 .icons8-checked-box:before { content: "\f10b"; }
 .icons8-cog-wheel:before { content: "\f105"; }
+.icons8-empty-box:before { content: "\f114"; }
+.icons8-eye:before { content: "\f111"; }
+.icons8-eye-outline:before { content: "\f112"; }
 .icons8-hamburger-menu:before { content: "\f10f"; }
 .icons8-magazine:before { content: "\f100"; }
 .icons8-magazine-2:before { content: "\f101"; }

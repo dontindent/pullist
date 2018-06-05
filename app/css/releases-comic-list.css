@@ -23,30 +23,45 @@ div#comic-list-header {
 }
 
 div.comic-list-search-container {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    grid-template-areas: 'search buttons refresh';
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+div#search-and-buttons {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    height: fit-content;
+    outline: var(--app-border-style);
+}
+
+div#search-and-buttons.focus {
+    outline: var(--app-border-active-style);
 }
 
 input#comic-list-search  {
     position: relative;
-    padding: 0 42px 0 10px;
-    height: 38px;
-    grid-column-start: search-start;
-    grid-column-end: buttons-end;
-    grid-row: 1;
+    padding: 0 10px 0 10px;
+    flex: 1;
+    height: 42px;
+    background: none;
     font-family: var(--app-font);
+    outline: none;
+    border: none;
 }
 
-input#comic-list-search.in-use  {
-    padding: 0 84px 0 10px;
+input#comic-list-search:focus  {
+    border: none;
+    outline: none;
 }
 
 a.comic-list-header-button {
     display: flex;
     position: relative;
     width: 42px;
-    height: 42px;
+    height: 44px;
     margin: 0;
     line-height: 40px;
     text-align: center;
@@ -81,23 +96,26 @@ a.comic-list-header-button.disabled:active {
 
 div#search-buttons {
     grid-area: buttons;
-    -ms-grid-row: 1;
     grid-row: 1;
-    height: 40px;
+    height: 42px;
     display: flex;
     flex-direction: row;
-    margin: 1px 1px 0 0;
+    margin: 0;
 }
 
 div#search-buttons a.comic-list-header-button {
-    height: 40px !important;
+    height: 42px !important;
     width: 42px;
 }
 
 a#comic-list-search-button {
+    height: 42px;
+    margin: 0;
 }
 
 a#comic-list-clear-search-button {
+    height: 42px;
+    margin: 0;
 }
 
 a#comic-list-refresh-button {

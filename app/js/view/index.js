@@ -109,6 +109,7 @@ class IndexView {
             }
 
             if (oldController) oldController._view.navigatingFrom();
+            console.log('done with navigating from');
 
             if (indexView._currentController) indexView._currentController._view.navigatedTo();
 

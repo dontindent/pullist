@@ -269,15 +269,15 @@ a.comic-list-button {
     cursor: default;
     color: rgba(0, 0, 0, 1.0);
     font-weight: 100;
-    opacity: 0.0;
+    display: none;
 }
 
 div.list-comic:hover a.comic-list-button {
-    opacity: 1.0;
+    display: unset;
 }
 
 a.comic-list-button.active {
-    opacity: 1.0 !important;
+    display: unset !important;
 }
 
 a.comic-list-button:hover {

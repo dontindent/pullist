@@ -1,6 +1,5 @@
 const $ = require('jquery');
 const Event = require('../misc/event-dispatcher');
-const Utilities = require('../misc/utilities');
 
 const shell = require('electron').shell;
 const logger = require('../misc/logger');
@@ -125,6 +124,55 @@ class ComicContainer {
     }
 }
 
+class ReleasesViewState {
+    constructor () {
+
+    }
+
+    save (releasesView) {
+        this.filterString = releasesView.$searchInput[0].value;
+        this.filtered = releasesView._filtered;
+
+        if (releasesView._selectedComicElement) {
+            this.selectedComicOriginalString = releasesView._selectedComicElement.comic.originalString;
+        }
+
+        this.scrollPos = releasesView._scrollPos;
+    }
+
+    restore (releasesView) {
+        if (this.selectedComicOriginalString) this.restoreSelectedComic(releasesView);
+
+        releasesView.$searchInput[0].value = this.filterString;
+
+        releasesView.searchInputKey(
+            {
+                which: 17,
+                preventDefault: function () { }
+            } );
+
+        if (this.filtered) {
+            releasesView.searchInputKey(
+                {
+                    which: 13,
+                    preventDefault: function () { }
+                } );
+        }
+
+        $(releasesView.$comicList[0]).scrollTop(this.scrollPos);
+    }
+
+    restoreSelectedComic (releasesView) {
+        let comicElement = findComicElement(releasesView, this.selectedComicOriginalString);
+
+        if (comicElement) {
+            $(comicElement).trigger('click');
+        }
+
+        // $(releasesView.$comicList).scrollTop($(comicElement).offset().top);
+    }
+}
+
 class ReleasesView {
     constructor (comicCollection) {
         this._comicCollection = comicCollection;
@@ -134,6 +182,7 @@ class ReleasesView {
         // noinspection JSUnusedGlobalSymbols
         this.numComics = 0;
         this.retrieveActive = true;
+        this.state = new ReleasesViewState();
 
         this.retrieveComicsEvent = new Event(this);
     }
@@ -173,6 +222,7 @@ class ReleasesView {
         this.comicProcessedHandler = this.comicProcessed.bind(this);
         this.comicsUnstableHandler = this.comicsUnstable.bind(this);
         this.comicsStableHandler = this.comicsStable.bind(this);
+        this.comicListScrolledHandler = this.comicListScrolled.bind(this);
 
         return this;
     }
@@ -186,6 +236,7 @@ class ReleasesView {
         this.$searchButton.on('click', this.searchButtonHandler);
 
         this.$cancelSearchButton.on('click', this.searchCancelHandler);
+        this.$comicList.on('scroll', this.comicListScrolledHandler);
 
         this._comicCollection.retrievedComicsEvent.attach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.attach(this.comicListProcessedHandler);
@@ -200,10 +251,12 @@ class ReleasesView {
         return true;
     }
 
+    // noinspection JSUnusedLocalSymbols
     searchInputFocusIn(event) {
         this.$searchAndButtons.addClass('focus');
     }
 
+    // noinspection JSUnusedLocalSymbols
     searchInputFocusOut(event) {
         this.$searchAndButtons.removeClass('focus');
     }
@@ -245,7 +298,7 @@ class ReleasesView {
 
         for (let group of this.$comicList[0].childNodes) {
             let comicViews = $(group).find('div.publisher-list')[0];
-            let numComics = comicViews.childNodes.length - 1;
+            let numComics = comicViews.childNodes.length;
             let hiddenComics = 0;
 
             for (let comicView of comicViews.childNodes) {
@@ -311,12 +364,22 @@ class ReleasesView {
         this.init();
         if (wasInitialized) {
             this.retrievedComics();
-            // this._selectedComicContainer.select(this._selectedComicElement);
+            this.state.restore(this);
         }
     }
 
     navigatingFrom() {
+        this.state.save(this);
+
         this.$retrieveButton.off('click', this.retrieveComicsButtonHandler);
+
+        this.$searchInput.off('focusin', this.searchInputFocusInHandler);
+        this.$searchInput.off('focusout', this.searchInputFocusOutHandler);
+        this.$searchInput.off('keyup', this.searchInputKeyHandler);
+        this.$searchButton.off('click', this.searchButtonHandler);
+
+        this.$cancelSearchButton.off('click', this.searchCancelHandler);
+        this.$comicList.off('scroll', this.comicListScrolledHandler);
 
         this._comicCollection.retrievedComicsEvent.unattach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.unattach(this.comicListProcessedHandler);
@@ -401,6 +464,11 @@ class ReleasesView {
         this.$comicDetailsNone.hide();
     }
 
+    // noinspection JSUnusedLocalSymbols
+    comicListScrolled (event) {
+        this._scrollPos = $(this.$comicList[0]).scrollTop();
+    }
+
     static updateHeaderButtons(comic) {
         let $watchButton = $('a#watch-button');
         let $unWatchButton = $('a#un-watch-button');
@@ -418,6 +486,26 @@ class ReleasesView {
         if (comic.watched) $watchButton.addClass('button-hidden');
         else $unWatchButton.addClass('button-hidden');
     }
+}
+
+function findComicElement (releasesView, comicOriginalString) {
+    event.preventDefault();
+
+    for (let group of releasesView.$comicList[0].childNodes) {
+        let comicViews = $(group).find('div.publisher-list')[0];
+
+        for (let comicView of comicViews.childNodes) {
+            if (!comicView.hasOwnProperty('comic')) continue;
+
+            let comic = comicView.comic;
+
+            let comicMatch = comic.originalString === comicOriginalString;
+
+            if (comicMatch) return comicView;
+        }
+    }
+
+    return null;
 }
 
 exports = module.exports = ReleasesView;

@@ -1,0 +1,119 @@
+<section id="pulled">
+    <div id="pulled-wrapper">
+        <div id="comic-list-wrapper">
+            <div id="comic-list-header">
+                <div class="comic-list-search-container">
+                    <div id="search-and-buttons">
+                        <input title="Search" id="comic-list-search" placeholder="Search">
+                        <a class="comic-list-header-button interface button-hidden" id="comic-list-clear-search-button"
+                           href="" title="Clear search">
+                            <i class="icons8-cancel"></i>
+                        </a>
+                        <a class="comic-list-header-button interface" id="comic-list-search-button"
+                           href="" title="Search">
+                            <i class="icons8-search"></i>
+                        </a>
+                    </div>
+                    <a class="comic-list-header-button interface" id="comic-list-refresh-button"
+                       href="" title="Sync newest comic list">
+                        <i class="icons8-refresh"></i>
+                    </a>
+                </div>
+                <div class="comic-list-header-container interface">
+                    <h1></h1>
+                </div>
+            </div>
+            <div id="comic-list-container" class="interface">
+            </div>
+        </div>
+        <div id="comic-details">
+            <div id="details-background">
+                <img id="details-background-img" src="">
+            </div>
+            <div id="details-container">
+                <div id="header-container" class="interface">
+                    <a class="detail-header-button button-hidden" id="un-watch-button" href="#">
+                        <i class="icons8-eye-outline detail-header-icon"></i>
+                        <span class="detail-header-text">Unwatch</span>
+                    </a>
+                    <a class="detail-header-button" id="watch-button" href="#">
+                        <i class="icons8-eye detail-header-icon"></i>
+                        <span class="detail-header-text">Watch</span>
+                    </a>
+                    <a class="detail-header-button button-hidden" id="un-pull-button" href="#">
+                        <i class="icons8-empty-box detail-header-icon"></i>
+                        <span class="detail-header-text">Unpull</span>
+                    </a>
+                    <a class="detail-header-button" id="pull-button" href="#">
+                        <i class="icons8-box detail-header-icon"></i>
+                        <span class="detail-header-text">Pull</span>
+                    </a>
+                </div>
+                <div id="details-content">
+                    <h1></h1>
+                    <img id="detail-cover" class="interface" src="">
+                    <div id="comic-remaining-details">
+                        <div id="writer-div">
+                            <p class="detail-label">WRITER</p>
+                            <p class="detail"></p>
+                        </div>
+                        <div id="artist-div">
+                            <p class="detail-label">ARTIST</p>
+                            <p class="detail"></p>
+                        </div>
+                        <div id="publisher-div">
+                            <p class="detail-label">PUBLISHER</p>
+                            <p class="detail"></p>
+                        </div>
+                        <div id="distributor-code-div">
+                            <p class="detail-label">DISTRIBUTOR CODE</p>
+                            <a href=""><p class="detail"></p></a>
+                        </div>
+                        <div id="price-div">
+                            <p class="detail-label">PRICE</p>
+                            <p class="detail"></p>
+                        </div>
+                        <div id="description-div">
+                            <p class="detail"></p>
+                        </div>
+                        <div id="last-pulled-div">
+                            <p class="last-pulled-text">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="comic-details-none">
+                <i class="icons8-magazine interface"></i>
+                <!--<p>select a comic to see something here</p>-->
+            </div>
+        </div>
+    </div>
+</section>
+
+<template id="publisher-template">
+    <div class="publisher-group">
+        <h2 class="publisher-heading"></h2>
+        <div class="publisher-list"></div>
+    </div>
+</template>
+
+<template id="comic-list-template">
+    <div class="list-comic">
+        <div class="list-comic-wrapper">
+            <h3 class="comic-title-list"></h3>
+            <div class="comic-details-list-container">
+                <div class="comic-details-list">
+                    <p class="comic-writer-list"></p>
+                    <span class="comic-detail-spacer-list"></span>
+                    <p class="comic-artist-list"></p>
+                </div>
+            </div>
+        </div>
+        <div class="list-comic-bg"></div>
+        <div class="comic-list-button">
+            <i class="icons8-box comic-list-icon" title="Pull comic"></i>
+            <i class="icons8-empty-box comic-list-icon" title="Unpull comic"></i>
+        </div>
+    </div>
+</template>

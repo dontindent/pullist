@@ -1,42 +1,37 @@
 const $ = require('jquery');
 const ComicListView = require('./comic-list-view');
 
-class ReleasesView extends ComicListView {
+class PulledView extends ComicListView {
     constructor (comicCollection) {
         super(comicCollection);
 
         // noinspection JSUnusedGlobalSymbols
-        this.callerString = 'ReleasesView';
+        this.callerString = 'PulledView';
     }
 
     createChildren () {
         super.createChildren();
-        this.$retrieveButton = $('a#comic-list-refresh-button');
     }
 
     enable () {
         super.enable();
-        this.$retrieveButton.on('click', this.retrieveComicsButtonHandler);
     }
 
     navigatingFrom () {
         super.navigatingFrom();
-        this.$retrieveButton.off('click', this.retrieveComicsButtonHandler);
     }
 
     comicsStable (sender, args) {
         super.comicsStable(sender, args);
-        this.$retrieveButton.removeClass('disabled');
     }
 
     comicsUnstable (sender, args) {
         super.comicsUnstable(sender, args);
-        this.$retrieveButton.addClass('disabled')
     }
 
     generateDateString () {
-        return 'Releases for ' + this._comicCollection.latestDate.toLocaleDateString("en-US");
+        return 'Pull list for ' + this._comicCollection.latestDate.toLocaleDateString("en-US");
     }
 }
 
-exports = module.exports = ReleasesView;
+exports = module.exports = PulledView;

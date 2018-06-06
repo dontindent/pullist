@@ -83,3 +83,15 @@ a, a:hover, a:visited {
     -webkit-app-region: no-drag;
     cursor: default;
 }
+
+.details-hidden {
+    opacity: 0.0 !important;
+}
+
+.button-hidden {
+    display: none !important;
+}
+
+.hidden {
+    display: none !important;
+}

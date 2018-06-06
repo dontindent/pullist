@@ -5,10 +5,12 @@ const $ = require('jquery');
 
 const { Color } = require('../misc/color.js');
 const Injector = require('../misc/injector');
-const ComicController = require('../controller/comic-controller');
+const ReleasesController = require('../controller/releases-controller');
+const PulledController = require('../controller/pulled-controller');
 const ComicDataService = require('../model/main-window/comic-data-service');
 const ComicCollection = require('../model/main-window/comic-collection');
 const ReleasesView = require('./releases');
+const PulledView = require('./pulled');
 const storageWindow = remote.getGlobal ('storageWindow');
 const userPrefs = remote.getGlobal('userPrefs');
 const storageInterface = require('../model/main-window/storage-interface');
@@ -24,6 +26,8 @@ class IndexView {
     constructor() {
         this._currentController = null;
         this._navCollapsed = false;
+        this._currentController = null;
+        this._controllers = {};
 
         this.init();
     }
@@ -78,10 +82,15 @@ class IndexView {
     }
 
     initMVC() {
-        Injector.register('comicDataService', ComicDataService);
-        let comicCollection = new ComicCollection(Injector.resolve('comicDataService'));
-        let releasesView = new ReleasesView(comicCollection);
-        this.comicController = new ComicController(comicCollection, releasesView);
+        Injector.register('ComicDataService', ComicDataService);
+        Injector.register('ComicCollection', ComicCollection, [ 'ComicDataService' ]);
+        Injector.register('ReleasesView', ReleasesView, [ 'ComicCollection' ]);
+        Injector.register('PulledView', PulledView, [ 'ComicCollection' ]);
+        Injector.register('ReleasesController', ReleasesController, [ 'ComicCollection', 'ReleasesView' ]);
+        Injector.register('PulledController', PulledController, [ 'ComicCollection', 'PulledView' ]);
+
+        this._controllers['releases.html'] = Injector.resolve('ReleasesController');
+        this._controllers['pulled.html'] = Injector.resolve('PulledController');
     }
 
     storageReady() {
@@ -101,12 +110,7 @@ class IndexView {
         indexView.$mainContainer.load(href, function () {
             let oldController = indexView._currentController;
 
-            if (href === 'releases.html') {
-                indexView._currentController = indexView.comicController;
-            }
-            else {
-                indexView._currentController = null;
-            }
+            indexView._currentController = indexView._controllers[href];
 
             if (oldController) oldController._view.navigatingFrom();
 

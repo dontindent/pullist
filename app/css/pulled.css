@@ -1,13 +1,13 @@
 @import url('comic-list.css');
 @import url('detail-view.css');
 
-section#releases {
+section#pulled {
     height: 100%;
     position: relative;
     overflow: hidden;
 }
 
-div#releases-wrapper {
+div#pulled-wrapper {
     display: flex;
     flex-grow: 1;
     height: 100%;

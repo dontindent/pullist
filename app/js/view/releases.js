@@ -153,7 +153,7 @@ class ReleasesView {
         this.$cancelSearchButton = $('a#comic-list-clear-search-button');
         this.$searchInput = $('input#comic-list-search');
         this.$releasesDate = $('div#comic-list-header h1');
-        this.$comicList = $('ul#comic-list');
+        this.$comicList = $('div#comic-list-container');
         this.$comicListWrapper = $('div#comic-list-wrapper');
         this.$comicDetailsNone = $('div#comic-details-none');
 
@@ -244,7 +244,7 @@ class ReleasesView {
         }
 
         for (let group of this.$comicList[0].childNodes) {
-            let comicViews = $(group).find('ul.publisher-list')[0];
+            let comicViews = $(group).find('div.publisher-list')[0];
             let numComics = comicViews.childNodes.length - 1;
             let hiddenComics = 0;
 
@@ -283,7 +283,7 @@ class ReleasesView {
         event.preventDefault();
 
         for (let group of this.$comicList[0].childNodes) {
-            let comicViews = $(group).find('ul.publisher-list')[0];
+            let comicViews = $(group).find('div.publisher-list')[0];
             for (let comicView of comicViews.childNodes) {
                 $(comicView).removeClass('hidden');
             }
@@ -350,7 +350,7 @@ class ReleasesView {
     }
 
     createList(comicList) {
-        let $comicList = $('#comic-list');
+        let $comicList = $('#comic-list-container');
         let $publisherTemplate = $($('#publisher-template').prop('content')).find('.publisher-group');
         let $comicListTemplate = $($('#comic-list-template').prop('content')).find('.list-comic');
 

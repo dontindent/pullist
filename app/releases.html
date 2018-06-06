@@ -24,7 +24,6 @@
                 </div>
             </div>
             <div id="comic-list-container" class="interface">
-                <ul id="comic-list"></ul>
             </div>
         </div>
         <div id="comic-details">
@@ -86,33 +85,37 @@
             </div>
             <div id="comic-details-none">
                 <i class="icons8-magazine interface"></i>
-                <!--<i>&#xe8f2;</i>-->
                 <!--<p>select a comic to see something here</p>-->
             </div>
         </div>
     </div>
-    <!--<script>require('./js/view/releases')</script>-->
 </section>
 
 <template id="publisher-template">
-<li class="publisher-group">
+<div class="publisher-group">
     <h2 class="publisher-heading"></h2>
-    <ul class="publisher-list">
-    </ul>
-</li>
+    <div class="publisher-list"></div>
+</div>
 </template>
 
 <template id="comic-list-template">
-<li class="list-comic">
-    <h3 class="comic-title-list"></h3>
-    <div class="comic-details-list-container">
-        <div class="comic-details-list">
-            <p class="comic-writer-list"></p>
-            <span class="comic-detail-spacer-list"></span>
-            <p class="comic-artist-list"></p>
+<div class="list-comic">
+    <div class="list-comic-wrapper">
+        <h3 class="comic-title-list"></h3>
+        <div class="comic-details-list-container">
+            <div class="comic-details-list">
+                <p class="comic-writer-list"></p>
+                <span class="comic-detail-spacer-list"></span>
+                <p class="comic-artist-list"></p>
+            </div>
         </div>
     </div>
-</li>
+    <div class="comic-list-buttons">
+        <a class="comic-list-button" href="#">
+            <i class="icons8-box comic-list-icon"></i>
+        </a>
+    </div>
+</div>
 </template>
 
 <template id="prepopulated-comic-detail">

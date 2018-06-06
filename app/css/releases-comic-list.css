@@ -149,63 +149,71 @@ div#comic-list-container {
     height: auto !important;
 }
 
-ul#comic-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
 
-ul#comic-list.disabled {
+div#comic-list-container.disabled {
     opacity: 0.25;
     pointer-events: none;
 }
 
-.publisher-group {
-
+div.publisher-group {
+    position: relative;
 }
 
-.publisher-heading {
+h2.publisher-heading {
+    position: sticky;
+    top: 0;
+    margin: 0;
+    padding: 5px 20px;
     font-family: var(--app-font);
     font-size: 10pt;
     font-weight: 700;
     text-transform: uppercase;
-    margin: 0;
-    padding: 5px 20px;
     background: #F8F8F8;
+    opacity: 1.0;
     border-top: var(--app-border-style);
     border-bottom: var(--app-border-style);
+    z-index: 5;
 }
 
-.publisher-list {
+div.publisher-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.publisher-list li {
-    list-style: none;
+div.list-comic {
     margin: 0;
-    padding: 0 20px;
+    position: relative;
+    padding: 5px 5px 5px 20px;
+    display: flex;
+    flex-direction: row;
+    z-index: 4;
 }
 
-li.list-comic {
-    padding: 5px 20px;
-    cursor: default;
+div.list-comic-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;       /* for the love of god never remove this. https://codepen.io/aj-foster/pen/emBYPW */
 }
 
-li.list-comic:hover {
+div.list-comic:hover {
     background: #F1F1F1;
 }
 
-li.list-comic:active, li.list-comic:focus {
+div.list-comic:active, div.list-comic:focus {
     background: #EEEEEE;
 }
 
-li.selected-comic {
+div.selected-comic {
     background: #F1F1F1;
 }
 
 h3.comic-title-list {
+    position: relative;
+    grid-column: 1;
+    grid-row: 1;
     margin: 0;
     font-size: 11pt;
     font-weight: 600;
@@ -214,6 +222,7 @@ h3.comic-title-list {
 }
 
 div.comic-details-list-container {
+    position: relative;
     display: flex;
     flex-direction: row;
 }
@@ -223,6 +232,7 @@ div.comic-details-list {
     flex-direction: row;
     font-size: 10pt;
     color: #AAAAAA;
+    min-width: 0;       /* for the love of god never remove this. https://codepen.io/aj-foster/pen/emBYPW */
     min-height: 13pt;
     line-height: 13pt;
 }
@@ -247,4 +257,37 @@ span.comic-detail-spacer-list {
     margin: 0;
     padding: 0;
     width: 10px;
+}
+
+div.comic-list-buttons {
+    position: relative;
+    box-sizing: border-box;
+}
+
+a.comic-list-button {
+    padding: 6px;
+    cursor: default;
+    color: rgba(0, 0, 0, 1.0);
+    font-weight: 100;
+    opacity: 0.0;
+}
+
+div.list-comic:hover a.comic-list-button {
+    opacity: 1.0;
+}
+
+a.comic-list-button.active {
+    opacity: 1.0 !important;
+}
+
+a.comic-list-button:hover {
+}
+
+a.comic-list-button:active {
+}
+
+i.comic-list-icon {
+    font-size: 12pt;
+    vertical-align: middle;
+    font-weight: 100;
 }

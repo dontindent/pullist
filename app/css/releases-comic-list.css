@@ -188,6 +188,8 @@ div.list-comic {
     display: flex;
     flex-direction: row;
     z-index: 4;
+    align-items: center;
+    justify-content: center;
 }
 
 div.list-comic-wrapper {
@@ -195,14 +197,24 @@ div.list-comic-wrapper {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-width: 0;       /* for the love of god never remove this. https://codepen.io/aj-foster/pen/emBYPW */
+    min-width: 0;       /* For the love of god never remove this. https://codepen.io/aj-foster/pen/emBYPW */
+    z-index: 1;
 }
 
-div.list-comic:hover {
+div.list-comic-bg {
+    z-index: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+div.list-comic:hover > div.list-comic-bg {
     background: #F1F1F1;
 }
 
-div.list-comic:active, div.list-comic:focus {
+div.list-comic-wrapper:active + div.list-comic-bg, div.list-comic-wrapper:focus + div.list-comic-bg {
     background: #EEEEEE;
 }
 
@@ -232,7 +244,7 @@ div.comic-details-list {
     flex-direction: row;
     font-size: 10pt;
     color: #AAAAAA;
-    min-width: 0;       /* for the love of god never remove this. https://codepen.io/aj-foster/pen/emBYPW */
+    min-width: 0;       /* For the love of god never remove this. https://codepen.io/aj-foster/pen/emBYPW */
     min-height: 13pt;
     line-height: 13pt;
 }
@@ -259,35 +271,72 @@ span.comic-detail-spacer-list {
     width: 10px;
 }
 
-div.comic-list-buttons {
+div.comic-list-button {
     position: relative;
-    box-sizing: border-box;
+    padding: 0 6px 0 6px;
+    display: none;
+    justify-content: center;
+    justify-items: center;
+    z-index: 100;
+    font-weight: 100;
+    color: var(--app-font-color);
 }
 
-a.comic-list-button {
-    padding: 6px;
-    cursor: default;
-    color: rgba(0, 0, 0, 1.0);
-    font-weight: 100;
+div.comic-list-button i.icons8-empty-box {
     display: none;
 }
 
-div.list-comic:hover a.comic-list-button {
-    display: unset;
-}
-
-a.comic-list-button.active {
+div.list-comic:hover div.comic-list-button {
     display: unset !important;
 }
 
-a.comic-list-button:hover {
+div.comic-list-button.active {
+    display: unset !important;
 }
 
-a.comic-list-button:active {
+div.comic-list-button:hover {
+    display: unset !important;
+    color: var(--app-font-color-highlight);
+}
+
+div.comic-list-button:active, div.comic-list-button:focus {
+    display: unset !important;
+    color: var(--app-font-color-active);
+}
+
+div.comic-list-button.active:hover {
+    display: unset !important;
+    color: var(--app-font-color-cancel) !important;
+}
+
+div.comic-list-button.active:active, div.comic-list-button.active:focus {
+    display: unset !important;
+    color: var(--app-font-color-cancel-active) !important;
+}
+
+div.comic-list-button.active:active, div.comic-list-button.active:focus {
+    display: unset !important;
+    color: var(--app-font-color-cancel-active) !important;
+}
+
+div.comic-list-button.active:hover i.icons8-box {
+    display: none !important;
+}
+
+div.comic-list-button.active:hover i.icons8-empty-box {
+    display: unset !important;
 }
 
 i.comic-list-icon {
-    font-size: 12pt;
+    font-size: 14pt;
     vertical-align: middle;
     font-weight: 100;
+}
+
+i.comic-list-icon.icons8-box:before {
+    margin-bottom: 10px;
+}
+
+i.comic-list-icon.icons8-empty-box:before {
+    margin-bottom: 10px;
 }

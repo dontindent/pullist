@@ -31,6 +31,8 @@ class Comic {
         this.lastPulledDate = new Date(-8640000000000000);
 
         this.needsStorageEvent = new Event(this);
+        this.pullStatusChanged = new Event(this);
+        this.watchStatusChange = new Event(this);
     }
 
     get key() {
@@ -54,12 +56,14 @@ class Comic {
     pull(pulled) {
         pulled = typeof pulled === typeof true ? pulled : this.pulled;
         this.pulled = pulled;
+        this.pullStatusChanged.notify(pulled);
         this.needsStorageEvent.notify();
     }
 
     watch(watched) {
         watched = typeof watched === typeof true ? watched : this.watched;
         this.watched = watched;
+        this.watchStatusChange.notify(watched);
         this.needsStorageEvent.notify();
     }
 

@@ -80,25 +80,21 @@ class ComicContainer {
         this.watchFunction = function (event) {
             event.preventDefault();
             comic.watch(true);
-            ReleasesView.updateHeaderButtons(comic);
         };
 
         this.unWatchFunction = function (event) {
             event.preventDefault();
             comic.watch(false);
-            ReleasesView.updateHeaderButtons(comic);
         };
 
         this.pullFunction = function (event) {
             event.preventDefault();
             comic.pull(true);
-            ReleasesView.updateHeaderButtons(comic);
         };
 
         this.unPullFunction = function (event) {
             event.preventDefault();
             comic.pull(false);
-            ReleasesView.updateHeaderButtons(comic);
         };
 
         this.$watchButton.on('click', this.watchFunction);
@@ -224,6 +220,11 @@ class ReleasesView {
         this.comicsStableHandler = this.comicsStable.bind(this);
         this.comicListScrolledHandler = this.comicListScrolled.bind(this);
 
+        this.comicSelectedHandler = this.comicSelected.bind(this);
+        this.comicPulledHandler = this.comicPulled.bind(this);
+        this.comicWatchedHandler = this.comicWatched.bind(this);
+        this.comicPullButtonHandler = ReleasesView.comicPullButton.bind(this);
+
         return this;
     }
 
@@ -252,16 +253,16 @@ class ReleasesView {
     }
 
     // noinspection JSUnusedLocalSymbols
-    searchInputFocusIn(event) {
+    searchInputFocusIn (event) {
         this.$searchAndButtons.addClass('focus');
     }
 
     // noinspection JSUnusedLocalSymbols
-    searchInputFocusOut(event) {
+    searchInputFocusOut (event) {
         this.$searchAndButtons.removeClass('focus');
     }
 
-    retrieveComicsButton(event) {
+    retrieveComicsButton (event) {
         event.preventDefault();
 
         if (this.retrieveActive) {
@@ -271,7 +272,11 @@ class ReleasesView {
         }
     }
 
-    searchInputKey(event) {
+    static comicPullButton (event) {
+        event.data.comic.pull(!event.data.comic.pulled);
+    }
+
+    searchInputKey (event) {
         if (event.which === 13) {
             this.search(event);
         }
@@ -286,7 +291,7 @@ class ReleasesView {
         }
     }
 
-    search(event) {
+    search (event) {
         event.preventDefault();
 
         let text = this.$searchInput[0].value;
@@ -332,7 +337,7 @@ class ReleasesView {
         this._filtered = true;
     }
 
-    clearSearch(event) {
+    clearSearch (event) {
         event.preventDefault();
 
         for (let group of this.$comicList[0].childNodes) {
@@ -349,7 +354,7 @@ class ReleasesView {
         this.$cancelSearchButton.addClass('button-hidden');
     }
 
-    retrievedComics() {
+    retrievedComics () {
         this.createList(this._comicCollection.comicsByPublisher);
         if (this._comicCollection.latestDate) {
             this.$releasesDate.text('Releases for ' + this._comicCollection.latestDate.toLocaleDateString("en-US"));
@@ -359,7 +364,7 @@ class ReleasesView {
         }
     }
 
-    navigatedTo() {
+    navigatedTo () {
         let wasInitialized = this._initialized;
         this.init();
         if (wasInitialized) {
@@ -368,7 +373,7 @@ class ReleasesView {
         }
     }
 
-    navigatingFrom() {
+    navigatingFrom () {
         this.state.save(this);
 
         this.$retrieveButton.off('click', this.retrieveComicsButtonHandler);
@@ -386,6 +391,9 @@ class ReleasesView {
         this._comicCollection.comicProcessedEvent.unattach(this.comicProcessedHandler);
         storageInterface.storageUnstableEvent.unattach(this.comicsUnstableHandler);
         storageInterface.storageStableEvent.unattach(this.comicsStableHandler);
+
+        this._selectedComicElement = null;
+        this._selectedComicContainer = null;
     }
 
     comicListProcessed (sender, args) {
@@ -412,7 +420,7 @@ class ReleasesView {
         this.$comicList.removeClass('disabled');
     }
 
-    createList(comicList) {
+    createList (comicList) {
         let $comicList = $('#comic-list-container');
         let $publisherTemplate = $($('#publisher-template').prop('content')).find('.publisher-group');
         let $comicListTemplate = $($('#comic-list-template').prop('content')).find('.list-comic');
@@ -423,21 +431,31 @@ class ReleasesView {
             if (!comicList.hasOwnProperty(key)) continue;
 
             let $publisherTemplateClone = $publisherTemplate.clone();
+
             $($publisherTemplateClone).find('.publisher-heading').text(key);
 
             let $publisherComics = $($publisherTemplateClone).find('.publisher-list');
             let view = this;
 
-
             comicList[key].forEach(function(comic) {
                 let $comicListTemplateClone = $comicListTemplate.clone();
+                let $pullButton = $($comicListTemplateClone).find('.comic-list-button');
+
                 $($comicListTemplateClone).find('.comic-title-list').text(comic.title);
                 $($comicListTemplateClone).find('.comic-writer-list').text(comic.writer);
                 $($comicListTemplateClone).find('.comic-artist-list').text(comic.artist);
 
+                comic.pullStatusChanged.attach(view.comicPulledHandler);
+                comic.watchStatusChange.attach(view.comicWatchedHandler);
+
                 $comicListTemplateClone[0].comic = comic;
 
-                $comicListTemplateClone.on('click', view.comicSelected.bind(view));
+                $comicListTemplateClone.on('click', view.comicSelectedHandler);
+                $pullButton.on('click', {comic: comic}, view.comicPullButtonHandler);
+
+                if (comic.pulled) {
+                    $pullButton.addClass('active');
+                }
 
                 $comicListTemplateClone.appendTo($publisherComics);
             });
@@ -448,6 +466,12 @@ class ReleasesView {
 
     comicSelected (event) {
         event.preventDefault();
+
+        // We don't want to select a comic in cases where the target is the pull button
+        if (event.target.classList.contains('comic-list-button') ||
+            event.target.parentNode.classList.contains('comic-list-button')) {
+            return;
+        }
 
         let oldSelectedComicElement = this._selectedComicElement;
         let oldSelectedComicContainer = this._selectedComicContainer;
@@ -462,6 +486,32 @@ class ReleasesView {
         this._selectedComicContainer.select(this._selectedComicElement);
 
         this.$comicDetailsNone.hide();
+    }
+
+    comicPulled (sender, args) {
+        let comic = sender;
+        let comicElement = findComicElement (this, comic.originalString);
+        let pulledButton = $(comicElement).find('.comic-list-button')[0];
+
+        if (args) {
+            $(pulledButton).addClass('active');
+        }
+        else {
+            $(pulledButton).removeClass('active');
+        }
+
+        if (comicElement === this._selectedComicElement) {
+            ReleasesView.updateHeaderButtons(comic);
+        }
+    }
+
+    comicWatched (sender, args) {
+        let comic = sender;
+        let comicElement = findComicElement (this, comic.originalString);
+
+        if (comicElement === this._selectedComicElement) {
+            ReleasesView.updateHeaderButtons(comic);
+        }
     }
 
     // noinspection JSUnusedLocalSymbols
@@ -489,8 +539,6 @@ class ReleasesView {
 }
 
 function findComicElement (releasesView, comicOriginalString) {
-    event.preventDefault();
-
     for (let group of releasesView.$comicList[0].childNodes) {
         let comicViews = $(group).find('div.publisher-list')[0];
 

@@ -1,9 +1,15 @@
 :root {
     /* Colors */
     --app-background-color: #FFFFFF;
+
     --app-border-color: #DDDDDD;
     --app-border-active-color: #000000;
+
     --app-font-color: #000000;
+    --app-font-color-cancel:#FF0000;
+    --app-font-color-cancel-active: #CC0000;
+    --app-font-color-highlight: var(--accent-color-light-1);
+    --app-font-color-active: var(--accent-color);
 
     --app-foreground-color: #000000;
 

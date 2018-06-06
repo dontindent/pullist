@@ -109,7 +109,6 @@ class IndexView {
             }
 
             if (oldController) oldController._view.navigatingFrom();
-            console.log('done with navigating from');
 
             if (indexView._currentController) indexView._currentController._view.navigatedTo();
 
@@ -121,8 +120,6 @@ class IndexView {
 
     hamburgerClicked(event) {
         event.preventDefault();
-
-        let hamburgerButton = event.delegateTarget;
 
         this.$navContainer.toggleClass('collapsed');
         this._navCollapsed = !this._navCollapsed;

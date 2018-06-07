@@ -18,12 +18,12 @@ const ipcChannels = require('../misc/ipc-channels');
 
 let indexView = null;
 
-$(function() {
+$(function () {
     indexView = new IndexView();
 });
 
 class IndexView {
-    constructor() {
+    constructor () {
         this._currentController = null;
         this._navCollapsed = false;
         this._currentController = null;
@@ -32,13 +32,13 @@ class IndexView {
         this.init();
     }
 
-    init() {
+    init () {
         this.createChildren();
         this.setupHandlers();
         this.enable();
     }
 
-    createChildren() {
+    createChildren () {
         this.$mainContainer = $('#main-container');
         this.$links = $('a.nav');
         this.$navItems = $('li.nav-item');
@@ -50,23 +50,21 @@ class IndexView {
         return this;
     }
 
-    setupHandlers() {
+    setupHandlers () {
         this.accentColorChangedHandler = updateColors.bind(this);
-        this.storageReadyHandler = this.storageReady.bind(this);
+        this.viewReadyEventHandler = this.viewReady.bind(this);
         this.linkClickedHandler = this.linkClicked.bind(this);
         this.hamburgerClickedHandler = this.hamburgerClicked.bind(this);
 
         return this;
     }
 
-    enable() {
+    enable  () {
         this.$windowTitle.hide();
         updateColors(null, userPrefs['accentColor']);
 
         this._navCollapsed = userPrefs['navCollapsed'];
         if (this._navCollapsed) this.$navContainer.addClass('collapsed');
-
-        storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
 
         ipcRenderer.on(ipcChannels.accentColorChanged, this.accentColorChangedHandler);
         this.$links.on('click', this.linkClickedHandler);
@@ -81,7 +79,7 @@ class IndexView {
         return true;
     }
 
-    initMVC() {
+    initMVC () {
         Injector.register('ComicDataService', ComicDataService);
         Injector.register('ComicCollection', ComicCollection, [ 'ComicDataService' ]);
         Injector.register('ReleasesView', ReleasesView, [ 'ComicCollection' ]);
@@ -93,13 +91,13 @@ class IndexView {
         this._controllers['pulled.html'] = Injector.resolve('PulledController');
     }
 
-    storageReady() {
+    viewReady () {
         // this.$splashscreen.hide();
         this.$splashscreen.fadeOut(400);
         this.$windowTitle.show();
     }
 
-    linkClicked(event) {
+    linkClicked (event) {
         event.preventDefault();
 
         let link = event.delegateTarget;
@@ -111,11 +109,11 @@ class IndexView {
             let oldController = indexView._currentController;
 
             indexView._currentController = indexView._controllers[href];
+            indexView._currentController._view.readyToViewEvent.attach(indexView.viewReadyEventHandler);
 
             if (oldController) oldController._view.navigatingFrom();
 
             if (indexView._currentController) indexView._currentController._view.navigatedTo();
-
         });
 
         this.$navItems.removeClass('selected');

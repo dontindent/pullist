@@ -51,7 +51,6 @@ class ComicCollection {
 
 
         if (dateValue !== -8640000000000000 && Utilities.exists(dateValue)) {
-            logger.log(dateValue, sender);
             this.latestDate = new Date(dateValue);
             this.latestDateUpdatedEvent.notify();
         }

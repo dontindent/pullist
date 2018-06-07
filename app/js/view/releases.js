@@ -1,5 +1,5 @@
 const $ = require('jquery');
-const ComicListView = require('./comic-list-view');
+const { ComicListView } = require('./comic-list-view');
 
 class ReleasesView extends ComicListView {
     constructor (comicCollection) {

@@ -29,6 +29,9 @@ div#splashscreen {
 div#splashscreen img {
     max-height: 25%;
     object-fit: contain;
+
+    /* Don't remove this! https://stackoverflow.com/questions/17932018/animate-opacity-in-jquery-leaves-ghost-elements */
+    -webkit-backface-visibility: hidden;
 }
 
 div#electron-titlebar {

@@ -1,4 +1,5 @@
 const $ = require('jquery');
+const View = require('./view');
 const Event = require('../misc/event-dispatcher');
 
 const shell = require('electron').shell;
@@ -165,8 +166,10 @@ class ComicListViewState {
     }
 }
 
-class ComicListView {
+class ComicListView extends View  {
     constructor (comicCollection) {
+        super();
+
         this._comicCollection = comicCollection;
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
@@ -387,6 +390,8 @@ class ComicListView {
         else {
             this.$releasesDate.text('');
         }
+
+        this.readyToView = true;
     }
 
     comicListProcessed(sender, args) {
@@ -554,4 +559,6 @@ function findComicElement (releasesView, comicOriginalString) {
     return null;
 }
 
-exports = module.exports = ComicListView;
+exports.ComicContainer = module.exports.ComicContainer = ComicContainer;
+exports.ComicListViewState = module.exports.ComicListViewState = ComicListViewState;
+exports.ComicListView = module.exports.ComicListView = ComicListView;

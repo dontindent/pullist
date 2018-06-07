@@ -6,10 +6,13 @@
     <link rel="stylesheet" type="text/css" href="css/global.css"/>
     <link rel="stylesheet" type="text/css" href="css/index.css"/>
 
-    <script>global.jQuery = require('jquery');</script>
+    <script>
+        global.jQuery = require('jquery');
+        global.$ = require('jquery');
+    ;</script>
 
     <link rel="stylesheet" type="text/css" href="js/lib/jquery-ui-1.12.1/jquery-ui.min.css" />
-    <script src = "js/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
 </head>
 <body>
 <div id="electron-titlebar" class="drag" platform="win32">
@@ -17,7 +20,6 @@
 </div>
 <div id="splashscreen" class="interface">
     <img src="img/Pullist.png">
-    <!--<div class="what"></div>-->
 </div>
 <div id="wrapper">
     <div id="nav-container">

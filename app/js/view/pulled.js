@@ -1,4 +1,3 @@
-const $ = require('jquery');
 const { ComicListView } = require('./comic-list-view');
 
 class PulledView extends ComicListView {

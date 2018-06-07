@@ -1,7 +1,6 @@
 const { remote, ipcRenderer } = require('electron');
 require('electron-titlebar');
 require('../misc/utilities');
-const $ = require('jquery');
 
 const { Color } = require('../misc/color.js');
 const Injector = require('../misc/injector');
@@ -13,7 +12,6 @@ const ReleasesView = require('./releases');
 const PulledView = require('./pulled');
 const storageWindow = remote.getGlobal ('storageWindow');
 const userPrefs = remote.getGlobal('userPrefs');
-const storageInterface = require('../model/main-window/storage-interface');
 const ipcChannels = require('../misc/ipc-channels');
 
 let indexView = null;
@@ -92,8 +90,7 @@ class IndexView {
     }
 
     viewReady () {
-        // this.$splashscreen.hide();
-        this.$splashscreen.fadeOut(400);
+        this.$splashscreen.stop().fadeOut(600);
         this.$windowTitle.show();
     }
 

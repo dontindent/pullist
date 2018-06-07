@@ -1,5 +1,4 @@
 const { remote } = require('electron');
-const $ = require('jquery');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
 const Utilities = require('../../misc/utilities');

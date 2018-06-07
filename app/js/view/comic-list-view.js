@@ -1,4 +1,3 @@
-const $ = require('jquery');
 const View = require('./view');
 const Event = require('../misc/event-dispatcher');
 

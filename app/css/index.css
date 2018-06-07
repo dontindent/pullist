@@ -1,16 +1,20 @@
 @import url('releases.css');
 @import url('pulled.css');
+@import url('alert.css');
 @import url("../font/pullist/css/styles.min.css");
 
-div#wrapper {
-    display: flex;
-    flex-grow: 1;
-    height: 100%;
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
-    box-sizing: border-box;
-    border: 1px solid var(--accent-color-light-1);
+div#electron-titlebar {
+    z-index: 900;
+    background: none;
+    border: none;
+    outline: none;
+}
+
+div#electron-titlebar-title {
+    color: #FFFFFF;
+    padding-top: 10px;
+    padding-left: 15px;
+    font-size: 9pt;
 }
 
 div#splashscreen {
@@ -34,18 +38,28 @@ div#splashscreen img {
     -webkit-backface-visibility: hidden;
 }
 
-div#electron-titlebar {
-    z-index: 900;
-    background: none;
-    border: none;
-    outline: none;
+div#modalBackground {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 898;
+    background: var(--app-background-color-model);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-div#electron-titlebar-title {
-    color: #FFFFFF;
-    padding-top: 10px;
-    padding-left: 15px;
-    font-size: 9pt;
+div#wrapper {
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: 1px solid var(--accent-color-light-1);
 }
 
 div#nav-container {

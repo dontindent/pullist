@@ -1,11 +1,11 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
 <!--
-2018-6-5: Created.
+2018-6-7: Created.
 -->
 <svg xmlns="http://www.w3.org/2000/svg">
 <metadata>
-Created by FontForge 20120731 at Tue Jun  5 15:03:18 2018
+Created by FontForge 20120731 at Thu Jun  7 15:51:06 2018
  By icons8
 
 </metadata>
@@ -22,7 +22,7 @@ Created by FontForge 20120731 at Tue Jun  5 15:03:18 2018
     bbox="10.5 -43.5195 501.5 429.442"
     underline-thickness="25.6"
     underline-position="-51.2"
-    unicode-range="U+0020-F114"
+    unicode-range="U+0020-F116"
   />
     <missing-glyph />
     <glyph glyph-name="space" unicode=" " horiz-adv-x="200" 
@@ -75,6 +75,8 @@ d="M136 368h240l5 -6.5l51 -68v-277.5h-352v277.5l51 68zM152 336l-24 -32h256l-24 3
 c-8.8125 -0.8125 -16.6875 5.6875 -17.5 14.5s5.6875 16.6875 14.5 17.5z" />
     <glyph glyph-name="cancel" unicode="&#xf108;" 
 d="M115.5 355.5l140.5 -140.5l140.5 140.5l23 -23l-140.5 -140.5l140.5 -140.5l-23 -23l-140.5 140.5l-140.5 -140.5l-23 23l140.5 140.5l-140.5 140.5z" />
+    <glyph glyph-name="share-symbol" unicode="&#xf116;" 
+d="M341.312 379.312l107.312 -107.312l-107.312 -107.312l-22.625 22.625l68.6875 68.6875h-35.375c-97.375 0 -176 -78.625 -176 -176h-32c0 114.688 93.3125 208 208 208h35.375l-68.6875 68.6875zM80 272h32v-224h288v64h32v-96h-352v256z" />
     <glyph glyph-name="checked-box" unicode="&#xf10b;" 
 d="M64 384h381l-32 -32h-317v-320h320v189l32 32v-253h-384v384zM436.5 331.5l23 -23l-192 -192l-11.5 -11l-11.5 11l-80 80l23 23l68.5 -68.5z" />
     <glyph glyph-name="cog-wheel" unicode="&#xf105;" 

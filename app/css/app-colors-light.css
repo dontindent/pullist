@@ -1,6 +1,7 @@
 :root {
     /* Colors */
     --app-background-color: #FFFFFF;
+    --app-background-color-model: rgba(255, 255, 255, 0.5);
 
     --app-border-color: #DDDDDD;
     --app-border-active-color: #000000;

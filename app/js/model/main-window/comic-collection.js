@@ -2,6 +2,7 @@ const { remote, ipcRenderer } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
 const Utilities = require('../../misc/utilities');
+const ipcChannels = require('../../misc/ipc-channels')
 
 const storageInterface = require('./storage-interface');
 const logger = require('../../misc/logger');
@@ -11,25 +12,18 @@ const sender = 'ComicCollection';
 class ComicCollection {
     constructor (comicService) {
         this._comicService = comicService;
-        this._comicDict = {};
-        this._comicsByPublisher = {};
         this._comicsByOriginal = {};
-        this.latestDate = null;
 
-        this.latestDateUpdatedEvent = new Event(this);
-        this.retrievedComicsEvent = new Event(this);
+        this.latestDate = null;
+        this.comicDict = {};
+        this.comicsByPublisher = {};
+
+        this.latestDateUpdatedEvent = new Event(this, true);
+        this.retrievedComicsEvent = new Event(this, true);
         this.comicListProcessedEvent = this._comicService.comicListProcessedEvent;
         this.comicProcessedEvent = this._comicService.comicProcessedEvent;
 
         this.init();
-    }
-
-    get comicDict() {
-        return this._comicDict;
-    }
-
-    get comicsByPublisher() {
-        return this._comicsByPublisher;
     }
 
     init() {
@@ -48,7 +42,6 @@ class ComicCollection {
         storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
 
         let dateValue = new Date(userPrefs['latestReleaseDate']);
-
 
         if (dateValue !== -8640000000000000 && Utilities.exists(dateValue)) {
             this.latestDate = new Date(dateValue);
@@ -76,8 +69,8 @@ class ComicCollection {
     comicsProcessed (args) {
         let [ comicDict, publishers ] = args;
 
-        this._comicDict = Object.assign({}, comicDict);
-        this._comicsByPublisher = {};
+        this.comicDict = Object.assign({}, comicDict);
+        this.comicsByPublisher = {};
 
         this.createSortedLists(publishers);
 
@@ -97,10 +90,10 @@ class ComicCollection {
     storeCollection () {
         let count = 0;
 
-        for(let key in this._comicDict) {
-            if (!this._comicDict.hasOwnProperty(key)) continue;
+        for(let key in this.comicDict) {
+            if (!this.comicDict.hasOwnProperty(key)) continue;
 
-            let comic = this._comicDict[key];
+            let comic = this.comicDict[key];
 
             storageInterface.sendStorageRequest(comic, this.storeCompleteHandler);
 
@@ -180,10 +173,10 @@ class ComicCollection {
 
     storeLatestDate() {
         if (this.latestDate) {
-            ipcRenderer.send('prefSet', { key: 'latestReleaseDate', value: this.latestDate.valueOf() });
+            ipcRenderer.send(ipcChannels.prefSet, { key: 'latestReleaseDate', value: this.latestDate.valueOf() });
         }
         else {
-            ipcRenderer.send('prefDelete', 'latestReleaseDate');
+            ipcRenderer.send(ipcChannels.prefDelete, 'latestReleaseDate');
         }
     }
 }

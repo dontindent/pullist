@@ -1,4 +1,4 @@
-const {app, ipcMain, BrowserWindow, systemPreferences } = require('electron');
+const { app, ipcMain, BrowserWindow, systemPreferences } = require('electron');
 const path = require('path');
 const url = require('url');
 const Store = require('./app/js/misc/pref-store');
@@ -25,7 +25,8 @@ const store = new Store({
     defaults: {
         windowBounds: {width: 1280, height: 800},
         latestReleaseDate: -8640000000000000,
-        includeOnlyComics: true
+        includeOnlyComics: true,
+        includeReprints: false
     }
 });
 
@@ -65,7 +66,7 @@ if (isWindows) {
 
 app.setName(config.productName);
 
-function createWindow (width, height) {
+function createWindows (width, height) {
     // Create the browser window.
     global.mainWindow = mainWindow = new BrowserWindow({
         frame: false,
@@ -74,17 +75,18 @@ function createWindow (width, height) {
         height: height,
         minWidth: 1024,
         minHeight: 800,
+        show: false,
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            nativeWindowOpen: true
         }
     });
 
+    // Create a hidden window to be used for asynchronous storage calls
     global.storageWindow = storageWindow = new BrowserWindow({
         title: 'Storage',
         show: false
     });
-
-    mainWindow.setMenuBarVisibility(false);
 
     // and load the index.html of the app.
     mainWindow.loadURL(url.format({
@@ -101,6 +103,10 @@ function createWindow (width, height) {
 
     mainWindow.webContents.openDevTools({mode: 'undocked'});
     storageWindow.webContents.openDevTools({mode: 'undocked'});
+
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+    });
 
     mainWindow.on('close', function(event) {
 
@@ -119,11 +125,47 @@ function createWindow (width, height) {
         let { width, height } = mainWindow.getBounds();
         store.set('windowBounds', { width, height });
     });
+
+    // noinspection JSUnusedLocalSymbols
+    mainWindow.webContents.on('new-window', (event, url, frameName, disposition, options, additionalFeatures) => {
+        if (frameName === 'confirm') {
+            // Open window as modal
+            event.preventDefault();
+
+            delete options['x'];
+            delete options['y'];
+            delete options['minWidth'];
+            delete options['minHeight'];
+
+            Object.assign(options, {
+                parent: mainWindow,
+                frame: false,
+                resizable: false,
+                width: 680,
+                height: 190,
+                modal: true,
+                movable: true,
+                show: false,
+            });
+
+            let window = new BrowserWindow(options);
+
+            // window.webContents.openDevTools({mode: 'undocked'});
+
+            window.loadURL(url);
+
+            window.once('ready-to-show', () => {
+                window.show();
+            });
+
+            event.newGuest = window;
+        }
+    });
 }
 
 app.on('ready', function () {
     let { width, height } = store.get('windowBounds');
-    createWindow(width, height);
+    createWindows(width, height);
 
     if (isWindows) {
         logger.log(systemPreferences.getColor('window-frame'), sender);
@@ -141,7 +183,7 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
     if (mainWindow == null) {
-        createWindow();
+        createWindows();
     }
 });
 

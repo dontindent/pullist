@@ -37,11 +37,13 @@ class IndexView {
     }
 
     createChildren () {
-        this.$mainContainer = $('#main-container');
+        this.$mainContainer = $('div#main-container');
         this.$links = $('a.nav');
         this.$navItems = $('li.nav-item');
-        this.$splashscreen = $('#splashscreen');
-        this.$windowTitle = $('#electron-titlebar-title');
+        this.$splashscreen = $('div#splashscreen');
+        this.$modal = $('div#modalBackground');
+        this.$modalContent = $('div#modalContent');
+        this.$windowTitle = $('div#electron-titlebar-title');
         this.$hamburgerButton = $('a.hamburger-button');
         this.$navContainer = $('div#nav-container');
 
@@ -90,6 +92,7 @@ class IndexView {
     }
 
     viewReady () {
+        this.$modal.hide();
         this.$splashscreen.stop().fadeOut(600);
         this.$windowTitle.show();
     }

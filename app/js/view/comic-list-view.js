@@ -1,12 +1,16 @@
 const View = require('./view');
-const Event = require('../misc/event-dispatcher');
 
-const shell = require('electron').shell;
+const { remote, ipcRenderer, shell } = require('electron');
+const userPrefs = remote.getGlobal('userPrefs');
 const logger = require('../misc/logger');
 const storageInterface = require('../model/main-window/storage-interface');
+const Utilities = require('../misc/utilities');
+const ipcChannels = require('../misc/ipc-channels');
 
 class ComicContainer {
-    constructor() {
+    constructor(view) {
+        this.view = view;
+
         this.$detailBackground = $('img#details-background-img');
         this.$detailTitle = $('div#details-content h1');
         this.$detailCover = $('img#detail-cover');
@@ -24,10 +28,6 @@ class ComicContainer {
         this.$lastPulledDiv = $('div#last-pulled-div');
         this.$lastPulledText = $('p.last-pulled-text');
 
-        this.watchFunction = null;
-        this.unWatchFunction = null;
-        this.pullFunction = null;
-        this.unPullFunction = null;
         this.detailBackgroundLoadedFunction = null;
         this.detailCoverLoadedFunction = null;
     }
@@ -75,30 +75,10 @@ class ComicContainer {
             this.$lastPulledDiv.addClass('details-hidden');
         }
 
-        this.watchFunction = function (event) {
-            event.preventDefault();
-            comic.watch(true);
-        };
-
-        this.unWatchFunction = function (event) {
-            event.preventDefault();
-            comic.watch(false);
-        };
-
-        this.pullFunction = function (event) {
-            event.preventDefault();
-            comic.pull(true);
-        };
-
-        this.unPullFunction = function (event) {
-            event.preventDefault();
-            comic.pull(false);
-        };
-
-        this.$watchButton.on('click', this.watchFunction);
-        this.$unWatchButton.on('click', this.unWatchFunction);
-        this.$pullButton.on('click', this.pullFunction);
-        this.$unPullButton.on('click', this.unPullFunction);
+        this.$watchButton.on('click', this.view.watchSelectedModeComicHandler);
+        this.$unWatchButton.on('click', this.view.unWatchSelectedModelComicHandler);
+        this.$pullButton.on('click', this.view.pullSelectedModelComicHandler);
+        this.$unPullButton.on('click', this.view.unPullSelectedModelComicHandler);
         this.$detailCodeLink.on('click', this.openInBrowserFunction);
 
         ComicListView.updateHeaderButtons(comic);
@@ -110,17 +90,17 @@ class ComicContainer {
         this.$detailBackground.off('load', this.detailBackgroundLoadedFunction);
         this.$detailCover.off('load', this.detailCoverLoadedFunction);
 
-        this.$watchButton.off('click', this.watchFunction);
-        this.$unWatchButton.off('click', this.unWatchFunction);
-        this.$pullButton.off('click', this.pullFunction);
-        this.$unPullButton.off('click', this.unPullFunction);
+        this.$watchButton.off('click', this.view.watchSelectedModeComicHandler);
+        this.$unWatchButton.off('click', this.view.unWatchSelectedModelComicHandler);
+        this.$pullButton.off('click', this.view.pullSelectedModelComicHandler);
+        this.$unPullButton.off('click', this.view.unPullSelectedModelComicHandler);
         this.$detailCodeLink.off('click', this.openInBrowserFunction);
     }
 }
 
 class ComicListViewState {
     constructor () {
-
+        this.saved = false;
     }
 
     save (releasesView) {
@@ -132,6 +112,8 @@ class ComicListViewState {
         }
 
         this.scrollPos = releasesView._scrollPos;
+
+        this.saved = true;
     }
 
     restore (releasesView) {
@@ -154,6 +136,8 @@ class ComicListViewState {
         }
 
         $(releasesView.$comicList[0]).scrollTop(this.scrollPos);
+
+        this.saved = false
     }
 
     restoreSelectedComic (releasesView) {
@@ -175,10 +159,7 @@ class ComicListView extends View  {
         this._filtered = false;
         // noinspection JSUnusedGlobalSymbols
         this.numComics = 0;
-        this.retrieveActive = true;
         this.state = new ComicListViewState();
-
-        this.retrieveComicsEvent = new Event(this);
 
         this.callerString = 'ComicListView';
     }
@@ -187,8 +168,6 @@ class ComicListView extends View  {
         this.createChildren();
         this.setupHandlers();
         this.enable();
-
-        this._initialized = true;
     }
 
     createChildren() {
@@ -207,7 +186,6 @@ class ComicListView extends View  {
     setupHandlers() {
         this.searchInputFocusInHandler = this.searchInputFocusIn.bind(this);
         this.searchInputFocusOutHandler = this.searchInputFocusOut.bind(this);
-        this.retrieveComicsButtonHandler = this.retrieveComicsButton.bind(this);
         this.searchInputKeyHandler = this.searchInputKey.bind(this);
         this.searchButtonHandler = this.search.bind(this);
         this.searchCancelHandler = this.clearSearch.bind(this);
@@ -219,10 +197,15 @@ class ComicListView extends View  {
         this.comicsStableHandler = this.comicsStable.bind(this);
         this.comicListScrolledHandler = this.comicListScrolled.bind(this);
 
-        this.comicSelectedHandler = this.comicSelected.bind(this);
-        this.comicPulledHandler = this.comicPulled.bind(this);
-        this.comicWatchedHandler = this.comicWatched.bind(this);
-        this.comicPullButtonHandler = ComicListView.comicPullButton.bind(this);
+        this.comicElementSelectedHandler = this.comicElementSelected.bind(this);
+        this.modelComicPulledHandler = this.modelComicPulled.bind(this);
+        this.modelComicWatchedHandler = this.modelComicWatched.bind(this);
+        this.comicPullButtonHandler = this.comicPullButton.bind(this);
+
+        this.watchSelectedModeComicHandler = this.watchSelectedModeComic.bind(this);
+        this.unWatchSelectedModelComicHandler = this.unWatchSelectedModelComic.bind(this);
+        this.pullSelectedModelComicHandler = this.pullSelectedModelComic.bind(this);
+        this.unPullSelectedModelComicHandler = this.unPullSelectedModelComic.bind(this);
 
         return this;
     }
@@ -246,14 +229,28 @@ class ComicListView extends View  {
             containment: 'parent',
             handles: 'e, w',
         });
-        return true;
+
+        let includeReprints = userPrefs['includeReprints'];
+
+        if (Utilities.exists(includeReprints)) {
+            this.includeReprints = includeReprints;
+        }
+        else {
+            this.includeReprints = false;
+            ipcRenderer.send(ipcChannels.prefSet, { key: 'includeReprints', value: this.includeReprints });
+        }
+
+        return this;
     }
 
     navigatedTo () {
-        let wasInitialized = this._initialized;
         this.init();
-        if (wasInitialized) {
+
+        if (this._comicCollection.retrievedComicsEvent.fired) {
             this.retrievedComics();
+        }
+
+        if (this.state.saved) {
             this.state.restore(this);
         }
     }
@@ -277,6 +274,19 @@ class ComicListView extends View  {
 
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
+
+        this.disconnectComics();
+    }
+
+    disconnectComics () {
+        for (let comicKey in this._comicCollection.comicDict) {
+            if (!this._comicCollection.comicDict.hasOwnProperty(comicKey)) continue;
+
+            let comic = this._comicCollection.comicDict[comicKey];
+
+            comic.pullStatusChanged.unattach(this.modelComicPulledHandler);
+            comic.watchStatusChange.unattach(this.modelComicWatchedHandler);
+        }
     }
 
     // noinspection JSUnusedLocalSymbols
@@ -289,17 +299,9 @@ class ComicListView extends View  {
         this.$searchAndButtons.removeClass('focus');
     }
 
-    retrieveComicsButton(event) {
-        event.preventDefault();
-
-        if (this.retrieveActive) {
-            this.retrieveComicsEvent.notify();
-            this.comicsUnstable();
-            this.$comicList.addClass('disabled');
-        }
-    }
-
-    static comicPullButton(event) {
+    // This can't be static because the methods that override it may rely on class data
+    // noinspection JSMethodCanBeStatic
+    comicPullButton(event) {
         event.data.comic.pull(!event.data.comic.pulled);
     }
 
@@ -415,51 +417,55 @@ class ComicListView extends View  {
         this.$comicList.removeClass('disabled');
     }
 
-    createList(comicList) {
+    createList(comicsByPublisher) {
         let $comicList = $('#comic-list-container');
         let $publisherTemplate = $($('#publisher-template').prop('content')).find('.publisher-group');
         let $comicListTemplate = $($('#comic-list-template').prop('content')).find('.list-comic');
 
         $comicList.empty();
 
-        for (let key in comicList) {
-            if (!comicList.hasOwnProperty(key)) continue;
+        for (let publisher in comicsByPublisher) {
+            if (!comicsByPublisher.hasOwnProperty(publisher)) continue;
 
             let $publisherTemplateClone = $publisherTemplate.clone();
 
-            $($publisherTemplateClone).find('.publisher-heading').text(key);
+            $($publisherTemplateClone).find('.publisher-heading').text(publisher);
 
             let $publisherComics = $($publisherTemplateClone).find('.publisher-list');
             let view = this;
+            let comicCount = 0;
 
-            comicList[key].forEach(function (comic) {
-                let $comicListTemplateClone = $comicListTemplate.clone();
-                let $pullButton = $($comicListTemplateClone).find('.comic-list-button');
+            comicsByPublisher[publisher].forEach(function (comic) {
+                if (view.defaultComicListFilter(comic)) {
+                    let $comicListTemplateClone = $comicListTemplate.clone();
+                    let $pullButton = $($comicListTemplateClone).find('.comic-list-button');
 
-                $($comicListTemplateClone).find('.comic-title-list').text(comic.title);
-                $($comicListTemplateClone).find('.comic-writer-list').text(comic.writer);
-                $($comicListTemplateClone).find('.comic-artist-list').text(comic.artist);
+                    $($comicListTemplateClone).find('.comic-title-list').text(comic.title);
+                    $($comicListTemplateClone).find('.comic-writer-list').text(comic.writer);
+                    $($comicListTemplateClone).find('.comic-artist-list').text(comic.artist);
 
-                comic.pullStatusChanged.attach(view.comicPulledHandler);
-                comic.watchStatusChange.attach(view.comicWatchedHandler);
+                    comic.pullStatusChanged.attach(view.modelComicPulledHandler);
+                    comic.watchStatusChange.attach(view.modelComicWatchedHandler);
 
-                $comicListTemplateClone[0].comic = comic;
+                    $comicListTemplateClone[0].comic = comic;
 
-                $comicListTemplateClone.on('click', view.comicSelectedHandler);
-                $pullButton.on('click', {comic: comic}, view.comicPullButtonHandler);
+                    $comicListTemplateClone.on('click', view.comicElementSelectedHandler);
+                    $pullButton.on('click', {comic: comic}, view.comicPullButtonHandler);
 
-                if (comic.pulled) {
-                    $pullButton.addClass('active');
+                    if (comic.pulled) {
+                        $pullButton.addClass('active');
+                    }
+
+                    $comicListTemplateClone.appendTo($publisherComics);
+                    comicCount++;
                 }
-
-                $comicListTemplateClone.appendTo($publisherComics);
             });
 
-            $publisherTemplateClone.appendTo($comicList);
+            if (comicCount) $publisherTemplateClone.appendTo($comicList);
         }
     }
 
-    comicSelected(event) {
+    comicElementSelected(event) {
         event.preventDefault();
 
         // We don't want to select a comic in cases where the target is the pull button
@@ -472,7 +478,7 @@ class ComicListView extends View  {
         let oldSelectedComicContainer = this._selectedComicContainer;
 
         this._selectedComicElement = event.delegateTarget;
-        this._selectedComicContainer = new ComicContainer();
+        this._selectedComicContainer = new ComicContainer(this);
 
         if (oldSelectedComicContainer) {
             oldSelectedComicContainer.unSelect(oldSelectedComicElement);
@@ -483,7 +489,7 @@ class ComicListView extends View  {
         this.$comicDetailsNone.hide();
     }
 
-    comicPulled(sender, args) {
+    modelComicPulled(sender, args) {
         let comic = sender;
         let comicElement = findComicElement(this, comic.originalString);
         let pulledButton = $(comicElement).find('.comic-list-button')[0];
@@ -501,7 +507,7 @@ class ComicListView extends View  {
     }
 
     // noinspection JSUnusedLocalSymbols
-    comicWatched(sender, args) {
+    modelComicWatched(sender, args) {
         let comic = sender;
         let comicElement = findComicElement(this, comic.originalString);
 
@@ -509,6 +515,26 @@ class ComicListView extends View  {
             ComicListView.updateHeaderButtons(comic);
         }
     }
+
+    watchSelectedModeComic (event) {
+        event.preventDefault();
+        this._selectedComicElement.comic.watch(true);
+    };
+
+    unWatchSelectedModelComic (event) {
+        event.preventDefault();
+        this._selectedComicElement.comic.watch(false);
+    };
+
+    pullSelectedModelComic (event) {
+        event.preventDefault();
+        this._selectedComicElement.comic.pull(true);
+    };
+
+    unPullSelectedModelComic (event) {
+        event.preventDefault();
+        this._selectedComicElement.comic.pull(false);
+    };
 
     // noinspection JSUnusedLocalSymbols
     comicListScrolled(event) {
@@ -519,6 +545,12 @@ class ComicListView extends View  {
     // noinspection JSMethodCanBeStatic
     generateDateString () {
         return 'Uh oh, this wasn\' overriden correctly!';
+    }
+
+    // This can't be static because the methods that override it may rely on class data
+    // noinspection JSMethodCanBeStatic
+    defaultComicListFilter (comic) {
+        return comic.reprint === this.includeReprints;
     }
 
     static updateHeaderButtons(comic) {
@@ -561,3 +593,4 @@ function findComicElement (releasesView, comicOriginalString) {
 exports.ComicContainer = module.exports.ComicContainer = ComicContainer;
 exports.ComicListViewState = module.exports.ComicListViewState = ComicListViewState;
 exports.ComicListView = module.exports.ComicListView = ComicListView;
+exports.findComicElement = module.exports.findComicElement = findComicElement;

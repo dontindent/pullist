@@ -1,0 +1,96 @@
+div#alert-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 6px 6px 6px 6px;
+    display: flex;
+    flex-direction: column;
+    background: var(--app-background-color);
+}
+
+div#alert-title {
+    position: relative;
+    /* height: 40px; */
+    font-size: 9pt;
+    -webkit-app-region: drag;
+}
+
+div#alert-message {
+    margin: 22px 16px 26px 16px;
+}
+
+p#alert-message-title {
+    font-size: 20pt;
+    margin: 0 0 10px 0;
+    font-weight: 400;
+}
+
+p#alert-message-text {
+    font-size: 11pt;
+    margin: 0 0 0 0;
+    font-weight: 400;
+}
+
+div#alert-buttons {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-right: 18px;
+}
+
+div.alert-button {
+    position: relative;
+    margin-left: 24px;
+    /* margin-right: 18px; */
+    font-size: 11pt;
+    font-weight: 600;
+    background: #DDDDDD;
+    padding: 6px 12px;
+    min-width: 64px;
+    text-align: center;
+    cursor: default;
+}
+
+div.alert-button:hover::before {
+    background: rgba(255, 255, 255, 0.25);
+    display: block;
+    position: absolute;
+    content: '';
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+div.alert-button.default {
+    background: var(--accent-color);
+    color: #FFFFFF;
+}
+
+div.alert-button.default:hover::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+}
+
+div.alert-button:active {
+    background: #000000;
+    color: #FFFFFF;
+}
+
+div.alert-button:active::before {
+    background: none;
+}
+
+span.button-text {
+    position: relative;
+    display: block;
+    font-size: 11pt;
+    font-weight: 600;
+}

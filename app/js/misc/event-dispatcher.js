@@ -1,12 +1,19 @@
 class Event {
-    constructor (sender) {
+    constructor (sender, postFire = false) {
         this._sender = sender;
         this._listeners = [];
+        this._postFire = postFire;
+        this._postFireArgs = null;
+        this.fired = false;
     }
 
     attach (listener) {
         if (this._listeners.indexOf(listener) === -1) {
             this._listeners.push(listener);
+        }
+
+        if (this._postFire && this.fired) {
+            this.notify(this._postFireArgs, { listener: listener });
         }
     }
 
@@ -18,11 +25,24 @@ class Event {
         }
     }
 
-    notify (args) {
+    notify (args, opts = {}) {
         let sender = this._sender;
-        this._listeners.forEach(function(listener) {
+
+        if (opts['listener']) {
+            let listener = opts['listener'];
             listener(sender, args);
-        })
+        }
+        else {
+            this._listeners.forEach(function(listener) {
+                listener(sender, args);
+            });
+        }
+
+        this.fired = true;
+
+        if (this._postFire) {
+            this._postFireArgs = args;
+        }
     }
 
     reset() {

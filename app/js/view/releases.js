@@ -1,4 +1,5 @@
 const { ComicListView } = require('./comic-list-view');
+const Event = require('../misc/event-dispatcher');
 
 class ReleasesView extends ComicListView {
     constructor (comicCollection) {
@@ -6,11 +7,19 @@ class ReleasesView extends ComicListView {
 
         // noinspection JSUnusedGlobalSymbols
         this.callerString = 'ReleasesView';
+        this.retrieveActive = true;
+
+        this.retrieveComicsEvent = new Event(this);
     }
 
     createChildren () {
         super.createChildren();
         this.$retrieveButton = $('a#comic-list-refresh-button');
+    }
+
+    setupHandlers () {
+        super.setupHandlers();
+        this.retrieveComicsButtonHandler = this.retrieveComicsButton.bind(this);
     }
 
     enable () {
@@ -31,6 +40,17 @@ class ReleasesView extends ComicListView {
     comicsUnstable (sender, args) {
         super.comicsUnstable(sender, args);
         this.$retrieveButton.addClass('disabled')
+    }
+
+    retrieveComicsButton(event) {
+        event.preventDefault();
+
+        if (this.retrieveActive) {
+            this.disconnectComics();
+            this.retrieveComicsEvent.notify();
+            this.comicsUnstable();
+            this.$comicList.addClass('disabled');
+        }
     }
 
     generateDateString () {

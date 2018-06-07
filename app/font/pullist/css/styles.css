@@ -48,6 +48,7 @@
 .icons8-magazine-2:before,
 .icons8-refresh:before,
 .icons8-search:before,
+.icons8-share-symbol:before,
 .icons8-speech-bubble:before {
   display: inline-block;
   font-family: "Pullist";
@@ -76,4 +77,5 @@
 .icons8-magazine-2:before { content: "\f101"; }
 .icons8-refresh:before { content: "\f107"; }
 .icons8-search:before { content: "\f10d"; }
+.icons8-share-symbol:before { content: "\f116"; }
 .icons8-speech-bubble:before { content: "\f103"; }

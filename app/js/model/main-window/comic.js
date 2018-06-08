@@ -68,7 +68,7 @@ class Comic {
     }
 
     equals(comic) {
-        return this.originalString === comic.originalString;
+        return this.originalString === comic.originalString && this.releaseDate === comic.releaseDate;
     }
 
     hasVariant(comic) {

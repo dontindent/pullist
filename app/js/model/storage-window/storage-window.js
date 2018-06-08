@@ -53,7 +53,7 @@ class StorageWindow {
             let comic = this.storeQueue.shift();
             let storageWindow = this;
 
-            this.dbManager.getComicByOriginal(comic.originalString, function (result) {
+            let queryResult = function (result) {
                 if (result) {
                     comic.id = result['Id'];
                     logger.log(['StorageWindow updating:', comic.originalString], caller);
@@ -62,7 +62,18 @@ class StorageWindow {
                     logger.log(['StorageWindow inserting:',comic.originalString], caller);
                     storageWindow.dbManager.insertComic(comic, storageWindow.storeComplete.bind(storageWindow));
                 }
-            });
+            };
+
+            if (comic.id) {
+                this.dbManager.getComicById(comic.id, queryResult);
+            }
+            else {
+                let date = comic.releaseDate;
+
+                if(typeof date !== typeof 1) date = new Date(message).valueOf();
+
+                this.dbManager.getComicByOriginalAndDate(comic.originalString, date, queryResult);
+            }
 
         } else {
             if (this.dbCloseTimer) {
@@ -78,7 +89,7 @@ class StorageWindow {
     storeComplete (comic) {
         sendMessage(ipcChannels.storeResponse, comic);
 
-        logger.log(['\tStorageWindow stored:', comic.originalString], caller);
+        logger.log(['StorageWindow stored:', comic.originalString], caller);
 
         this.processStoreQueue();
     }

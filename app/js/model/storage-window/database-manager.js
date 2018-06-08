@@ -254,14 +254,14 @@ class ComicDatabase {
         }
     }
 
-    getComicByOriginal (originalString, callback) {
+    getComicById (id, callback) {
         if (!this.db) {
             this.db = SQL.dbOpen(this.dbPath);
         }
 
         if (this.db) {
-            let query = 'SELECT * FROM `Comic` WHERE `OriginalString` IS ?';
-            let statement = this.db.prepare(query, [originalString]);
+            let query = 'SELECT * FROM `Comic` WHERE `Id` IS ?';
+            let statement = this.db.prepare(query, [ id ]);
             try {
                 let result = null;
 
@@ -276,7 +276,40 @@ class ComicDatabase {
                     callback(result);
                 }
             } catch (error) {
-                logger.log(['ComicDatabase.getComicByOriginal', 'No data found for OriginalString =', originalString], sender);
+                logger.log(['ComicDatabase.getComicById', 'No data found for Id =', id], sender);
+                throw (error);
+            }
+        } else {
+            this.storageError.notify();
+            logger.log ('Couldn\'t open database for select', sender);
+        }
+    }
+
+    getComicByOriginalAndDate (originalString, date, callback) {
+        if (!this.db) {
+            this.db = SQL.dbOpen(this.dbPath);
+        }
+
+        if (this.db) {
+            let query = 'SELECT * FROM `Comic` WHERE `OriginalString` IS ? and `ReleaseDate` IS ?';
+            let statement = this.db.prepare(query, [originalString, (new Date(date)).toMSDateTimeOffset() ]);
+            try {
+                let result = null;
+
+                if (statement.step()) {
+                    let values = [statement.get()];
+                    let columns = statement.getColumnNames();
+                    result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
+                    result['ReleaseDate'] = Date.fromMSDateTimeOffset(result['ReleaseDate']).valueOf();
+                }
+
+                if (typeof callback === 'function') {
+                    callback(result);
+                }
+            } catch (error) {
+                logger.log([ 'ComicDatabase.getComicByOriginalAndDate',
+                             'No data found for OriginalString =', originalString,
+                             'and ReleaseDate =', date], sender);
                 throw (error);
             }
         } else {

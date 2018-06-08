@@ -66,6 +66,7 @@ class StorageInterface {
         if (!this._storeInProgress) {
             let comicToStore = this._storageQueue.shift();
 
+            // console.log(comicToStore);
             logger.log(['Sending store request for:', comicToStore.originalString], caller);
             storageWindow.webContents.send(ipcChannels.storeRequest, comicToStore);
             this._storeInProgress = true;
@@ -88,7 +89,7 @@ class StorageInterface {
 
         this._loadCallback = callback;
 
-        logger.log(['Sending load request for comics from:', date], caller);
+        logger.log(['Sending load request for comics from:', new Date(date)], caller);
         storageWindow.webContents.send(ipcChannels.loadRequest, date);
 
         return true;

@@ -33,10 +33,15 @@ class ComicContainer {
     }
 
     select (selectedComicElement) {
-        let container = this;
         let comic = selectedComicElement.comic;
 
         $(selectedComicElement).addClass('selected-comic');
+
+        this.update (comic);
+    }
+
+    update(comic) {
+        let container = this;
 
         this.detailBackgroundLoadedFunction = function() {
             container.$detailBackground.removeClass('details-hidden');
@@ -336,7 +341,6 @@ class ComicListView extends View  {
             let hiddenComics = 0;
 
             for (let comicView of comicViews.childNodes) {
-                // console.log(comicView.comic);
                 if (!comicView.hasOwnProperty('comic')) continue;
 
                 $(comicView).removeClass('hidden');
@@ -385,7 +389,7 @@ class ComicListView extends View  {
 
     retrievedComics() {
         this.createList(this._comicCollection.comicsByPublisher);
-        if (this._comicCollection.latestDate) {
+        if (this._comicCollection.currentDate) {
             this.$releasesDate.text(this.generateDateString());
         }
         else {
@@ -401,7 +405,11 @@ class ComicListView extends View  {
     }
 
     comicProcessed(sender, comic) {
+        if (!this._selectedComicContainer) return;
 
+        if (comic === this._selectedComicElement.comic) {
+            this._selectedComicContainer.update(comic);
+        }
     }
 
     // noinspection JSUnusedLocalSymbols

@@ -14,7 +14,7 @@ global.detailUrlBase = detailUrlBase;
 const userPrefs = remote.getGlobal('userPrefs');
 
 class ComicDataService {
-    constructor() {
+    constructor () {
         this.callerString = 'ComicDataService';
         this.comicDict = {};
         this.publishers = [];
@@ -25,7 +25,7 @@ class ComicDataService {
         this.retrievalDate = new Date(-8640000000000000);
     }
 
-    getNewComicList(comicsByOriginalString) {
+    getNewComicList (comicsByOriginalString) {
         let service = this;
         let deferred = $.Deferred();
         this.comicCount = 0;
@@ -55,6 +55,10 @@ class ComicDataService {
         });
 
         return deferred.promise();
+    }
+
+    reScrapeComic (comic) {
+        return getComicDetails(this, comic, false);
     }
 }
 
@@ -207,7 +211,7 @@ function processDetails(comicService) {
     return $.when.apply(undefined, promises).promise();
 }
 
-function getComicDetails(comicService, comic) {
+function getComicDetails(comicService, comic, updateService = true) {
     // Group 2 - Writer
     // Group 4 - Artist
     // Group 6 - Cover artist
@@ -246,19 +250,21 @@ function getComicDetails(comicService, comic) {
         }
 
         comic.publisher = $catalogDetail.find('.Publisher')[0].textContent.replace(/ +/g, ' ').trim();
-        if (!comicService.publishers.includes(comic.publisher)) comicService.publishers.push(comic.publisher);
+        if (updateService) {
+            if (!comicService.publishers.includes(comic.publisher)) comicService.publishers.push(comic.publisher);
+        }
 
         comic.coverURL = previewsWorldBase + $($contentImage[0]).attr('src');
 
         comicService.comicProcessedEvent.notify(comic);
-        comicService.processedComics++;
+        if (updateService) comicService.processedComics++;
 
         deferred.resolve(comic);
     }).fail(function() {
         logger.log ('comicDataService failed GET for ' + comic.title, comicService.callerString);
     });
 
-    comicService.comicCount++;
+    if (updateService) comicService.comicCount++;
 
     return deferred.promise();
 }

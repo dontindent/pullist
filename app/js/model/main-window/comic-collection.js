@@ -39,6 +39,7 @@ class ComicCollection {
 
     setupHandlers() {
         this.storageReadyHandler = this.storageReady.bind(this);
+        this.storeIndividualCompleteHandler = this.storeIndividualComplete.bind(this);
         this.storeCompleteHandler = this.storeComplete.bind(this);
         this.loadCompleteHandler = this.loadComplete.bind(this);
         this.deleteCompleteHandler = this.deleteComplete.bind(this);
@@ -113,10 +114,31 @@ class ComicCollection {
         }
 
         this.latestDate = this._comicService.retrievalDate;
+        this.currentDate = this.latestDate;
         this.latestDateUpdatedEvent.notify();
         this.retrievedComicsEvent.notify();
 
         if (storageInterface.storageReady) this.storeCollection();
+    }
+
+    storeComic (comic) {
+        storageInterface.sendStorageRequest(comic, this.storeCompleteHandler);
+
+        this.comicsToStore++;
+    }
+
+    storeIndividualComplete (comicRemote) {
+        let comicLocal = this._comicsByOriginal[comicRemote.originalString];
+        comicLocal.id = comicRemote.id;
+
+        this.comicsStored++;
+        this.comicStoredEvent.notify(comicLocal);
+
+        if (this.comicsStored === this.comicsToStore) {
+            this.comicsStoredEvent.notify();
+            this.comicsToStore = 0;
+            this.comicsStored = 0;
+        }
     }
 
     storeCollection () {
@@ -150,6 +172,8 @@ class ComicCollection {
 
         if (this.comicsStored === this.comicsToStore) {
             this.comicsStoredEvent.notify();
+            this.comicsToStore = 0;
+            this.comicsStored = 0;
         }
     }
 
@@ -170,6 +194,14 @@ class ComicCollection {
             let newComic = Comic.fromGeneric(comic);
 
             if (!publishers.includes(newComic.publisher)) publishers.push(newComic.publisher);
+
+            collection._comicsByOriginal[newComic.originalString] = newComic;
+
+            if (newComic.coverURL === null) {
+                collection._comicService.reScrapeComic(newComic).done(function () {
+                    collection.storeComic(newComic);
+                });
+            }
 
             if (newComic.variant) {
                 variantQueue.push(newComic);

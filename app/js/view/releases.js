@@ -44,7 +44,7 @@ class ReleasesView extends ComicListView {
         if (this._comicCollection.currentDate !== this._comicCollection.latestDate) {
             this._comicCollection.loadComicsForDate(this._comicCollection.latestDate);
         }
-        
+
         super.navigatedTo();
     }
 

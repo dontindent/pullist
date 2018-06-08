@@ -40,6 +40,14 @@ class ReleasesView extends ComicListView {
         this._comicCollection.comicsStoredEvent.attach(this.comicsStoredHandler)
     }
 
+    navigatedTo () {
+        if (this._comicCollection.currentDate !== this._comicCollection.latestDate) {
+            this._comicCollection.loadComicsForDate(this._comicCollection.latestDate);
+        }
+        
+        super.navigatedTo();
+    }
+
     navigatingFrom () {
         super.navigatingFrom();
         this.$retrieveButton.off('click', this.retrieveComicsButtonHandler);
@@ -102,8 +110,8 @@ class ReleasesView extends ComicListView {
     }
 
     generateDateString () {
-        if (Utilities.exists(this._comicCollection.latestDate)) {
-            return 'Releases for ' + this._comicCollection.latestDate.toLocaleDateString("en-US");
+        if (Utilities.exists(this._comicCollection.currentDate)) {
+            return 'Releases for ' + this._comicCollection.currentDate.toLocaleDateString("en-US");
         }
     }
 }

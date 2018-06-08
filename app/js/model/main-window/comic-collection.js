@@ -1,17 +1,12 @@
-const { remote, ipcRenderer } = require('electron');
+const { remote } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
 const Utilities = require('../../misc/utilities');
-const ipcChannels = require('../../misc/ipc-channels');
 
 const storageInterface = require('./storage-interface');
 const logger = require('../../misc/logger');
 const userPrefs = remote.getGlobal('userPrefs');
 const sender = 'ComicCollection';
-
-// TODO Load comics based on latest date in database
-// TODO Provide database API to get all available dates
-// TODO make ReleasesView request the latest date every time it is navigated to
 
 class ComicCollection {
     constructor (comicService) {
@@ -19,12 +14,14 @@ class ComicCollection {
         this._comicsByOriginal = {};
 
         this._latestDate = null;
+        this._currentDate = null;
         this.availableDates = [];
         this.comicDict = {};
         this.comicsByPublisher = {};
         this.comicsToStore = 0;
         this.comicsStored = 0;
 
+        this.currentDateUpdatedEvent = new Event(this, true);
         this.latestDateUpdatedEvent = new Event(this, true);
         this.retrievedComicsEvent = new Event(this, true);
         this.comicsStoredEvent = new Event (this, true);
@@ -50,12 +47,6 @@ class ComicCollection {
 
     enable() {
         storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
-
-        // let dateValue = new Date(userPrefs['latestReleaseDate']);
-
-        // if (dateValue !== -8640000000000000 && Utilities.exists(dateValue)) {
-        //     this.latestDate = new Date(dateValue)
-        // }
     }
 
     get latestDate () {
@@ -69,7 +60,23 @@ class ComicCollection {
         else {
             this._latestDate = value;
         }
+
         this.latestDateUpdatedEvent.notify(this._latestDate);
+    }
+
+    get currentDate () {
+        return this._currentDate;
+    }
+
+    set currentDate (value) {
+        if (typeof value === typeof -8640000000000000) {
+            this._currentDate = new Date(value);
+        }
+        else {
+            this._currentDate = value;
+        }
+
+        this.currentDateUpdatedEvent.notify(this._currentDate);
     }
 
     storageReady() {
@@ -81,6 +88,7 @@ class ComicCollection {
 
         if (Utilities.exists(date)) {
             storageInterface.sendLoadRequest(date.valueOf(), this.loadCompleteHandler);
+            this.currentDate = date;
         }
         else {
             this.retrievedComicsEvent.notify();
@@ -103,8 +111,8 @@ class ComicCollection {
         if (this.latestDate !== this._comicService.retrievalDate) {
             storageInterface.sendDeleteRequest(this._comicService.retrievalDate, this.deleteCompleteHandler);
         }
+
         this.latestDate = this._comicService.retrievalDate;
-        // this.storeLatestDate();
         this.latestDateUpdatedEvent.notify();
         this.retrievedComicsEvent.notify();
 
@@ -178,8 +186,7 @@ class ComicCollection {
         });
 
         if (!comicList.length) {
-            this.latestDate = null;
-            // this.storeLatestDate();
+            this.currentDate = null;
         }
 
         logger.log('Loaded ' + comicList.length + ' comics', sender);
@@ -209,15 +216,6 @@ class ComicCollection {
             collection.comicsByPublisher[publisher].push(comic);
             comic.needsStorageEvent.attach(storageInterface.sendStorageRequest.bind(storageInterface));
         }.bind(this));
-}
-
-    storeLatestDate() {
-        if (this.latestDate) {
-            ipcRenderer.send(ipcChannels.prefSet, { key: 'latestReleaseDate', value: this.latestDate.valueOf() });
-        }
-        else {
-            ipcRenderer.send(ipcChannels.prefDelete, 'latestReleaseDate');
-        }
     }
 }
 

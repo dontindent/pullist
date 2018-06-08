@@ -1,6 +1,5 @@
 const { ComicListView } = require('./comic-list-view');
 const Event = require('../misc/event-dispatcher');
-const ProgressBar = require('progressbar.js');
 const logger = require("../misc/logger");
 
 class ReleasesView extends ComicListView {
@@ -21,11 +20,6 @@ class ReleasesView extends ComicListView {
         this.$retrieveStatusContainer = $('div#comic-retrieve-status-container');
         this.$retrieveStatusMessage = $('span#comic-retrieve-message');
         this.$progressBarContainer = $('div#progress-bar');
-        // this.progressBar = new ProgressBar.Line('div#progress-bar', {
-        //     strokeWidth: 2,
-        //     color: document.documentElement.style.getPropertyValue('--accent-color'),
-        //     svgStyle: { width: '100%', height: '100%' }
-        // });
     }
 
     setupHandlers () {
@@ -36,7 +30,6 @@ class ReleasesView extends ComicListView {
 
     enable () {
         super.enable();
-        // this.$retrieveStatusContainer.hide();
         this.$retrieveButton.on('click', this.retrieveComicsButtonHandler);
 
         this._comicCollection.comicsStoredEvent.attach(this.comicsStoredHandler)
@@ -57,12 +50,12 @@ class ReleasesView extends ComicListView {
         this.$retrieveButton.addClass('disabled')
     }
 
+    // TODO Make sure that other views can't disrupt the comic retrieval process...
     retrieveComicsButton (event) {
         event.preventDefault();
 
         if (this.retrieveActive) {
             this.$retrieveStatusContainer.removeClass('status-hidden');
-            // this.$retrieveStatusContainer.slideToggle(600);
             this.$retrieveStatusMessage.text('Retrieving comic list');
             this.disconnectComics();
             this.retrieveComicsEvent.notify();
@@ -79,7 +72,6 @@ class ReleasesView extends ComicListView {
         super.comicListProcessed(sender, numComics);
 
         this.processedComics = 0;
-        // this.progressBar.animating = false;
         this.$retrieveStatusMessage.text('Comic list retrieved');
     }
 
@@ -90,10 +82,6 @@ class ReleasesView extends ComicListView {
         this.$retrieveStatusMessage.text(comic.title);
 
         if (this.processedComics === this.numComics) {
-            // this.progressBar.stop();
-            // this.progressBar.animate(1.0, { duration: 500 }, function () {
-            //     this.progressBar.animating = false;
-            // }.bind(this));
             this.$retrieveStatusMessage.text('Storing comics');
         }
         else {
@@ -101,19 +89,9 @@ class ReleasesView extends ComicListView {
             this.$progressBarContainer[0].style.width = percentComplete.toString() + '%';
             logger.log(percentComplete, this.callerString);
         }
-
-        // if (this.progressBar.animating) return;
-
-        // this.progressBar.animating = true;
-        // this.progressCallbackHandler = this.stepAnimation.bind(this);
-        // this.progressBar.animate(this.processedComics / this.numComics, { duration: 500 }, this.progressCallbackHandler);
     }
 
-    stepAnimation () {
-        if (this.processedComics >= this.numComics) return;
-        this.progressBar.animate(this.processedComics / this.numComics, { duration: 500 }, this.progressCallbackHandler);
-    }
-
+    // noinspection JSUnusedLocalSymbols
     comicsStored(sender, count) {
         this.$retrieveStatusContainer.addClass('status-hidden');
     }

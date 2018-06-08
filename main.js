@@ -168,9 +168,6 @@ app.on('ready', function () {
     createWindows(width, height);
 
     if (isWindows) {
-        logger.log(systemPreferences.getColor('window-frame'), sender);
-        logger.log(systemPreferences.getColor('active-border'), sender);
-
         mainWindow.webContents.send('accentColorChanged', systemPreferences.getAccentColor());
     }
 });

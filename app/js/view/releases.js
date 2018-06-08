@@ -1,6 +1,11 @@
 const { ComicListView } = require('./comic-list-view');
 const Event = require('../misc/event-dispatcher');
+// noinspection JSUnusedLocalSymbols
 const logger = require("../misc/logger");
+const Utilities = require("../misc/utilities");
+
+// TODO Implement click handler for cover art to allow viewing at a higher resolution
+// TODO Implemented variant cover browser
 
 class ReleasesView extends ComicListView {
     constructor (comicCollection) {
@@ -87,17 +92,19 @@ class ReleasesView extends ComicListView {
         else {
             let percentComplete = (this.processedComics / this.numComics) * 100;
             this.$progressBarContainer[0].style.width = percentComplete.toString() + '%';
-            logger.log(percentComplete, this.callerString);
         }
     }
 
     // noinspection JSUnusedLocalSymbols
     comicsStored(sender, count) {
         this.$retrieveStatusContainer.addClass('status-hidden');
+        this.$progressBarContainer[0].style.width = '0%';
     }
 
     generateDateString () {
-        return 'Releases for ' + this._comicCollection.latestDate.toLocaleDateString("en-US");
+        if (Utilities.exists(this._comicCollection.latestDate)) {
+            return 'Releases for ' + this._comicCollection.latestDate.toLocaleDateString("en-US");
+        }
     }
 }
 

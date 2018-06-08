@@ -71,15 +71,18 @@ a.comic-list-header-button {
     flex-direction: row;
     align-content: center;
     justify-content: center;
+    background: var(--app-command-button-background-color);
 }
 
 a.comic-list-header-button.disabled {
-    color: #BBBBBB;
+    background: var(--app-command-button-background-color-disabled);
+    color: var(--app-command-button-foreground-color-disabled);
     pointer-events: none;
 }
 
 a.comic-list-header-button:hover {
-    background: #F1F1F1;
+    background: var(--app-command-button-background-color-hover);
+    color: var(--app-command-button-foreground-color-hover);
 }
 
 a.comic-list-header-button.disabled:hover {
@@ -87,7 +90,8 @@ a.comic-list-header-button.disabled:hover {
 }
 
 a.comic-list-header-button:active {
-    background: #EEEEEE;
+    background: var(--app-command-button-background-color-active);
+    color: var(--app-command-button-foreground-color-active);
 }
 
 a.comic-list-header-button.disabled:active {
@@ -168,7 +172,8 @@ h2.publisher-heading {
     font-size: 10pt;
     font-weight: 700;
     text-transform: uppercase;
-    background: #F8F8F8;
+    background: var(--app-list-header-background-color);
+    color: var(--app-list-header-foreground-color);
     opacity: 1.0;
     border-top: var(--app-border-style);
     border-bottom: var(--app-border-style);
@@ -190,6 +195,7 @@ div.list-comic {
     z-index: 4;
     align-items: center;
     justify-content: center;
+    color: var(--app-list-item-foreground-color);
 }
 
 div.list-comic-wrapper {
@@ -208,18 +214,20 @@ div.list-comic-bg {
     left: 0;
     bottom: 0;
     right: 0;
+    background: var(--app-list-item-background-color);
 }
 
 div.list-comic:hover > div.list-comic-bg {
-    background: #F1F1F1;
+    background: var(--app-list-item-background-color-hover);
 }
 
 div.list-comic-wrapper:active + div.list-comic-bg, div.list-comic-wrapper:focus + div.list-comic-bg {
-    background: #EEEEEE;
+    background: var(--app-list-item-background-color-active);
 }
 
 div.selected-comic {
-    background: #F1F1F1;
+    background: var(--app-list-item-background-color-selected);
+    color: var(--app-list-item-foreground-color-selected);
 }
 
 h3.comic-title-list {
@@ -243,7 +251,8 @@ div.comic-details-list {
     display: flex;
     flex-direction: row;
     font-size: 10pt;
-    color: #AAAAAA;
+    background: var(--app-list-detail-background-color);
+    color: var(--app-list-detail-foreground-color);
     min-width: 0;       /* For the love of god never remove this. https://codepen.io/aj-foster/pen/emBYPW */
     min-height: 13pt;
     line-height: 13pt;
@@ -366,7 +375,7 @@ div#progress-bar {
     left: 0;
     width: 0;
     height: 2px;
-    background: var(--accent-color);
+    background: var(--app-progressbar-color);
 }
 
 span#comic-retrieve-message {
@@ -377,6 +386,38 @@ span#comic-retrieve-message {
     right: 0;
     margin: 0 10px 0 10px;
     font-size: 10pt;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+div#comic-pulled-info-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    min-width: 0;
+    height: 50px;
+    background: var(--app-background-color-overlay);
+    border-top: var(--app-border-style);
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+span#comic-pulled-info-price {
+    position: relative;
+    margin: 0 10px 0 10px;
+    font-size: 14pt;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+span#comic-pulled-info-count {
+    position: relative;
+    margin: 0 10px 0 10px;
+    font-size: 9pt;
     overflow: hidden;
     white-space: nowrap;
 }

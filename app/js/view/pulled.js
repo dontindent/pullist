@@ -9,10 +9,15 @@ class PulledView extends ComicListView {
         // noinspection JSUnusedGlobalSymbols
         this.callerString = 'PulledView';
         this.navigatedFrom = false;
+        this.listPrice = 0.0;
+        this.listCount = 0;
     }
 
     createChildren () {
         super.createChildren();
+
+        this.$listPrice = $('span#comic-pulled-info-price');
+        this.$listCount = $('span#comic-pulled-info-count');
     }
 
     enable () {
@@ -21,6 +26,7 @@ class PulledView extends ComicListView {
 
     navigatedTo() {
         super.navigatedTo();
+        this.assessPullList();
 
         this.navigatedFrom = false;
     }
@@ -51,7 +57,8 @@ class PulledView extends ComicListView {
     modelComicPulled(sender, args) {
         super.modelComicPulled(sender, args);
 
-        if (!this.navigatedFrom) this.createList(this._comicCollection.comicsByPublisher);
+        this.createList(this._comicCollection.comicsByPublisher);
+        this.assessPullList();
     }
 
     unPullSelectedModelComic (event) {
@@ -77,6 +84,31 @@ class PulledView extends ComicListView {
 
     defaultComicListFilter (comic) {
         return super.defaultComicListFilter(comic) && comic.pulled;
+    }
+
+    assessPullList () {
+        this.listPrice = 0;
+        this.listCount = 0;
+
+        for (let comicKey in this._comicCollection.comicDict) {
+            if (!this._comicCollection.comicDict.hasOwnProperty(comicKey)) continue;
+
+            let comic = this._comicCollection.comicDict[comicKey];
+
+            if (this.defaultComicListFilter(comic)) {
+                this.listPrice += comic.price;
+                this.listCount++;
+            }
+        }
+
+        this.$listPrice.text(this.listPrice.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }));
+
+        let countString = this.listCount !== 1 ? this.listCount + ' comics in list' : this.listCount + ' comic in list';
+
+        this.$listCount.text(countString);
     }
 }
 

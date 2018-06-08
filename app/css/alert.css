@@ -12,7 +12,6 @@ div#alert-wrapper {
 
 div#alert-title {
     position: relative;
-    /* height: 40px; */
     font-size: 9pt;
     -webkit-app-region: drag;
 }
@@ -44,10 +43,9 @@ div#alert-buttons {
 div.alert-button {
     position: relative;
     margin-left: 24px;
-    /* margin-right: 18px; */
     font-size: 11pt;
     font-weight: 600;
-    background: #DDDDDD;
+    background: var(--app-button-background-color);
     padding: 6px 12px;
     min-width: 64px;
     text-align: center;
@@ -55,7 +53,7 @@ div.alert-button {
 }
 
 div.alert-button:hover::before {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--app-button-background-color-hover);
     display: block;
     position: absolute;
     content: '';
@@ -66,8 +64,8 @@ div.alert-button:hover::before {
 }
 
 div.alert-button.default {
-    background: var(--accent-color);
-    color: #FFFFFF;
+    background: var(--app-button-background-color-default);
+    color: var(--app-button-foreground-color-default);
 }
 
 div.alert-button.default:hover::before {
@@ -80,8 +78,8 @@ div.alert-button.default:hover::before {
 }
 
 div.alert-button:active {
-    background: #000000;
-    color: #FFFFFF;
+    background: var(--app-button-background-color-active);
+    color: var(--app-button-foreground-color-active);
 }
 
 div.alert-button:active::before {

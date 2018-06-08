@@ -1,18 +1,53 @@
 :root {
     /* Colors */
     --app-background-color: #FFFFFF;
+    --app-foreground-color: #000000;
     --app-background-color-model: rgba(255, 255, 255, 0.5);
+    --app-background-color-inverted: var(--app-foreground-color);
+    --app-foreground-color-inverted: var(--app-background-color);
+    --app-background-color-overlay: #FDFDFD;
 
     --app-border-color: #DDDDDD;
     --app-border-active-color: #000000;
 
-    --app-font-color: #000000;
+    --app-font-color: var(--app-foreground-color);
     --app-font-color-cancel:#FF0000;
     --app-font-color-cancel-active: #CC0000;
     --app-font-color-highlight: var(--accent-color-light-1);
     --app-font-color-active: var(--accent-color);
 
-    --app-foreground-color: #000000;
+    --app-button-background-color: #DDDDDD;
+    --app-button-foreground-color: var(--app-foreground-color);
+    --app-button-background-color-default: var(--accent-color);
+    --app-button-foreground-color-default: #FFFFFF;
+    --app-button-background-color-active: var(--app-background-color-inverted);
+    --app-button-foreground-color-active: var(--app-foreground-color-inverted);
+    --app-button-background-color-hover: rgba(255, 255, 255, 0.25);
+    --app-button-foreground-color-hover: var(--app-button-foreground-color);
+
+    --app-command-button-background-color: none;
+    --app-command-button-foreground-color: var(--app-foreground-color);
+    --app-command-button-background-color-hover: #F1F1F1;
+    --app-command-button-foreground-color-hover: var(--app-command-button-foreground-color);
+    --app-command-button-background-color-active: #EEEEEE;
+    --app-command-button-foreground-color-active: var(--app-command-button-foreground-color);
+    --app-command-button-background-color-disabled: none;
+    --app-command-button-foreground-color-disabled: #BBBBBB;
+
+    --app-list-header-background-color: #F8F8F8;
+    --app-list-header-foreground-color: var(--app-foreground-color);
+    --app-list-item-background-color: none;
+    --app-list-item-foreground-color: var(--app-foreground-color);
+    --app-list-item-background-color-hover: #F1F1F1;
+    --app-list-item-foreground-color-hover: var(--app-foreground-color);
+    --app-list-item-background-color-active: #EEEEEE;
+    --app-list-item-foreground-color-active: var(--app-foreground-color);
+    --app-list-item-background-color-selected: #F1F1F1;
+    --app-list-item-foreground-color-selected: var(--app-foreground-color);
+    --app-list-detail-background-color: none;
+    --app-list-detail-foreground-color: #AAAAAA;
+
+    --app-progressbar-color: var(--accent-color);
 
     /* Styles */
     --app-border-style: 1px solid var(--app-border-color);

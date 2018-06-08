@@ -105,8 +105,11 @@ class IndexView {
         let href = $(link).attr('href');
         let $navItem = $(link).parent();
 
+        let oldController = indexView._currentController;
+
+        if (oldController === indexView._controllers[href]) return;
+
         indexView.$mainContainer.load(href, function () {
-            let oldController = indexView._currentController;
 
             indexView._currentController = indexView._controllers[href];
             indexView._currentController._view.readyToViewEvent.attach(indexView.viewReadyEventHandler);

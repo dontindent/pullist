@@ -19,12 +19,14 @@ class StorageWindow {
         this.storageRequestHandler = this.storageRequest.bind(this);
         this.loadRequestHandler = this.loadRequest.bind(this);
         this.deleteRequestHandler = this.deleteRequest.bind(this);
+        this.datesRequestHandler = this.datesRequest.bind(this);
 
         this.dbManager.storageReady.attach(this.storageReadyHandler);
 
         ipcRenderer.on (ipcChannels.storeRequest, this.storageRequestHandler);
         ipcRenderer.on (ipcChannels.loadRequest, this.loadRequestHandler);
         ipcRenderer.on (ipcChannels.deleteRequest, this.deleteRequestHandler);
+        ipcRenderer.on (ipcChannels.datesRequest, this.datesRequestHandler);
 
         this.dbManager.initDB();
     }
@@ -79,6 +81,18 @@ class StorageWindow {
         logger.log(['\tStorageWindow stored:', comic.originalString], caller);
 
         this.processStoreQueue();
+    }
+
+    // noinspection JSUnusedLocalSymbols
+    datesRequest (event, message) {
+        logger.log([ 'Got request to retrieve all available dates' ], caller);
+
+        this.dbManager.getAllDates(this.datesComplete.bind(this));
+    }
+
+    // noinspection JSMethodCanBeStatic
+    datesComplete (dates) {
+        sendMessage(ipcChannels.datesResponse, dates);
     }
 
     loadRequest (event, message) {

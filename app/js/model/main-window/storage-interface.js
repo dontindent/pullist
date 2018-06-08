@@ -1,6 +1,7 @@
 const { remote, ipcRenderer } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const ipcChannels = require('../../misc/ipc-channels');
+const Utilities = require('../../misc/utilities');
 
 const storageWindow = remote.getGlobal ('storageWindow');
 const logger = require('../../misc/logger');
@@ -13,8 +14,9 @@ class StorageInterface {
         this._storageCallbacksByOriginal = {};
         this._loadCallback = null;
         this._deleteCallback = null;
-        this.storageReady = false;
+        this._datesCallback = null;
         this._storeInProgress = false;
+        this.storageReady = false;
 
         this.createEvents();
         this.setupHandlers();
@@ -30,17 +32,20 @@ class StorageInterface {
 
     setupHandlers () {
         this.storageReadyHandler = this.storageReadyFunction.bind(this);
+
         this.storageResponseHandler = this.storageResponse.bind(this);
         this.loadResponseHandler = this.loadResponse.bind(this);
         this.deleteResponseHandler = this.deleteResponse.bind(this);
+        this.datesResponseHandler = this.datesResponse.bind(this);
     }
 
     enable () {
-        ipcRenderer.on (ipcChannels.storageReady, this.storageReadyHandler);
+        ipcRenderer.on(ipcChannels.storageReady, this.storageReadyHandler);
 
-        ipcRenderer.on (ipcChannels.storeResponse, this.storageResponseHandler);
-        ipcRenderer.on (ipcChannels.loadResponse, this.loadResponseHandler);
-        ipcRenderer.on (ipcChannels.deleteResponse, this.deleteResponseHandler);
+        ipcRenderer.on(ipcChannels.storeResponse, this.storageResponseHandler);
+        ipcRenderer.on(ipcChannels.loadResponse, this.loadResponseHandler);
+        ipcRenderer.on(ipcChannels.deleteResponse, this.deleteResponseHandler);
+        ipcRenderer.on(ipcChannels.datesResponse, this.datesResponseHandler);
     }
 
     storageReadyFunction () {
@@ -65,6 +70,17 @@ class StorageInterface {
             storageWindow.webContents.send(ipcChannels.storeRequest, comicToStore);
             this._storeInProgress = true;
         }
+    }
+
+    sendDatesRequest (callback) {
+        if (this._loadCallback) return false;
+
+        this._datesCallback = callback;
+
+        logger.log([ 'Sending request for all available dates' ], caller);
+        storageWindow.webContents.send(ipcChannels.datesRequest, null);
+
+        return true;
     }
 
     sendLoadRequest(date, callback) {
@@ -108,13 +124,25 @@ class StorageInterface {
         }
     }
 
+    datesResponse (event, retrievedDates) {
+        logger.log('Date retrieval complete', caller);
+
+        let dates = [];
+        for (let dateObject of retrievedDates) {
+            dates.push(new Date(dateObject['ReleaseDate']));
+        }
+
+        if (typeof this._datesCallback === 'function') this._datesCallback(dates);
+    }
+
     loadResponse (event, message) {
-        logger.log('\tLoad complete', caller);
+        logger.log('Load complete', caller);
         if (typeof this._loadCallback === 'function') this._loadCallback(message);
     }
 
 
     deleteResponse (event, message) {
+        logger.log('Delete complete', caller);
         if (typeof this._deleteCallback === 'function') this._deleteCallback(message);
     }
 }

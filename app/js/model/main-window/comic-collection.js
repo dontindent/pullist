@@ -9,12 +9,17 @@ const logger = require('../../misc/logger');
 const userPrefs = remote.getGlobal('userPrefs');
 const sender = 'ComicCollection';
 
+// TODO Load comics based on latest date in database
+// TODO Provide database API to get all available dates
+// TODO make ReleasesView request the latest date every time it is navigated to
+
 class ComicCollection {
     constructor (comicService) {
         this._comicService = comicService;
         this._comicsByOriginal = {};
 
-        this.latestDate = null;
+        this._latestDate = null;
+        this.availableDates = [];
         this.comicDict = {};
         this.comicsByPublisher = {};
         this.comicsToStore = 0;
@@ -40,28 +45,42 @@ class ComicCollection {
         this.storeCompleteHandler = this.storeComplete.bind(this);
         this.loadCompleteHandler = this.loadComplete.bind(this);
         this.deleteCompleteHandler = this.deleteComplete.bind(this);
+        this.datesCompleteHandler = this.datesComplete.bind(this);
     }
 
     enable() {
         storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
 
-        let dateValue = new Date(userPrefs['latestReleaseDate']);
+        // let dateValue = new Date(userPrefs['latestReleaseDate']);
 
-        if (dateValue !== -8640000000000000 && Utilities.exists(dateValue)) {
-            this.latestDate = new Date(dateValue);
-            this.latestDateUpdatedEvent.notify();
+        // if (dateValue !== -8640000000000000 && Utilities.exists(dateValue)) {
+        //     this.latestDate = new Date(dateValue)
+        // }
+    }
+
+    get latestDate () {
+        return this._latestDate;
+    }
+
+    set latestDate (value) {
+        if (typeof value === typeof -8640000000000000) {
+            this._latestDate = new Date(value);
         }
+        else {
+            this._latestDate = value;
+        }
+        this.latestDateUpdatedEvent.notify(this._latestDate);
     }
 
     storageReady() {
-        this.loadLatestComics();
+        storageInterface.sendDatesRequest(this.datesCompleteHandler);
     }
 
-    loadLatestComics() {
+    loadComicsForDate (date) {
         if (!storageInterface.storageReady) return;
 
-        if (Utilities.exists(this.latestDate)) {
-            storageInterface.sendLoadRequest(this.latestDate.valueOf(), this.loadCompleteHandler);
+        if (Utilities.exists(date)) {
+            storageInterface.sendLoadRequest(date.valueOf(), this.loadCompleteHandler);
         }
         else {
             this.retrievedComicsEvent.notify();
@@ -85,7 +104,7 @@ class ComicCollection {
             storageInterface.sendDeleteRequest(this._comicService.retrievalDate, this.deleteCompleteHandler);
         }
         this.latestDate = this._comicService.retrievalDate;
-        this.storeLatestDate();
+        // this.storeLatestDate();
         this.latestDateUpdatedEvent.notify();
         this.retrievedComicsEvent.notify();
 
@@ -126,6 +145,13 @@ class ComicCollection {
         }
     }
 
+    datesComplete (datesList) {
+        this.availableDates = datesList;
+        this.latestDate = Math.max(...this.availableDates);
+
+        this.loadComicsForDate(this.latestDate);
+    }
+
     loadComplete (comicList) {
         let variantQueue = [];
         let publishers = [];
@@ -133,7 +159,7 @@ class ComicCollection {
         let collection = this;
 
         comicList.forEach(function (comic) {
-            let newComic = Comic.fromGeneric(comic[0]);
+            let newComic = Comic.fromGeneric(comic);
 
             if (!publishers.includes(newComic.publisher)) publishers.push(newComic.publisher);
 
@@ -153,7 +179,7 @@ class ComicCollection {
 
         if (!comicList.length) {
             this.latestDate = null;
-            this.storeLatestDate();
+            // this.storeLatestDate();
         }
 
         logger.log('Loaded ' + comicList.length + ' comics', sender);

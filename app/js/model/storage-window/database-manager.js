@@ -3,11 +3,13 @@ const SQL = require('../../../../node_modules/sql.js/js/sql');
 const path = require('path');
 const fs = require('fs');
 const Event = require('../../misc/event-dispatcher');
+const Utilities = require('../../misc/utilities');
 
 const logger = require('../../misc/logger');
 
 const sender = 'ComicDatabase';
 
+// The following is base HEAVILY off of https://github.com/patrickmoffitt/local-sqlite-example
 
 function _rowsFromSqlDataObject(object) {
     let data = {};
@@ -134,6 +136,40 @@ class ComicDatabase {
         }
     }
 
+    getAllDates (callback) {
+        if (!this.db) {
+            this.db = SQL.dbOpen(this.dbPath);
+        }
+
+        if (this.db) {
+            let query = 'SELECT DISTINCT `ReleaseDate` FROM Comic ORDER BY `ReleaseDate`';
+            let statement = this.db.prepare(query);
+            try {
+                let results = [];
+
+                while (statement.step()) {
+                    let values = [statement.get()];
+                    let columns = statement.getColumnNames();
+                    let result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
+
+                    result['ReleaseDate'] = Date.fromMSDateTimeOffset(result['ReleaseDate']).valueOf();
+
+                    results.push(result);
+                }
+                if (typeof callback === 'function') {
+                    callback(results);
+                }
+            } catch (error) {
+                logger.log([ 'ComicDatabase.getAllDates', 'No data found in `Comic` in column ReleaseDate' ], sender);
+            } finally {
+                this.closeDB();
+            }
+        } else {
+            this.storageError.notify();
+            logger.log ('Couldn\'t open database for select', sender);
+        }
+    }
+
     insertComic (comic, callback) {
         if (!this.db) {
             this.db = SQL.dbOpen(this.dbPath);
@@ -145,7 +181,7 @@ class ComicDatabase {
             query += ' VALUES (' + _insertPlaceHoldersString(17) + ')';
             let values = [ comic.series, comic.number, comic.writer, comic.artist, comic.coverArtist,
                             comic.publisher, comic.description, comic.price, comic.pulled, comic.watched, comic.code,
-                            comic.coverURL, comic.reprint, comic.variant, comic.releaseDate.valueOf(),
+                            comic.coverURL, comic.reprint, comic.variant, (new Date(comic.releaseDate)).toMSDateTimeOffset(),
                             comic.originalString, comic.mainID ];
 
             let statement = this.db.prepare(query);
@@ -195,7 +231,7 @@ class ComicDatabase {
             query += ' WHERE ID = ?';
             let values = [ comic.series, comic.number, comic.writer, comic.artist, comic.coverArtist,
                 comic.publisher, comic.description, comic.price, comic.pulled, comic.watched, comic.code,
-                comic.coverURL, comic.reprint, comic.variant, comic.releaseDate.valueOf(),
+                comic.coverURL, comic.reprint, comic.variant, (new Date(comic.releaseDate)).toMSDateTimeOffset(),
                 comic.originalString, comic.mainID, comic.id ];
 
             let statement = this.db.prepare(query);
@@ -233,6 +269,7 @@ class ComicDatabase {
                     let values = [statement.get()];
                     let columns = statement.getColumnNames();
                     result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
+                    result['ReleaseDate'] = Date.fromMSDateTimeOffset(result['ReleaseDate']).valueOf();
                 }
 
                 if (typeof callback === 'function') {
@@ -255,14 +292,17 @@ class ComicDatabase {
 
         if (this.db) {
             let query = 'SELECT * FROM `Comic` WHERE `ReleaseDate` IS ?';
-            let statement = this.db.prepare(query, [date]);
+            let statement = this.db.prepare(query, [ (new Date(date)).toMSDateTimeOffset() ]);
             try {
                 let results = [];
 
                 while (statement.step()) {
                     let values = [statement.get()];
                     let columns = statement.getColumnNames();
-                    results.push(_rowsFromSqlDataObject({values: values, columns: columns}));
+                    let result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
+
+                    result['ReleaseDate'] = Date.fromMSDateTimeOffset(result['ReleaseDate']).valueOf();
+                    results.push(result);
                 }
 
                 if (typeof callback === 'function') {
@@ -287,7 +327,7 @@ class ComicDatabase {
         if (this.db) {
 
             let query = 'DELETE FROM `Comic` WHERE ( ReleaseDate != ? ) AND ( Pulled != 1)';
-            let statement = this.db.prepare(query, [date]);
+            let statement = this.db.prepare(query, [ (new Date(date)).toMSDateTimeOffset() ]);
             try {
                 let result = false;
 

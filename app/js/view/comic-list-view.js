@@ -227,7 +227,7 @@ class ComicListView extends View  {
 
         this.$comicListWrapper.resizable({
             containment: 'parent',
-            handles: 'e, w',
+            handles: 'e',
         });
 
         let includeReprints = userPrefs['includeReprints'];
@@ -395,12 +395,12 @@ class ComicListView extends View  {
         this.readyToView = true;
     }
 
-    comicListProcessed(sender, args) {
+    comicListProcessed(sender, numComics) {
         // noinspection JSUnusedGlobalSymbols
-        this.numComics = args;
+        this.numComics = numComics;
     }
 
-    comicProcessed(sender, args) {
+    comicProcessed(sender, comic) {
 
     }
 

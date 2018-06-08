@@ -2,7 +2,7 @@ const { remote, ipcRenderer } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
 const Utilities = require('../../misc/utilities');
-const ipcChannels = require('../../misc/ipc-channels')
+const ipcChannels = require('../../misc/ipc-channels');
 
 const storageInterface = require('./storage-interface');
 const logger = require('../../misc/logger');
@@ -17,9 +17,13 @@ class ComicCollection {
         this.latestDate = null;
         this.comicDict = {};
         this.comicsByPublisher = {};
+        this.comicsToStore = 0;
+        this.comicsStored = 0;
 
         this.latestDateUpdatedEvent = new Event(this, true);
         this.retrievedComicsEvent = new Event(this, true);
+        this.comicsStoredEvent = new Event (this, true);
+        this.comicStoredEvent = new Event (this, true);
         this.comicListProcessedEvent = this._comicService.comicListProcessedEvent;
         this.comicProcessedEvent = this._comicService.comicProcessedEvent;
 
@@ -59,6 +63,9 @@ class ComicCollection {
         if (Utilities.exists(this.latestDate)) {
             storageInterface.sendLoadRequest(this.latestDate.valueOf(), this.loadCompleteHandler);
         }
+        else {
+            this.retrievedComicsEvent.notify();
+        }
     }
 
     populateComics () {
@@ -82,13 +89,12 @@ class ComicCollection {
         this.latestDateUpdatedEvent.notify();
         this.retrievedComicsEvent.notify();
 
-        console.log(comicDict);
-
         if (storageInterface.storageReady) this.storeCollection();
     }
 
     storeCollection () {
-        let count = 0;
+        this.comicsToStore = 0;
+        this.comicsStored = 0;
 
         for(let key in this.comicDict) {
             if (!this.comicDict.hasOwnProperty(key)) continue;
@@ -97,7 +103,7 @@ class ComicCollection {
 
             storageInterface.sendStorageRequest(comic, this.storeCompleteHandler);
 
-            count++;
+            this.comicsToStore++;
         }
     }
 
@@ -109,7 +115,15 @@ class ComicCollection {
                 this._comicsByOriginal[variant.originalString] = variant;
                 variant.mainID = comicLocal.id;
                 storageInterface.sendStorageRequest(variant, this.storeCompleteHandler);
+                this.comicsToStore++;
             }.bind(this));
+
+        this.comicsStored++;
+        this.comicStoredEvent.notify(comicLocal);
+
+        if (this.comicsStored === this.comicsToStore) {
+            this.comicsStoredEvent.notify();
+        }
     }
 
     loadComplete (comicList) {

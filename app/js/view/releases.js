@@ -1,5 +1,7 @@
 const { ComicListView } = require('./comic-list-view');
 const Event = require('../misc/event-dispatcher');
+const ProgressBar = require('progressbar.js');
+const logger = require("../misc/logger");
 
 class ReleasesView extends ComicListView {
     constructor (comicCollection) {
@@ -8,6 +10,7 @@ class ReleasesView extends ComicListView {
         // noinspection JSUnusedGlobalSymbols
         this.callerString = 'ReleasesView';
         this.retrieveActive = true;
+        this.processedComics = 0;
 
         this.retrieveComicsEvent = new Event(this);
     }
@@ -15,16 +18,28 @@ class ReleasesView extends ComicListView {
     createChildren () {
         super.createChildren();
         this.$retrieveButton = $('a#comic-list-refresh-button');
+        this.$retrieveStatusContainer = $('div#comic-retrieve-status-container');
+        this.$retrieveStatusMessage = $('span#comic-retrieve-message');
+        this.$progressBarContainer = $('div#progress-bar');
+        // this.progressBar = new ProgressBar.Line('div#progress-bar', {
+        //     strokeWidth: 2,
+        //     color: document.documentElement.style.getPropertyValue('--accent-color'),
+        //     svgStyle: { width: '100%', height: '100%' }
+        // });
     }
 
     setupHandlers () {
         super.setupHandlers();
         this.retrieveComicsButtonHandler = this.retrieveComicsButton.bind(this);
+        this.comicsStoredHandler = this.comicsStored.bind(this);
     }
 
     enable () {
         super.enable();
+        // this.$retrieveStatusContainer.hide();
         this.$retrieveButton.on('click', this.retrieveComicsButtonHandler);
+
+        this._comicCollection.comicsStoredEvent.attach(this.comicsStoredHandler)
     }
 
     navigatingFrom () {
@@ -42,15 +57,65 @@ class ReleasesView extends ComicListView {
         this.$retrieveButton.addClass('disabled')
     }
 
-    retrieveComicsButton(event) {
+    retrieveComicsButton (event) {
         event.preventDefault();
 
         if (this.retrieveActive) {
+            this.$retrieveStatusContainer.removeClass('status-hidden');
+            // this.$retrieveStatusContainer.slideToggle(600);
+            this.$retrieveStatusMessage.text('Retrieving comic list');
             this.disconnectComics();
             this.retrieveComicsEvent.notify();
             this.comicsUnstable();
             this.$comicList.addClass('disabled');
         }
+    }
+
+    retrievedComics () {
+        super.retrievedComics();
+    }
+
+    comicListProcessed (sender, numComics) {
+        super.comicListProcessed(sender, numComics);
+
+        this.processedComics = 0;
+        // this.progressBar.animating = false;
+        this.$retrieveStatusMessage.text('Comic list retrieved');
+    }
+
+    comicProcessed (sender, comic) {
+        super.comicProcessed(sender, comic);
+
+        this.processedComics++;
+        this.$retrieveStatusMessage.text(comic.title);
+
+        if (this.processedComics === this.numComics) {
+            // this.progressBar.stop();
+            // this.progressBar.animate(1.0, { duration: 500 }, function () {
+            //     this.progressBar.animating = false;
+            // }.bind(this));
+            this.$retrieveStatusMessage.text('Storing comics');
+        }
+        else {
+            let percentComplete = (this.processedComics / this.numComics) * 100;
+            this.$progressBarContainer[0].style.width = percentComplete.toString() + '%';
+            logger.log(percentComplete, this.callerString);
+        }
+
+        // if (this.progressBar.animating) return;
+
+        // this.progressBar.animating = true;
+        // this.progressCallbackHandler = this.stepAnimation.bind(this);
+        // this.progressBar.animate(this.processedComics / this.numComics, { duration: 500 }, this.progressCallbackHandler);
+    }
+
+    stepAnimation () {
+        if (this.processedComics >= this.numComics) return;
+        this.progressBar.animate(this.processedComics / this.numComics, { duration: 500 }, this.progressCallbackHandler);
+    }
+
+    comicsStored(sender, count) {
+        this.$retrieveStatusContainer.addClass('status-hidden');
     }
 
     generateDateString () {

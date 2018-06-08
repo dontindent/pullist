@@ -2,23 +2,26 @@ const { remote } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
 const Utilities = require('../../misc/utilities');
+const logger = require("../../misc/logger");
 
 const newReleasesUrl = 'https://www.previewsworld.com/shipping/newreleases.txt';
 const detailUrlBase = 'http://www.previewsworld.com/Catalog/';
 const previewsWorldBase = "http://www.previewsworld.com";
 
+// noinspection JSUnresolvedVariable
 global.detailUrlBase = detailUrlBase;
 
 const userPrefs = remote.getGlobal('userPrefs');
 
 class ComicDataService {
     constructor() {
+        this.callerString = 'ComicDataService';
         this.comicDict = {};
-        this.comicsByOriginal = {};
         this.publishers = [];
         this.comicListProcessedEvent = new Event(this);
         this.comicProcessedEvent = new Event(this);
         this.comicCount = 0;
+        this.processedComics = 0;
         this.retrievalDate = new Date(-8640000000000000);
     }
 
@@ -26,11 +29,14 @@ class ComicDataService {
         let service = this;
         let deferred = $.Deferred();
         this.comicCount = 0;
+        this.processedComics = 0;
         this.comicDict = {};
 
         let includeOnlyComics = userPrefs['includeOnlyComics'];
 
-        if (Utilities.exists(comicsByOriginalString)) this.comicsByOriginal = comicsByOriginalString;
+        if (Utilities.exists(comicsByOriginalString)) { // noinspection JSUnusedGlobalSymbols
+            this.comicsByOriginal = comicsByOriginalString;
+        }
 
         if (includeOnlyComics === null || includeOnlyComics === undefined) {
             includeOnlyComics = true;
@@ -42,7 +48,7 @@ class ComicDataService {
                 if (includeOnlyComics) {
                     removeNonComics(service);
                 }
-                console.log('Parsed ' + service.comicCount + ' comics');
+                logger.log('Parsed ' + service.comicCount + ' comics', service.callerString);
 
                 deferred.resolve([service.comicDict, service.publishers]);
             });
@@ -58,7 +64,6 @@ function processList(comicService, rawList) {
     let date;
     let publisher = '';
     let count = 0;
-    let comicsByOriginal = {};
     let variantPool = {};
     let variantKeys = [];
 
@@ -135,10 +140,6 @@ function processList(comicService, rawList) {
         comic.originalString = parameters[1];
         comic.variantList = [];
 
-        comicsByOriginal[comic.originalString] = comic;
-
-        count++;
-
         if (comic.originalString in comicService.comicsByOriginal) {
             let original = comicService.comicsByOriginal[comic.originalString];
             original.copyDetails(comic);
@@ -152,12 +153,14 @@ function processList(comicService, rawList) {
             comicService.comicsByOriginal[comic.originalString] = comic;
         }
 
+        count++;
+
         if(!(key in comicService.comicDict)) {
             comicService.comicDict[key] = comic;
         }
         else {
             if (!(key in variantPool)) {
-                variantPool[key] = [comic];
+                variantPool[key] = [ comic ];
                 variantKeys.push(key)
             }
             else variantPool[key].push(comic);
@@ -180,7 +183,8 @@ function processList(comicService, rawList) {
     }
 
     comicService.retrievalDate = date;
-    comicService.comicListProcessedEvent.notify(Object.size(comicService.comicDict));
+    comicService.comicListProcessedEvent.notify(count);
+    logger.log(['Found', count, 'comics in text list'], comicService.callerString);
 
     return count;
 }
@@ -189,18 +193,16 @@ function processDetails(comicService) {
     let i = 0;
     let promises = [];
 
-    for(let key in comicService.comicDict) {
-        if (!comicService.comicDict.hasOwnProperty(key)) continue;
+    for(let key in comicService.comicsByOriginal) {
+        if (!comicService.comicsByOriginal.hasOwnProperty(key)) continue;
 
-        let comic = comicService.comicDict[key];
+        let comic = comicService.comicsByOriginal[key];
         promises.push(getComicDetails(comicService, comic));
-
-        comic.variantList.forEach(function(variant) {
-            promises.push(getComicDetails(comicService, variant));
-        });
 
         i++;
     }
+
+    logger.log(['Getting details of', i, 'comics'], comicService.callerString);
 
     return $.when.apply(undefined, promises).promise();
 }
@@ -249,10 +251,11 @@ function getComicDetails(comicService, comic) {
         comic.coverURL = previewsWorldBase + $($contentImage[0]).attr('src');
 
         comicService.comicProcessedEvent.notify(comic);
+        comicService.processedComics++;
 
         deferred.resolve(comic);
     }).fail(function() {
-        console.log ('comicDataService failed GET for ' + comic.title);
+        logger.log ('comicDataService failed GET for ' + comic.title, comicService.callerString);
     });
 
     comicService.comicCount++;
@@ -261,22 +264,27 @@ function getComicDetails(comicService, comic) {
 }
 
 function removeNonComics(comicService) {
+    let oldCount = comicService.comicCount;
+
     comicService.publishers = [];
     comicService.comicCount = 0;
 
-    for (let key in comicService.comicDict) {
-        if (!comicService.comicDict.hasOwnProperty(key)) continue;
+    for (let key in comicService.comicsByOriginal) {
+        if (!comicService.comicsByOriginal.hasOwnProperty(key)) continue;
 
-        let comic = comicService.comicDict[key];
+        let comic = comicService.comicsByOriginal[key];
 
         if (!comic.writer && !comic.artist && !comic.coverArtist) {
-            delete comicService.comicDict[key];
+            delete comicService.comicsByOriginal[key];
+            delete comicService.comicDict[comic.key];
         }
         else {
             if (!comicService.publishers.includes(comic.publisher)) comicService.publishers.push(comic.publisher);
-            comicService.comicCount += 1 + comic.variantList.length;
+            comicService.comicCount ++;
         }
     }
+
+    logger.log([ 'Pruned', oldCount - comicService.comicCount, 'non-comics from the list' ], comicService.callerString);
 }
 
 exports = module.exports = ComicDataService;

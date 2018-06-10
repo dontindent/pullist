@@ -1,0 +1,283 @@
+@charset "UTF-8";
+
+/*!
+ * Pikaday
+ * Copyright © 2014 David Bushell | BSD & MIT license | http://dbushell.com/
+ */
+
+.pika-single {
+    z-index: 9999;
+    display: block;
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--app-border-color);
+    /*border-bottom-color: #bbb;*/
+    font-family: var(--app-font);
+}
+
+/*
+clear child float (pika-lendar), using the famous micro clearfix hack
+http://nicolasgallagher.com/micro-clearfix-hack/
+*/
+.pika-single:before,
+.pika-single:after {
+    content: " ";
+    display: table;
+}
+.pika-single:after { clear: both }
+.pika-single { *zoom: 1 }
+
+.pika-single.is-hidden {
+    display: none;
+}
+
+.pika-single.is-bound {
+    position: absolute;
+    box-shadow: 0 5px 15px -5px rgba(0,0,0,.5);
+}
+
+.pika-lendar {
+    width: 290px;
+    float: left;
+}
+
+.pika-title {
+    position: relative;
+    text-align: center;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    margin: 5px 10px 0 10px;
+}
+
+.pika-label {
+    display: inline-block;
+    *display: inline;
+    position: relative;
+    z-index: 9999;
+    overflow: hidden;
+    margin: 0;
+    padding: 5px 3px;
+    font-size: 15pt;
+    line-height: 17pt;
+    font-weight: 400;
+    background-color: #fff;
+    text-align: left;
+}
+
+.pika-title select {
+    cursor: default;
+    position: absolute;
+    z-index: 9998;
+    margin: 0;
+    left: 0;
+    top: 5px;
+    filter: alpha(opacity=0);
+    opacity: 0;
+}
+
+select.pika-select-year {
+    width: 5em;
+}
+
+button.pika-prev,
+button.pika-next {
+    display: block;
+    cursor: default;
+    position: relative;
+    outline: none;
+    border: 0;
+    padding: 0;
+    width: 20pt;
+    height: 30px;
+    /* hide text using text-indent trick, using width value (it's enough) */
+    text-indent: 50px;
+    white-space: nowrap;
+    overflow: hidden;
+    background: transparent;
+    /*background-size: 75% 75%;*/
+    /*opacity: .5;*/
+    *position: absolute;
+    *top: 0;
+}
+
+.pika-prev {
+    grid-column: 4;
+    margin-right: 16px;
+}
+
+.pika-next {
+    grid-column: 5;
+}
+
+.pika-prev:hover,
+.pika-next:hover {
+
+}
+
+/*noinspection CssNoGenericFontName*/
+.pika-prev::before, .pika-next::before {
+    display: inline-block;
+    font-family: "Pullist";
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    line-height: 1;
+    font-size: 18pt;
+    text-decoration: inherit;
+    text-rendering: optimizeLegibility;
+    text-transform: none;
+    position:absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-indent: 0;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-smoothing: antialiased;
+}
+
+.pika-prev::before,
+.is-rtl .pika-next::before {
+    margin-top: 5px;
+    content: "\f11d";
+}
+
+.pika-next::before,
+.is-rtl .pika-prev::before {
+    margin-top: 2px;
+    content: "\f11e";
+}
+
+.pika-prev.is-disabled,
+.pika-next.is-disabled {
+    cursor: default;
+    opacity: .2;
+}
+
+.pika-select {
+    display: inline-block;
+    *display: inline;
+}
+
+.pika-table {
+    width: 100%;
+    border: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.pika-table th,
+.pika-table td {
+    min-width: 40px;
+    min-height: 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    /*border: 2px solid var(--app-calendar-background-color);*/
+    background: var(--app-calendar-background-color);
+}
+
+.pika-table th {
+    color: var(--app-font-color);
+    font-size: 9pt;
+    line-height: 18pt;
+    font-weight: 400;
+    text-align: center;
+    border-bottom: 1px solid var(--app-calendar-background-color);
+    background: none;
+}
+
+button.pika-button {
+    cursor: default;
+    display: block;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    outline: none;
+    border: 2px solid transparent;
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    font-size: 14pt;
+    line-height: 16pt;
+    font-weight: 300;
+    text-align: center;
+    background: none;
+}
+
+.pika-week {
+    font-size: 11px;
+    color: #999;
+}
+
+td.is-today {
+    background: var(--app-calendar-background-color-current) !important;
+}
+
+td.is-today button.pika-button {
+    color: var(--app-calendar-foreground-color-current) !important;
+    font-weight: 600;
+}
+
+td.is-selected,
+td.has-event {
+}
+
+td.is-selected button.pika-button,
+td.has-event button.pika-button {
+    border-color: var(--app-calendar-border-color-selected) !important;
+}
+
+td.has-event button.pika-button {
+    background: #005da9;
+}
+
+td.is-disabled,
+td.is-inrange {
+    background: var(--app-calendar-background-color-disabled);
+}
+
+td.is-disabled button.pika-button,
+td.is-inrange button.pika-button {
+}
+
+td.is-startrange button.pika-button {
+    color: #fff;
+    background: #6CB31D;
+    box-shadow: none;
+}
+
+td.is-endrange button.pika-button {
+    color: #fff;
+    background: #33aaff;
+    box-shadow: none;
+}
+
+td.is-disabled button.pika-button {
+    /*pointer-events: none;*/
+    cursor: default;
+}
+
+td.is-outside-current-month button.pika-button {
+
+}
+
+td.is-selection-disabled {
+    pointer-events: none;
+    cursor: default;
+}
+
+button.pika-button:hover,
+td.pika-row.pick-whole-week:hover button.pika-button {
+    /*color: #fff;*/
+    border-color: var(--app-calendar-border-color-hover) !important;
+    box-shadow: none;
+}
+
+/* styling for abbr */
+.pika-table abbr {
+    border-bottom: none;
+    cursor: help;
+    text-decoration: none;
+}
+

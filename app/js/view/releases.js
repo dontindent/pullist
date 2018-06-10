@@ -35,6 +35,7 @@ class ReleasesView extends ComicListView {
 
     enable () {
         super.enable();
+
         this.$retrieveButton.on('click', this.retrieveComicsButtonHandler);
 
         this._comicCollection.comicsStoredEvent.attach(this.comicsStoredHandler)

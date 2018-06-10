@@ -122,7 +122,7 @@ class ComicCollection {
     }
 
     storeComic (comic) {
-        storageInterface.sendStorageRequest(comic, this.storeCompleteHandler);
+        storageInterface.sendStorageRequest(comic, this.storeIndividualCompleteHandler);
 
         this.comicsToStore++;
     }

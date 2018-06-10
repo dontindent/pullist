@@ -133,7 +133,7 @@ div.comic-list-header-container {
     flex-direction: row;
 }
 
-div#comic-list-header h1 {
+h1#comic-list-header-text {
     font-family: var(--app-font);
     font-size: 14pt;
     font-weight: 600;
@@ -350,74 +350,3 @@ i.comic-list-icon.icons8-empty-box:before {
     margin-bottom: 10px;
 }
 
-div#comic-retrieve-status-container {
-    transition: bottom 0.6s ease-out;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background: var(--app-background-color);
-    z-index: 6;
-    display: block;
-    text-align: center;
-    min-width: 0;
-}
-
-div#comic-retrieve-status-container.status-hidden {
-    transition: bottom 0.6s ease-out;
-    bottom: -50px;
-}
-
-div#progress-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--app-progressbar-color);
-}
-
-span#comic-retrieve-message {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    left: 0;
-    right: 0;
-    margin: 0 10px 0 10px;
-    font-size: 10pt;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-div#comic-pulled-info-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    min-width: 0;
-    height: 50px;
-    background: var(--app-background-color-overlay);
-    border-top: var(--app-border-style);
-    z-index: 6;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-span#comic-pulled-info-price {
-    position: relative;
-    margin: 0 10px 0 10px;
-    font-size: 14pt;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-span#comic-pulled-info-count {
-    position: relative;
-    margin: 0 10px 0 10px;
-    font-size: 9pt;
-    overflow: hidden;
-    white-space: nowrap;
-}

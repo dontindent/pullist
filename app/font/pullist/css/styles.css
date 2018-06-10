@@ -36,14 +36,21 @@
 
 .icons8, [data-icons8]:before,
 .icons8-add:before,
+.icons8-arrow-pointing-to-right:before,
 .icons8-box:before,
+.icons8-calendar:before,
 .icons8-cancel:before,
 .icons8-checked-box:before,
 .icons8-cog-wheel:before,
+.icons8-collapse-arrow:before,
+.icons8-drop-down-arrow:before,
+.icons8-email:before,
+.icons8-email-envelope:before,
 .icons8-empty-box:before,
 .icons8-eye:before,
 .icons8-eye-outline:before,
 .icons8-hamburger-menu:before,
+.icons8-left-arrow:before,
 .icons8-magazine:before,
 .icons8-magazine-2:before,
 .icons8-refresh:before,
@@ -65,14 +72,21 @@
 }
 
 .icons8-add:before { content: "\f109"; }
+.icons8-arrow-pointing-to-right:before { content: "\f11c"; }
 .icons8-box:before { content: "\f10a"; }
+.icons8-calendar:before { content: "\f120"; }
 .icons8-cancel:before { content: "\f108"; }
 .icons8-checked-box:before { content: "\f10b"; }
 .icons8-cog-wheel:before { content: "\f105"; }
+.icons8-collapse-arrow:before { content: "\f11d"; }
+.icons8-drop-down-arrow:before { content: "\f11e"; }
+.icons8-email:before { content: "\f119"; }
+.icons8-email-envelope:before { content: "\f118"; }
 .icons8-empty-box:before { content: "\f114"; }
 .icons8-eye:before { content: "\f111"; }
 .icons8-eye-outline:before { content: "\f112"; }
 .icons8-hamburger-menu:before { content: "\f10f"; }
+.icons8-left-arrow:before { content: "\f11b"; }
 .icons8-magazine:before { content: "\f100"; }
 .icons8-magazine-2:before { content: "\f101"; }
 .icons8-refresh:before { content: "\f107"; }

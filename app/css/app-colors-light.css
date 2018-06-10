@@ -47,6 +47,10 @@
     --app-list-detail-background-color: none;
     --app-list-detail-foreground-color: #AAAAAA;
 
+    --app-header-foreground-color: var(--app-font-color);
+    --app-header-foreground-color-hover: var(--accent-color);
+    --app-header-foreground-color-active: var(--accent-color-dark-2);
+
     --app-calendar-background-color: #DFDFDF;
     --app-calendar-background-color-disabled: #F4F4F4;
     --app-calendar-foreground-color-disabled: var(--app-font-color);

@@ -33,7 +33,7 @@ http://nicolasgallagher.com/micro-clearfix-hack/
 
 .pika-single.is-bound {
     position: absolute;
-    box-shadow: 0 5px 15px -5px rgba(0,0,0,.5);
+    /*box-shadow: 0 5px 15px -5px rgba(0,0,0,.5);*/
 }
 
 .pika-lendar {
@@ -244,13 +244,13 @@ td.is-inrange button.pika-button {
 td.is-startrange button.pika-button {
     color: #fff;
     background: #6CB31D;
-    box-shadow: none;
+    /*box-shadow: none;*/
 }
 
 td.is-endrange button.pika-button {
     color: #fff;
     background: #33aaff;
-    box-shadow: none;
+    /*box-shadow: none;*/
 }
 
 td.is-disabled button.pika-button {
@@ -271,7 +271,7 @@ button.pika-button:hover,
 td.pika-row.pick-whole-week:hover button.pika-button {
     /*color: #fff;*/
     border-color: var(--app-calendar-border-color-hover) !important;
-    box-shadow: none;
+    /*box-shadow: none;*/
 }
 
 /* styling for abbr */

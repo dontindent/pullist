@@ -13,6 +13,7 @@ class ComicCollection {
         this._comicService = comicService;
         this._comicsByOriginal = {};
 
+        this._earliestDate = null;
         this._latestDate = null;
         this._currentDate = null;
         this.availableDates = [];
@@ -50,18 +51,20 @@ class ComicCollection {
         storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
     }
 
+    get earliestDate () {
+        return this._earliestDate;
+    }
+
+    set earliestDate (value) {
+        this._earliestDate = dateCheck(value);
+    }
+
     get latestDate () {
         return this._latestDate;
     }
 
     set latestDate (value) {
-        if (typeof value === typeof -8640000000000000) {
-            this._latestDate = new Date(value);
-        }
-        else {
-            this._latestDate = value;
-        }
-
+        this._latestDate = dateCheck(value);
         this.latestDateUpdatedEvent.notify(this._latestDate);
     }
 
@@ -70,13 +73,7 @@ class ComicCollection {
     }
 
     set currentDate (value) {
-        if (typeof value === typeof -8640000000000000) {
-            this._currentDate = new Date(value);
-        }
-        else {
-            this._currentDate = value;
-        }
-
+        this._currentDate = dateCheck(value);
         this.currentDateUpdatedEvent.notify(this._currentDate);
     }
 
@@ -87,13 +84,17 @@ class ComicCollection {
     loadComicsForDate (date) {
         if (!storageInterface.storageReady) return;
 
-        if (Utilities.exists(date)) {
-            storageInterface.sendLoadRequest(date.valueOf(), this.loadCompleteHandler);
-            this.currentDate = date;
-        }
-        else {
+        if (!Utilities.exists(date)) {
             this.retrievedComicsEvent.notify();
+            return;
         }
+
+        if (!(date instanceof Date)) {
+            throw 'Date object required.';
+        }
+
+        storageInterface.sendLoadRequest(date.valueOf(), this.loadCompleteHandler);
+        this.currentDate = date;
     }
 
     populateComics () {
@@ -179,6 +180,7 @@ class ComicCollection {
 
     datesComplete (datesList) {
         this.availableDates = datesList;
+        this.earliestDate = Math.min(...this.availableDates);
         this.latestDate = Math.max(...this.availableDates);
 
         this.loadComicsForDate(this.latestDate);
@@ -189,6 +191,9 @@ class ComicCollection {
         let publishers = [];
         let comicsById = {};
         let collection = this;
+
+        this._comicsByOriginal = {};
+        this.comicDict = {};
 
         comicList.forEach(function (comic) {
             let newComic = Comic.fromGeneric(comic);
@@ -236,6 +241,8 @@ class ComicCollection {
         let collection = this;
         publishers = publishers.sort();
 
+        collection.comicsByPublisher = {};
+
         publishers.forEach(function(publisher){
             collection.comicsByPublisher[publisher] = [];
         });
@@ -248,6 +255,18 @@ class ComicCollection {
             collection.comicsByPublisher[publisher].push(comic);
             comic.needsStorageEvent.attach(storageInterface.sendStorageRequest.bind(storageInterface));
         }.bind(this));
+    }
+}
+
+function dateCheck (value) {
+    if (typeof value === typeof -8640000000000000) {
+        return new Date(value);
+    }
+    else if (value instanceof Date) {
+        return value;
+    }
+    else {
+        throw value + ' is not convertible to Date.'
     }
 }
 

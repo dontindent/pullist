@@ -15,6 +15,88 @@ div#pulled-wrapper {
     overflow: hidden;
 }
 
+div.pulled-header-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+}
+
+a#datepicker {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    grid-column: 1;
+    color: var(--app-header-foreground-color);
+    /*margin: 10px 0;*/
+}
+
+a#datepicker:hover {
+    color: var(--app-header-foreground-color-hover);
+}
+
+a#datepicker:active, a#datepicker:focus {
+    color: var(--app-header-foreground-color-active);
+}
+
+a#datepicker h1#comic-list-header-text {
+    position: relative;
+    white-space: nowrap;
+    /*margin: 0 0;*/
+}
+
+a#datepicker i.icons8-calendar {
+    display: flex;
+    align-items: center;
+    margin: 5px 0 0 5px;
+    flex: 0;
+}
+
+i#comic-list-header-icon {
+    margin-top: 0.95em;
+    grid-column: 2;
+}
+
+a.pulled-header-date-button {
+    font-size: 18pt;
+    display: flex;
+    align-items: center;
+    background: var(--app-command-button-background-color);
+    margin: 10px 0;
+}
+
+
+/*--app-command-button-background-color: none;*/
+/*--app-command-button-foreground-color: var(--app-foreground-color);*/
+/*--app-command-button-background-color-hover: #F1F1F1;*/
+/*--app-command-button-foreground-color-hover: var(--app-command-button-foreground-color);*/
+/*--app-command-button-background-color-active: #EEEEEE;*/
+/*--app-command-button-foreground-color-active: var(--app-command-button-foreground-color);*/
+/*--app-command-button-background-color-disabled: none;*/
+/*--app-command-button-foreground-color-disabled: #BBBBBB;*/
+
+a.pulled-header-date-button:hover {
+    background: var(--app-command-button-background-color-hover);
+}
+
+a.pulled-header-date-button:active {
+    background: var(--app-command-button-background-color-active);
+}
+
+a.pulled-header-date-button.disabled {
+    background: var(--app-command-button-background-color-disabled) !important;
+    color: var(--app-command-button-foreground-color-disabled) !important;
+    pointer-events: none;
+}
+
+a#pulled-header-prev-date {
+    grid-column: 3;
+}
+
+a#pulled-header-next-date {
+    grid-column: 4;
+}
+
 div#comic-pulled-info-container {
     position: absolute;
     bottom: 0;

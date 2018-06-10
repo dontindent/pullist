@@ -1,4 +1,5 @@
 const { remote, shell } = require('electron');
+const Event = require("../misc/event-dispatcher");
 // noinspection JSUnusedLocalSymbols
 const logger = require("../misc/logger");
 const { ComicListView } = require('./comic-list-view');
@@ -37,19 +38,23 @@ class PulledView extends ComicListView {
     constructor (comicCollection) {
         super(comicCollection);
 
-        // noinspection JSUnusedGlobalSymbols1
         this.callerString = 'PulledView';
+        // noinspection JSUnusedGlobalSymbols
         this.navigatedFrom = false;
         this.listPrice = 0.0;
         this.listCount = 0;
-        this.selectedDate = null;
+        this._selectedDate = null;
+
+        this.selectedDateChangedEvent = new Event(this);
     }
 
     createChildren () {
         super.createChildren();
 
-        this.$datePicker = $('a#datepicker');
         this.$shareListButton = $('a#comic-list-share-button');
+        this.$datePicker = $('a#datepicker');
+        this.$prevDateButton = $('a#pulled-header-prev-date');
+        this.$nextDateButton = $('a#pulled-header-next-date');
         this.$listPrice = $('span#comic-pulled-info-price');
         this.$listCount = $('span#comic-pulled-info-count');
     }
@@ -57,9 +62,11 @@ class PulledView extends ComicListView {
     setupHandlers () {
         super.setupHandlers();
 
+        this.shareListButtonHandler = this.shareListButtonClick.bind(this);
         this.datePickerClickHandler = this.datePickerClick.bind(this);
-        this.isValidDateHandler = this.isValidDate.bind(this);
-        this.shareListButtonHandler = this.shareListButton.bind(this);
+        this.isValidDateHandler = this.isSelectableDate.bind(this);
+        this.prevDateButtonClickHandler = this.prevDateButtonClick.bind(this);
+        this.nextDateButtonClickHandler = this.nextDateButtonClick.bind(this);
     }
 
     enable () {
@@ -67,20 +74,34 @@ class PulledView extends ComicListView {
 
         this.$shareListButton.on('click', this.shareListButtonHandler);
         this.$datePicker.on('click', this.datePickerClickHandler);
+        this.$prevDateButton.on('click', this.prevDateButtonClickHandler);
+        this.$nextDateButton.on('click', this.nextDateButtonClickHandler);
     }
 
-    // TODO Add calendar icon next to list header (make link display: flex and flex-direction: column)
-    // TODO Add styling to list header link
+    get selectedDate () {
+        return this._selectedDate;
+    }
+
+    set selectedDate (date) {
+        if (compareDates(date, this._selectedDate)) return;
+
+        this._selectedDate = date;
+        this.updateDateElements();
+        this.selectedDateChangedEvent.notify(date);
+    }
+
     navigatedTo() {
+        this._selectedDate = this._comicCollection.currentDate;
         super.navigatedTo();
         this.assessPullList();
 
-        this.selectedDate = this._comicCollection.currentDate;
+        // noinspection JSUnusedGlobalSymbols
         this.navigatedFrom = false;
 
+        let pulledView = this;
 
         let field = document.getElementById('datepicker');
-        let picker = new Pikaday({
+        this.picker = new Pikaday({
             field: field,
             defaultDate: this.selectedDate,
             setDefaultDate: true,
@@ -94,17 +115,18 @@ class PulledView extends ComicListView {
                 weekdays      : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
                 weekdaysShort : ['Su','Mo','Tu','We','Th','Fr','Sa']
             },
-            onselect: function (date) {
-                field.date = picker.toString();
-            }.bind(this)
+            onSelect: (date) => pulledView.selectedDate = date
         });
 
-        console.log(this._comicCollection.availableDates);
+        this.picker.isOpen = false;
+
+        this.updateDateElements();
     }
 
     navigatingFrom () {
         super.navigatingFrom();
 
+        // noinspection JSUnusedGlobalSymbols
         this.navigatedFrom = true;
     }
 
@@ -120,7 +142,7 @@ class PulledView extends ComicListView {
         }
     }
 
-    shareListButton (event) {
+    shareListButtonClick (event) {
         event.preventDefault();
 
         let mailString = 'mailto:?subject=' +
@@ -135,13 +157,61 @@ class PulledView extends ComicListView {
 
     datePickerClick (event) {
         event.preventDefault();
+
+        if (!this.picker) return;
+
+        // noinspection JSUnresolvedVariable
+        if (this.picker.isOpen) {
+            event.delegateTarget.blur();
+            this.picker.isOpen = false;
+        }
+        else this.picker.isOpen = true;
     }
 
-    isValidDate (date) {
+    prevDateButtonClick (event) {
+        event.preventDefault();
+
+        let availableDates = this._comicCollection.availableDates;
+        let numDates = this._comicCollection.availableDates.length;
+        let dateElements = [];
+
+        for (let i = 0; i < numDates; i++) {
+            if (compareDates(availableDates[i], this.selectedDate)) {
+                this.selectedDate = dateElements.pop();
+                break;
+            }
+            else {
+                dateElements.push(availableDates[i]);
+            }
+        }
+
+        this.updateDateElements();
+    }
+
+    nextDateButtonClick (event) {
+        event.preventDefault();
+
+        let availableDates = this._comicCollection.availableDates;
+        let numDates = this._comicCollection.availableDates.length;
+        let dateElements = [];
+
+        for (let i = numDates - 1; i >=  0; i--) {
+            console.log(availableDates[i], this.selectedDate);
+            if (compareDates(availableDates[i], this.selectedDate)) {
+                this.selectedDate = dateElements.pop();
+                break;
+            }
+            else {
+                dateElements.push(availableDates[i]);
+            }
+        }
+
+        this.updateDateElements();
+    }
+
+    isSelectableDate (date) {
         for (let availableDate of this._comicCollection.availableDates) {
-            if (availableDate.getDate() === date.getDate() &&
-                availableDate.getMonth() === date.getMonth() &&
-                availableDate.getFullYear() === date.getFullYear()) return false;
+            if (compareDates(date, availableDate)) return false;
         }
 
         return true;
@@ -180,7 +250,7 @@ class PulledView extends ComicListView {
     }
 
     generateDateString () {
-        return 'Pull list for ' + this._comicCollection.currentDate.toLocaleDateString("en-US");
+        return 'Pull list for ' + this.selectedDate.toLocaleDateString("en-US");
     }
 
     defaultComicListFilter (comic) {
@@ -229,6 +299,33 @@ class PulledView extends ComicListView {
 
         return pullListString;
     }
+
+    updateDateElements () {
+        if (compareDates(this.selectedDate, this._comicCollection.latestDate)) {
+            this.$nextDateButton.addClass('disabled');
+        }
+        else {
+            this.$nextDateButton.removeClass('disabled');
+        }
+
+        if (compareDates(this.selectedDate, this._comicCollection.earliestDate)) {
+            this.$prevDateButton.addClass('disabled');
+        }
+        else {
+            this.$prevDateButton.removeClass('disabled');
+        }
+
+        // noinspection JSUnresolvedFunction
+        this.picker.setDate(this.selectedDate);
+        // noinspection JSUnresolvedFunction
+        this.picker.gotoDate(this.selectedDate);
+    }
+}
+
+function compareDates (d1, d2) {
+    return d1.getDate() === d2.getDate() &&
+        d1.getMonth() === d2.getMonth() &&
+        d1.getFullYear() === d2.getFullYear();
 }
 
 exports = module.exports = PulledView;

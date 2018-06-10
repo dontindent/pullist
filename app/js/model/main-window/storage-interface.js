@@ -133,18 +133,29 @@ class StorageInterface {
             dates.push(new Date(dateObject['ReleaseDate']));
         }
 
-        if (typeof this._datesCallback === 'function') this._datesCallback(dates);
+        if (typeof this._datesCallback === 'function') {
+            let callback = this._datesCallback;
+            this._datesCallback = null;
+            callback(dates);
+        }
     }
 
     loadResponse (event, message) {
         logger.log('Load complete', caller);
-        if (typeof this._loadCallback === 'function') this._loadCallback(message);
+        if (typeof this._loadCallback === 'function') {
+            let callback = this._loadCallback;
+            this._loadCallback = null;
+            callback(message);
+        }
     }
-
 
     deleteResponse (event, message) {
         logger.log('Delete complete', caller);
-        if (typeof this._deleteCallback === 'function') this._deleteCallback(message);
+        if (typeof this._deleteCallback === 'function') {
+            let callback = this._datesCallback;
+            this._datesCallback = null;
+            callback(message);
+        }
     }
 }
 

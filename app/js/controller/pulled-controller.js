@@ -5,12 +5,20 @@ class PulledController extends Controller {
         super(model, view);
     }
 
-    setupHandlers() {
+    setupHandlers () {
         super.setupHandlers();
+
+        this.viewSelectedDateChangedHandler = this.viewSelectedDateChanged.bind(this);
     }
 
-    enable() {
+    enable () {
         super.enable();
+
+        this._view.selectedDateChangedEvent.attach(this.viewSelectedDateChangedHandler);
+    }
+
+    viewSelectedDateChanged (sender, date) {
+        this._model.loadComicsForDate(date);
     }
 }
 

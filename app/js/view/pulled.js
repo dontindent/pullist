@@ -142,6 +142,12 @@ class PulledView extends ComicListView {
         }
     }
 
+    retrievedComics (event) {
+        super.retrievedComics (event);
+
+        this.assessPullList();
+    }
+
     shareListButtonClick (event) {
         event.preventDefault();
 
@@ -149,8 +155,6 @@ class PulledView extends ComicListView {
             encodeURIComponent('Pull List for ' + this._comicCollection.currentDate.toLocaleDateString("en-US")) +
             '&body=' +
             encodeURIComponent(this.generatePullListString());
-
-        console.log(mailString);
 
         shell.openExternal(mailString);
     }
@@ -261,6 +265,7 @@ class PulledView extends ComicListView {
         this.listPrice = 0;
         this.listCount = 0;
 
+        console.log(this._comicCollection.comicDict);
         for (let comicKey in this._comicCollection.comicDict) {
             if (!this._comicCollection.comicDict.hasOwnProperty(comicKey)) continue;
 
@@ -282,18 +287,16 @@ class PulledView extends ComicListView {
         this.$listCount.text(countString);
     }
 
-    // TODO Ensure that string list order matches screen order
     generatePullListString() {
         let pullListString = '';
 
-        for (let comicKey in this._comicCollection.comicDict) {
-            if (!this._comicCollection.comicDict.hasOwnProperty(comicKey)) continue;
+        for (let publisher in this._comicCollection.comicsByPublisher) {
+            if (!this._comicCollection.comicsByPublisher.hasOwnProperty(publisher)) continue;
 
-            let comic = this._comicCollection.comicDict[comicKey];
-
-            if (this.defaultComicListFilter(comic)) {
-                pullListString += comic.title + '\n';
-                console.log(pullListString, comic);
+            for (let comic of this._comicCollection.comicsByPublisher[publisher]) {
+                if (this.defaultComicListFilter(comic)) {
+                    pullListString += comic.title + '\n';
+                }
             }
         }
 

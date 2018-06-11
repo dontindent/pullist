@@ -1,9 +1,12 @@
 let Event = require('../misc/event-dispatcher');
+let logger = require('../misc/logger');
 
 class View {
     constructor () {
+        this.callerString = 'View';
         this._readytoView = false;
         this.readyToViewEvent = new Event (this);
+        this.navigatedToEvent = new Event (this);
     }
 
     init() {
@@ -25,7 +28,10 @@ class View {
     }
 
     navigatedTo () {
+        logger.log('Navigated to, starting initialization', this.callerString);
         this.init();
+
+        this.navigatedToEvent.notify();
     }
 
     navigatingFrom () {

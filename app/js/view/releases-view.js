@@ -16,6 +16,7 @@ class ReleasesView extends ComicListView {
         this.retrieveActive = true;
         this.processedComics = 0;
 
+        this.notLatestDateEvent = new Event(this);
         this.retrieveComicsEvent = new Event(this);
     }
 
@@ -37,16 +38,17 @@ class ReleasesView extends ComicListView {
         super.enable();
 
         this.$retrieveButton.on('click', this.retrieveComicsButtonHandler);
-
-        this._comicCollection.comicsStoredEvent.attach(this.comicsStoredHandler)
+        this._comicCollection.comicsStoredEvent.attach(this.comicsStoredHandler);
     }
 
     navigatedTo () {
-        if (this._comicCollection.currentDate !== this._comicCollection.latestDate) {
-            this._comicCollection.loadComicsForDate(this._comicCollection.latestDate);
-        }
-
         super.navigatedTo();
+
+        if (this._comicCollection.latestDate) {
+            if (!Date.compareDates(this._comicCollection.currentDate, this._comicCollection.latestDate)) {
+                this.notLatestDateEvent.notify();
+            }
+        }
     }
 
     navigatingFrom () {
@@ -61,7 +63,7 @@ class ReleasesView extends ComicListView {
 
     comicsUnstable (sender, args) {
         super.comicsUnstable(sender, args);
-        this.$retrieveButton.addClass('disabled')
+        this.$retrieveButton.addClass('disabled');
     }
 
     // TODO Make sure that other views can't disrupt the comic retrieval process...
@@ -78,8 +80,15 @@ class ReleasesView extends ComicListView {
         }
     }
 
-    retrievedComics () {
-        super.retrievedComics();
+    retrievedComics (sender, args) {
+        super.retrievedComics(sender, args);
+
+        if (!Date.compareDates(this._comicCollection.currentDate, this._comicCollection.latestDate)) {
+            this.notLatestDateEvent.notify();
+        }        
+        else if (this.state.saved && this.readyToRestore()) {
+            this.state.restore(this);
+        }
     }
 
     comicListProcessed (sender, numComics) {
@@ -114,6 +123,14 @@ class ReleasesView extends ComicListView {
         if (Utilities.exists(this._comicCollection.currentDate)) {
             return 'Releases for ' + this._comicCollection.currentDate.toLocaleDateString("en-US");
         }
+    }
+
+    readyToRestore () {
+        return Date.compareDates(this._comicCollection.currentDate, this._comicCollection.latestDate);
+    }
+
+    shouldCreateList () {
+        return Date.compareDates(this._comicCollection.currentDate, this._comicCollection.latestDate);
     }
 }
 

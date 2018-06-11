@@ -2,6 +2,7 @@ const { remote, shell } = require('electron');
 const Event = require("../misc/event-dispatcher");
 // noinspection JSUnusedLocalSymbols
 const logger = require("../misc/logger");
+const Utilities = require('../misc/utilities');
 const { ComicListView } = require('./comic-list-view');
 const { Alert } = require('./alert');
 const Pikaday = require('pikaday');
@@ -85,7 +86,7 @@ class PulledView extends ComicListView {
     }
 
     set selectedDate (date) {
-        if (compareDates(date, this._selectedDate)) return;
+        if (Date.compareDates(date, this._selectedDate)) return;
 
         this._selectedDate = date;
         this.updateDateElements();
@@ -94,12 +95,11 @@ class PulledView extends ComicListView {
 
     navigatedTo() {
         this._selectedDate = this._comicCollection.currentDate;
+
         super.navigatedTo();
-        this.assessPullList();
 
         // noinspection JSUnusedGlobalSymbols
         this.navigatedFrom = false;
-
         let pulledView = this;
 
         let field = document.getElementById('datepicker');
@@ -119,7 +119,6 @@ class PulledView extends ComicListView {
             },
             onSelect: (date) => pulledView.selectedDate = date
         });
-
         this.picker.isOpen = false;
 
         this.updateDateElements();
@@ -144,8 +143,8 @@ class PulledView extends ComicListView {
         }
     }
 
-    retrievedComics (event) {
-        super.retrievedComics (event);
+    retrievedComics (sender, args) {
+        super.retrievedComics (sender, args);
 
         this.assessPullList();
     }
@@ -182,7 +181,7 @@ class PulledView extends ComicListView {
         let dateElements = [];
 
         for (let i = 0; i < numDates; i++) {
-            if (compareDates(availableDates[i], this.selectedDate)) {
+            if (Date.compareDates(availableDates[i], this.selectedDate)) {
                 this.selectedDate = dateElements.pop();
                 break;
             }
@@ -202,8 +201,7 @@ class PulledView extends ComicListView {
         let dateElements = [];
 
         for (let i = numDates - 1; i >=  0; i--) {
-            console.log(availableDates[i], this.selectedDate);
-            if (compareDates(availableDates[i], this.selectedDate)) {
+            if (Date.compareDates(availableDates[i], this.selectedDate)) {
                 this.selectedDate = dateElements.pop();
                 break;
             }
@@ -217,7 +215,7 @@ class PulledView extends ComicListView {
 
     isSelectableDate (date) {
         for (let availableDate of this._comicCollection.availableDates) {
-            if (compareDates(date, availableDate)) return false;
+            if (Date.compareDates(date, availableDate)) return false;
         }
 
         return true;
@@ -286,6 +284,8 @@ class PulledView extends ComicListView {
         let countString = this.listCount !== 1 ? this.listCount + ' comics in list' : this.listCount + ' comic in list';
 
         this.$listCount.text(countString);
+
+        logger.log('Assessed pull list', this.callerString);
     }
 
     generatePullListString() {
@@ -317,14 +317,14 @@ class PulledView extends ComicListView {
 
         this.$calendarIcon.show();
 
-        if (compareDates(this.selectedDate, this._comicCollection.latestDate)) {
+        if (Date.compareDates(this.selectedDate, this._comicCollection.latestDate)) {
             this.$nextDateButton.addClass('disabled');
         }
         else {
             this.$nextDateButton.removeClass('disabled');
         }
 
-        if (compareDates(this.selectedDate, this._comicCollection.earliestDate)) {
+        if (Date.compareDates(this.selectedDate, this._comicCollection.earliestDate)) {
             this.$prevDateButton.addClass('disabled');
         }
         else {

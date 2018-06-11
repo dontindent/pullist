@@ -8,6 +8,8 @@ const logger = require('../../misc/logger');
 const userPrefs = remote.getGlobal('userPrefs');
 const sender = 'ComicCollection';
 
+let tempDate = null;
+
 class ComicCollection {
     constructor (comicService) {
         this._comicService = comicService;
@@ -57,7 +59,6 @@ class ComicCollection {
 
     set earliestDate (value) {
         this._earliestDate = dateCheck(value);
-        console.log(this._earliestDate);
     }
 
     get latestDate () {
@@ -85,24 +86,23 @@ class ComicCollection {
     loadComicsForDate (date) {
         if (!storageInterface.storageReady) return;
 
-        if (!Utilities.exists(date)) {
-            this.retrievedComicsEvent.notify();
-            return;
-        }
-
-        if (!(date instanceof Date)) {
+        if (!Utilities.exists(date) || !(date instanceof Date)) {
             throw 'Date object required.';
         }
 
+        this.retrievedComicsEvent.clear();
+
         storageInterface.sendLoadRequest(date.valueOf(), this.loadCompleteHandler);
-        this.currentDate = date;
+        tempDate = date;
     }
 
     populateComics () {
         let cboCopy = Object.assign({}, this._comicsByOriginal);
+        this.retrievedComicsEvent.clear();
         this._comicService.getNewComicList(cboCopy).done(this.comicsProcessed.bind(this));
     }
 
+    /** Called after a new comics list has been retreived by the comic service. */
     comicsProcessed (args) {
         let [ comicDict, publishers ] = args;
 
@@ -227,10 +227,13 @@ class ComicCollection {
         if (!comicList.length) {
             this.currentDate = null;
         }
+        else {
+            this.currentDate = tempDate;
+            tempDate = null;
+        }
 
         logger.log('Loaded ' + comicList.length + ' comics', sender);
 
-        this.latestDateUpdatedEvent.notify();
         this.createSortedLists(publishers);
         this.retrievedComicsEvent.notify();
     }

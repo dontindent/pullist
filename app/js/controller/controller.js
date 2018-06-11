@@ -1,3 +1,5 @@
+//@ts-check
+
 class Controller {
     constructor (model, view) {
         this._model = model;
@@ -7,18 +9,23 @@ class Controller {
         this.init();
     }
 
-    init() {
+    init () {
         this.setupHandlers();
         this.enable();
     }
 
-    setupHandlers() {
-
+    setupHandlers () {
+        this.navigatedToHandler = this.onNavigatedTo.bind(this);
     }
 
-    enable() {
+    enable () {
+        this._view.navigatedToEvent.attach(this.navigatedToHandler);
+    }
+
+    onNavigatedTo (sender, args) {
 
     }
 }
 
+//@ts-ignore
 exports = module.exports = Controller;

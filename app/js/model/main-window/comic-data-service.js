@@ -1,3 +1,5 @@
+//@ts-check
+
 const { remote } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
@@ -8,6 +10,7 @@ const newReleasesUrl = 'https://www.previewsworld.com/shipping/newreleases.txt';
 const detailUrlBase = 'http://www.previewsworld.com/Catalog/';
 const previewsWorldBase = "http://www.previewsworld.com";
 
+//@ts-ignore
 // noinspection JSUnresolvedVariable
 global.detailUrlBase = detailUrlBase;
 
@@ -238,6 +241,7 @@ function getComicDetails(comicService, comic, updateService = true) {
                 descriptionString += '\n';
             }
             else {
+                //@ts-ignore
                 descriptionString += this.textContent ? this.textContent.trim() : this.innerHTML.trim();
             }
         });
@@ -295,4 +299,5 @@ function removeNonComics(comicService) {
     logger.log([ 'Pruned', oldCount - comicService.comicCount, 'non-comics from the list' ], comicService.callerString);
 }
 
+//@ts-ignore
 exports = module.exports = ComicDataService;

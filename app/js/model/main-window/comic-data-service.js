@@ -32,7 +32,7 @@ class ComicDataService {
         this.processedComics = 0;
         this.comicDict = {};
 
-        let includeOnlyComics = userPrefs['includeOnlyComics'];
+        let includeOnlyComics = userPrefs.includeOnlyComics;
 
         if (Utilities.exists(comicsByOriginalString)) { // noinspection JSUnusedGlobalSymbols
             this.comicsByOriginal = comicsByOriginalString;
@@ -165,7 +165,7 @@ function processList(comicService, rawList) {
         else {
             if (!(key in variantPool)) {
                 variantPool[key] = [ comic ];
-                variantKeys.push(key)
+                variantKeys.push(key);
             }
             else variantPool[key].push(comic);
         }
@@ -184,6 +184,8 @@ function processList(comicService, rawList) {
         for (let i = 1; i < variants.length; i++) {
             main.addVariant(variants[i]);
         }
+
+        comicService.comicDict[variantKey] = main;
     }
 
     comicService.retrievalDate = date;

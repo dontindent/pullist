@@ -6,6 +6,8 @@ const config = require(path.join(__dirname, 'package.json'));
 const logger = require('./app/js/misc/logger');
 const ipcChannels = require('./app/js/misc/ipc-channels');
 
+app.commandLine.appendSwitch('remote-debugging-port', '9222');
+
 let mainWindow = null;
 let storageWindow = null;
 
@@ -102,7 +104,7 @@ function createWindows (width, height) {
     }));
 
     mainWindow.webContents.openDevTools({mode: 'undocked'});
-    storageWindow.webContents.openDevTools({mode: 'undocked'});
+    // storageWindow.webContents.openDevTools({mode: 'undocked'});
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
@@ -132,10 +134,10 @@ function createWindows (width, height) {
             // Open window as modal
             event.preventDefault();
 
-            delete options['x'];
-            delete options['y'];
-            delete options['minWidth'];
-            delete options['minHeight'];
+            delete options.x;
+            delete options.y;
+            delete options.minWidth;
+            delete options.minHeight;
 
             Object.assign(options, {
                 parent: mainWindow,

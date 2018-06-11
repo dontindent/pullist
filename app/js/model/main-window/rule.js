@@ -166,8 +166,6 @@ class RuleGroup {
     apply (comic) {
         if (comic.reprint && !this.allowReprints) return;
 
-        console.log(this.rules);
-
         for (let rule of this.rules) {
             let result = rule.apply(comic);
 

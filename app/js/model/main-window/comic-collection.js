@@ -57,6 +57,7 @@ class ComicCollection {
 
     set earliestDate (value) {
         this._earliestDate = dateCheck(value);
+        console.log(this._earliestDate);
     }
 
     get latestDate () {
@@ -116,7 +117,8 @@ class ComicCollection {
 
         this.latestDate = this._comicService.retrievalDate;
         this.currentDate = this.latestDate;
-        this.latestDateUpdatedEvent.notify();
+        if (!this.earliestDate) this.earliestDate = this.latestDate;
+
         this.retrievedComicsEvent.notify();
 
         if (storageInterface.storageReady) this.storeCollection();
@@ -266,7 +268,7 @@ function dateCheck (value) {
         return value;
     }
     else {
-        throw value + ' is not convertible to Date.'
+        throw value + ' is not convertible to Date.';
     }
 }
 

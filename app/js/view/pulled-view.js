@@ -54,6 +54,7 @@ class PulledView extends ComicListView {
 
         this.$shareListButton = $('a#comic-list-share-button');
         this.$datePicker = $('a#datepicker');
+        this.$calendarIcon = $('i#calendar-icon');
         this.$prevDateButton = $('a#pulled-header-prev-date');
         this.$nextDateButton = $('a#pulled-header-next-date');
         this.$listPrice = $('span#comic-pulled-info-price');
@@ -242,7 +243,7 @@ class PulledView extends ComicListView {
         let superUnPull = super.unPullSelectedModelComic.bind(this);
 
         this.confirmUnPull(comic, event, superUnPull);
-    };
+    }
 
     confirmUnPull (comic, event, funIfTrue) {
         let title = 'Unpull comic?';
@@ -304,6 +305,18 @@ class PulledView extends ComicListView {
     }
 
     updateDateElements () {
+
+        // If no date is selected, we assume that no data exists in the database, and that there are no other pull lists to select from
+        if (!this.selectedDate) {
+            this.$calendarIcon.hide();
+            this.$nextDateButton.addClass('disabled');
+            this.$prevDateButton.addClass('disabled');
+
+            return;
+        }
+
+        this.$calendarIcon.show();
+
         if (compareDates(this.selectedDate, this._comicCollection.latestDate)) {
             this.$nextDateButton.addClass('disabled');
         }

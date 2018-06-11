@@ -6,6 +6,32 @@ class View {
         this.readyToViewEvent = new Event (this);
     }
 
+    init() {
+        this.createChildren();
+        this.setupHandlers();
+        this.enable();
+    }
+
+    createChildren () {
+
+    }
+
+    setupHandlers () {
+
+    }
+
+    enable () {
+
+    }
+
+    navigatedTo () {
+        this.init();
+    }
+
+    navigatingFrom () {
+
+    }
+
     get readyToView () {
         return this._readytoView;
     }

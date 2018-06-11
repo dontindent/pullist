@@ -169,12 +169,6 @@ class ComicListView extends View  {
         this.callerString = 'ComicListView';
     }
 
-    init() {
-        this.createChildren();
-        this.setupHandlers();
-        this.enable();
-    }
-
     createChildren() {
         this.$searchAndButtons = $('div#search-and-buttons');
         this.$searchButton = $('a#comic-list-search-button');
@@ -249,7 +243,7 @@ class ComicListView extends View  {
     }
 
     navigatedTo () {
-        this.init();
+        super.navigatedTo();
 
         if (this._comicCollection.retrievedComicsEvent.fired) {
             this.retrievedComics();
@@ -261,6 +255,8 @@ class ComicListView extends View  {
     }
 
     navigatingFrom () {
+        super.navigatingFrom();
+
         this.state.save(this);
 
         this.$searchInput.off('focusin', this.searchInputFocusInHandler);

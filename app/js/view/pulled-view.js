@@ -34,6 +34,7 @@ const isWindows = remote.getGlobal('isWindows');
 // .net native extension for node.js
 // https://stackoverflow.com/questions/11257690/net-native-extension-for-node-js
 
+// TODO Save and restore state based on navigation
 class PulledView extends ComicListView {
     constructor (comicCollection) {
         super(comicCollection);
@@ -265,7 +266,6 @@ class PulledView extends ComicListView {
         this.listPrice = 0;
         this.listCount = 0;
 
-        console.log(this._comicCollection.comicDict);
         for (let comicKey in this._comicCollection.comicDict) {
             if (!this._comicCollection.comicDict.hasOwnProperty(comicKey)) continue;
 

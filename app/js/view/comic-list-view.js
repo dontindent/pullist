@@ -2,6 +2,7 @@ const View = require('./view');
 
 const { remote, ipcRenderer, shell } = require('electron');
 const userPrefs = remote.getGlobal('userPrefs');
+const Event = require('../misc/event-dispatcher');
 const logger = require('../misc/logger');
 const storageInterface = require('../model/main-window/storage-interface');
 const Utilities = require('../misc/utilities');
@@ -154,10 +155,12 @@ class ComicListViewState {
     }
 }
 
+// TODO Ensure that state is properly restored when comic list date has been changed
 class ComicListView extends View  {
     constructor (comicCollection) {
         super();
 
+        this.callerString = 'ComicListView';
         this._comicCollection = comicCollection;
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
@@ -166,7 +169,8 @@ class ComicListView extends View  {
         this.numComics = 0;
         this.state = new ComicListViewState();
 
-        this.callerString = 'ComicListView';
+        this.refreshedListEvent = new Event(this);
+
     }
 
     createChildren() {
@@ -467,6 +471,8 @@ class ComicListView extends View  {
 
             if (comicCount) $publisherTemplateClone.appendTo($comicList);
         }
+
+        this.refreshedListEvent.notify()
     }
 
     comicElementSelected(event) {

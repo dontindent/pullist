@@ -8,8 +8,10 @@ const Utilities = require('../misc/utilities');
 const ipcChannels = require('../misc/ipc-channels');
 
 class RulesView extends View  {
-    constructor () {
+    constructor (ruleCollection) {
         super();
+
+        this.ruleCollection = ruleCollection;
     }
 
     createChildren() {
@@ -32,6 +34,8 @@ class RulesView extends View  {
 
     navigatedTo () {
         super.navigatedTo();
+
+        console.log(this.ruleCollection.data);
     }
 
     navigatingFrom () {

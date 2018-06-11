@@ -6,10 +6,13 @@ const { Color } = require('../misc/color.js');
 const Injector = require('../misc/injector');
 const ReleasesController = require('../controller/releases-controller');
 const PulledController = require('../controller/pulled-controller');
+const RulesController = require('../controller/rules-controller');
 const ComicDataService = require('../model/main-window/comic-data-service');
 const ComicCollection = require('../model/main-window/comic-collection');
+const RuleCollection = require('../model/main-window/rule-collection');
 const ReleasesView = require('./releases-view');
 const PulledView = require('./pulled-view');
+const RulesView = require('./rules-view');
 const storageWindow = remote.getGlobal ('storageWindow');
 const userPrefs = remote.getGlobal('userPrefs');
 const ipcChannels = require('../misc/ipc-channels');
@@ -82,13 +85,17 @@ class IndexView {
     initMVC () {
         Injector.register('ComicDataService', ComicDataService);
         Injector.register('ComicCollection', ComicCollection, [ 'ComicDataService' ]);
+        Injector.register('RuleCollection', RuleCollection);
         Injector.register('ReleasesView', ReleasesView, [ 'ComicCollection' ]);
         Injector.register('PulledView', PulledView, [ 'ComicCollection' ]);
-        Injector.register('ReleasesController', ReleasesController, [ 'ComicCollection', 'ReleasesView' ]);
+        Injector.register('RulesView', RulesView, [ 'RuleCollection' ]);
+        Injector.register('ReleasesController', ReleasesController, [ 'ComicCollection', 'ReleasesView', 'RuleCollection' ]);
         Injector.register('PulledController', PulledController, [ 'ComicCollection', 'PulledView' ]);
+        Injector.register('RulesController', RulesController, [ 'RuleCollection', 'RulesView' ]);
 
         this._controllers['releases.html'] = Injector.resolve('ReleasesController');
         this._controllers['pulled.html'] = Injector.resolve('PulledController');
+        this._controllers['rules.html'] = Injector.resolve('RulesController');
     }
 
     viewReady () {

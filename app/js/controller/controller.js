@@ -19,10 +19,6 @@ class Controller {
     enable() {
 
     }
-
-    retrieveComics() {
-
-    }
 }
 
 exports = module.exports = Controller;

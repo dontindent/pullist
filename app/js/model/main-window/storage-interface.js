@@ -1,5 +1,3 @@
-//@ts-check
-
 const { remote, ipcRenderer } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const ipcChannels = require('../../misc/ipc-channels');
@@ -15,7 +13,6 @@ class StorageInterface {
         this._storageQueue = [];
         this._storageCallbacksByOriginal = {};
         this._loadCallbacks = [];
-        this._loadCallback = null;
         this._deleteCallback = null;
         this._datesCallback = null;
         this._storeInProgress = false;
@@ -53,34 +50,46 @@ class StorageInterface {
         ipcRenderer.on(ipcChannels.datesResponse, this.datesResponseHandler);
     }
 
+    get storeInProgress () { 
+        return this._storeInProgress;
+    }
+
+    set storeInProgress (value) {
+        if (this._storeInProgress !== value ) {
+            this._storeInProgress = value;
+
+            if (this._storeInProgress === true) {
+                this.storageUnstableEvent.notify(null);
+            }
+            // else {
+            //     this.storageStableEvent.notify(null);
+            // }
+        }
+    }
+
     storageReadyFunction () {
         this.storageReady = true;
         this.storageReadyEvent.notify(null);
     }
 
     sendStorageRequest (comic, callback) {
-        this.storageUnstableEvent.notify(null);
-
         this._storageQueue.push(comic);
         this._storageCallbacksByOriginal[comic.originalString] = callback;
 
         this.processStorageQueue();
     }
 
-    processStorageQueue() {
-        if (!this._storeInProgress) {
-            let comicToStore = this._storageQueue.shift();
+    processStorageQueue () {
+        if (!this.storeInProgress) {
+            let comicToStore = prepComicForSend(this._storageQueue.shift());
 
-            // console.log(comicToStore);
-            logger.log(['Sending store request for:', comicToStore.originalString], this.callerString);
+            logger.log([ 'Sending store request for:', comicToStore.originalString ], this.callerString);
             storageWindow.webContents.send(ipcChannels.storeRequest, comicToStore);
-            this._storeInProgress = true;
+            this.storeInProgress = true;
         }
     }
 
     sendDatesRequest (callback) {
-        // if (this._loadCallback) return false;
-
         this._datesCallback = callback;
 
         logger.log([ 'Sending request for all available dates' ], this.callerString);
@@ -89,11 +98,8 @@ class StorageInterface {
         return true;
     }
 
-    sendLoadRequest(date, callback) {
-        // if (this._loadCallback) return false;
-
+    sendLoadRequest (date, callback) {
         this._loadCallbacks.push(callback);
-        this._loadCallback = callback;
 
         logger.log([ 'Sending load request for comics from:', new Date(date) ], this.callerString);
         storageWindow.webContents.send(ipcChannels.loadRequest, date);
@@ -101,11 +107,8 @@ class StorageInterface {
         return true;
     }
 
-    sendLoadLastPulledRequest(series, number, callback) {
-        // if (this._loadCallback) return false;
-
+    sendLoadLastPulledRequest (series, number, callback) {
         this._loadCallbacks.push(callback);
-        this._loadCallback = callback;
 
         logger.log([ 'Sending load request for previous comic to', series, number ], this.callerString);
         storageWindow.webContents.send(ipcChannels.loadLastRequest, { series: series, number: number });
@@ -113,7 +116,7 @@ class StorageInterface {
         return true;
     }
 
-    sendDeleteRequest(date, callback) {
+    sendDeleteRequest (date, callback) {
         this._deleteCallback = callback;
 
         logger.log([ 'Sending delete request for comics not from:', date ], this.callerString);
@@ -132,7 +135,7 @@ class StorageInterface {
         let index = this._storageQueue.indexOf(storedComic);
         if (index !== -1) this._storageQueue.splice(index, 1);
 
-        this._storeInProgress = false;
+        this.storeInProgress = false;
 
         if (!this._storageQueue.length) {
             this.storageStableEvent.notify(null);
@@ -179,11 +182,18 @@ class StorageInterface {
     deleteResponse (event, message) {
         logger.log('Delete complete', this.callerString);
         if (typeof this._deleteCallback === 'function') {
-            let callback = this._datesCallback;
-            this._datesCallback = null;
+            let callback = this._deleteCallback;
+            this._deleteCallback = null;
             callback(message);
         }
     }
+}
+
+function prepComicForSend (comic) {
+    let cloneComic = Object.assign({}, comic);
+    delete cloneComic._storageInterface;
+
+    return cloneComic;
 }
 
 const storageInterface = new StorageInterface();

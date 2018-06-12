@@ -10,6 +10,10 @@ class Injector {
 
         this._registry[serviceType] = service;
         this._dependencies[serviceType] = dependencies;
+
+        if (typeof service === typeof {}) {
+            this._instances[serviceType] = service;
+        }
     }
 
     resolve (serviceType) {

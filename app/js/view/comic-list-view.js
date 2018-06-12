@@ -4,7 +4,6 @@ const { remote, ipcRenderer, shell } = require('electron');
 const userPrefs = remote.getGlobal('userPrefs');
 const Event = require('../misc/event-dispatcher');
 const logger = require('../misc/logger');
-const storageInterface = require('../model/main-window/storage-interface');
 // eslint-disable-next-line no-unused-vars
 const Utilities = require('../misc/utilities');
 const ipcChannels = require('../misc/ipc-channels');
@@ -171,13 +170,13 @@ class ComicListViewState {
     }
 }
 
-// TODO Implement determining last pulled issue
 class ComicListView extends View  {
-    constructor (comicCollection) {
+    constructor (comicCollection, storageInterface) {
         super();
 
         this.callerString = 'ComicListView';
         this._comicCollection = comicCollection;
+        this._storageInterface = storageInterface;
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
         this._filtered = false;
@@ -242,8 +241,9 @@ class ComicListView extends View  {
         this._comicCollection.retrievedComicsEvent.attach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.attach(this.comicListProcessedHandler);
         this._comicCollection.comicProcessedEvent.attach(this.comicProcessedHandler);
-        storageInterface.storageUnstableEvent.attach(this.comicsUnstableHandler);
-        storageInterface.storageStableEvent.attach(this.comicsStableHandler);
+        this._comicCollection.lastIssueUpdatedEvent.attach(this.modelComicLastPulledUpdateHandler);
+        this._storageInterface.storageUnstableEvent.attach(this.comicsUnstableHandler);
+        this._storageInterface.storageStableEvent.attach(this.comicsStableHandler);
 
         //@ts-ignore
         this.$comicListWrapper.resizable({
@@ -278,8 +278,8 @@ class ComicListView extends View  {
         this._comicCollection.retrievedComicsEvent.unattach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.unattach(this.comicListProcessedHandler);
         this._comicCollection.comicProcessedEvent.unattach(this.comicProcessedHandler);
-        storageInterface.storageUnstableEvent.unattach(this.comicsUnstableHandler);
-        storageInterface.storageStableEvent.unattach(this.comicsStableHandler);
+        this._storageInterface.storageUnstableEvent.unattach(this.comicsUnstableHandler);
+        this._storageInterface.storageStableEvent.unattach(this.comicsStableHandler);
 
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
@@ -297,7 +297,7 @@ class ComicListView extends View  {
 
             comic.pullStatusChangedEvent.unattach(this.modelComicPulledHandler);
             comic.watchStatusChangedEvent.unattach(this.modelComicWatchedHandler);
-            comic.lastIssueUpdatedEvent.unattach(this.modelComicLastPulledUpdateHandler);
+            // comic.lastIssueUpdatedEvent.unattach(this.modelComicLastPulledUpdateHandler);
         }
     }
 
@@ -476,7 +476,6 @@ class ComicListView extends View  {
 
                     comic.pullStatusChangedEvent.attach(view.modelComicPulledHandler);
                     comic.watchStatusChangedEvent.attach(view.modelComicWatchedHandler);
-                    comic.lastIssueUpdatedEvent.attach(view.modelComicLastPulledUpdateHandler);
 
                     $comicListTemplateClone[0].comic = comic;
 

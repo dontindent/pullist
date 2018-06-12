@@ -90,5 +90,10 @@ lerna-debug.log
 .DS_Store
 Thumbs.db
 
-@ electron-packager
+# electron-packager
 Pullist-win32-ia32
+
+# temp - disable testing
+*/test/*
+test-*
+spectron-*

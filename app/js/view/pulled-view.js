@@ -1,12 +1,13 @@
 const { remote, shell } = require('electron');
 const Event = require("../misc/event-dispatcher");
-// noinspection JSUnusedLocalSymbols
 const logger = require("../misc/logger");
+// eslint-disable-next-line no-unused-vars
 const Utilities = require('../misc/utilities');
 const { ComicListView } = require('./comic-list-view');
 const { Alert } = require('./alert');
 const Pikaday = require('pikaday');
 
+// eslint-disable-next-line no-unused-vars
 const isWindows = remote.getGlobal('isWindows');
 
 // Using Native Windows Features from Electron
@@ -37,8 +38,8 @@ const isWindows = remote.getGlobal('isWindows');
 
 // TODO Save and restore state based on navigation
 class PulledView extends ComicListView {
-    constructor (comicCollection) {
-        super(comicCollection);
+    constructor (comicCollection, storageInterface) {
+        super(comicCollection, storageInterface);
 
         this.callerString = 'PulledView';
         // noinspection JSUnusedGlobalSymbols
@@ -336,12 +337,6 @@ class PulledView extends ComicListView {
         // noinspection JSUnresolvedFunction
         this.picker.gotoDate(this.selectedDate);
     }
-}
-
-function compareDates (d1, d2) {
-    return d1.getDate() === d2.getDate() &&
-        d1.getMonth() === d2.getMonth() &&
-        d1.getFullYear() === d2.getFullYear();
 }
 
 exports = module.exports = PulledView;

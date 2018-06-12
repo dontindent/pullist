@@ -1,5 +1,3 @@
-const Comic = require('../model/main-window/comic');
-
 class Controller {
     constructor (model, view) {
         this._model = model;
@@ -16,14 +14,14 @@ class Controller {
 
     setupHandlers () {
         this.navigatedToHandler = this.onNavigatedTo.bind(this);
-        this.nnedLastComicPulledHandler = this.onNeedLastComicPulled.bind(this);
+        this.needLastComicPulledHandler = this.onNeedLastComicPulled.bind(this);
     }
 
     enable () {
         this._view.navigatedToEvent.attach(this.navigatedToHandler);
 
         if ('needLastComicPulledEvent' in this._view) {
-            this._view.needLastComicPulledEvent.attach(this.nnedLastComicPulledHandler);
+            this._view.needLastComicPulledEvent.attach(this.needLastComicPulledHandler);
         }
     }
 
@@ -33,9 +31,9 @@ class Controller {
     }
 
     onNeedLastComicPulled(sender, args) {
-        let comic = typeof args === typeof new Comic() ? args : null;
+        let comic = args;
 
-        comic.loadLastIssueData();
+        this._model.loadLastPulledIssue(comic);
     }
 }
 

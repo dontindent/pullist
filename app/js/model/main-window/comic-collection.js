@@ -2,8 +2,6 @@ const { remote } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
 const Utilities = require('../../misc/utilities');
-
-const storageInterface = require('./storage-interface');
 const logger = require('../../misc/logger');
 // eslint-disable-next-line no-unused-vars
 const userPrefs = remote.getGlobal('userPrefs');
@@ -12,9 +10,11 @@ const sender = 'ComicCollection';
 let tempDate = null;
 
 class ComicCollection {
-    constructor (comicService) {
+    constructor (comicService, storageInterface) {
         this._comicService = comicService;
+        this._storageInterface = storageInterface;
         this._comicsByOriginal = {};
+        this._comicsLastPulledQueue = [];
 
         this._earliestDate = null;
         this._latestDate = null;
@@ -30,6 +30,7 @@ class ComicCollection {
         this.retrievedComicsEvent = new Event(this, true);
         this.comicsStoredEvent = new Event (this, true);
         this.comicStoredEvent = new Event (this, true);
+        this.lastIssueUpdatedEvent = new Event(this, true);
         this.comicListProcessedEvent = this._comicService.comicListProcessedEvent;
         this.comicProcessedEvent = this._comicService.comicProcessedEvent;
 
@@ -51,7 +52,7 @@ class ComicCollection {
     }
 
     enable() {
-        storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
+        this._storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
     }
 
     get earliestDate () {
@@ -81,11 +82,11 @@ class ComicCollection {
     }
 
     storageReady() {
-        storageInterface.sendDatesRequest(this.datesCompleteHandler);
+        this._storageInterface.sendDatesRequest(this.datesCompleteHandler);
     }
 
     loadComicsForDate (date) {
-        if (!storageInterface.storageReady) return;
+        if (!this._storageInterface.storageReady) return;
 
         if (!Utilities.exists(date) || !(date instanceof Date)) {
             throw 'Date object required.';
@@ -93,7 +94,7 @@ class ComicCollection {
 
         this.retrievedComicsEvent.clear();
 
-        storageInterface.sendLoadRequest(date.valueOf(), this.loadCompleteHandler);
+        this._storageInterface.sendLoadRequest(date.valueOf(), this.loadCompleteHandler);
         tempDate = date;
     }
 
@@ -113,7 +114,7 @@ class ComicCollection {
         this.createSortedLists(publishers);
 
         if (this.latestDate !== this._comicService.retrievalDate) {
-            storageInterface.sendDeleteRequest(this._comicService.retrievalDate, this.deleteCompleteHandler);
+            this._storageInterface.sendDeleteRequest(this._comicService.retrievalDate, this.deleteCompleteHandler);
         }
 
         this.latestDate = this._comicService.retrievalDate;
@@ -122,11 +123,11 @@ class ComicCollection {
 
         this.retrievedComicsEvent.notify();
 
-        if (storageInterface.storageReady) this.storeCollection();
+        if (this._storageInterface.storageReady) this.storeCollection();
     }
 
     storeComic (comic) {
-        storageInterface.sendStorageRequest(comic, this.storeIndividualCompleteHandler);
+        this._storageInterface.sendStorageRequest(comic, this.storeIndividualCompleteHandler);
 
         this.comicsToStore++;
     }
@@ -154,7 +155,7 @@ class ComicCollection {
 
             let comic = this.comicDict[key];
 
-            storageInterface.sendStorageRequest(comic, this.storeCompleteHandler);
+            this._storageInterface.sendStorageRequest(comic, this.storeCompleteHandler);
 
             this.comicsToStore++;
         }
@@ -167,7 +168,7 @@ class ComicCollection {
         comicLocal.variantList.forEach(function (variant) {
                 this._comicsByOriginal[variant.originalString] = variant;
                 variant.mainID = comicLocal.id;
-                storageInterface.sendStorageRequest(variant, this.storeCompleteHandler);
+                this._storageInterface.sendStorageRequest(variant, this.storeCompleteHandler);
                 this.comicsToStore++;
             }.bind(this));
 
@@ -199,7 +200,7 @@ class ComicCollection {
         this.comicDict = {};
 
         comicList.forEach(function (comic) {
-            let newComic = Comic.fromGeneric(comic);
+            let newComic = Comic.fromGeneric(comic, collection._storageInterface);
 
             if (!publishers.includes(newComic.publisher)) publishers.push(newComic.publisher);
 
@@ -240,7 +241,21 @@ class ComicCollection {
     }
 
     deleteComplete (status) {
-        if (!status) storageInterface.sendDeleteRequest(this.latestDate, this.deleteCompleteHandler);
+        if (!status) this._storageInterface.sendDeleteRequest(this.latestDate, this.deleteCompleteHandler);
+    }
+
+    loadLastPulledIssue (comic) {
+        this._comicsLastPulledQueue.push(comic);
+        this._storageInterface.sendLoadLastPulledRequest(comic.series, comic.number, this.onLastPulledIssueLoaded.bind(this));
+    }
+
+    onLastPulledIssueLoaded (comicObject) {
+        let comicSource = this._comicsLastPulledQueue.shift();
+
+        comicSource.lastPulledNumber = comicObject.Number;
+        comicSource.lastPulledDate = new Date(comicObject.ReleaseDate);
+
+        this.lastIssueUpdatedEvent.notify(comicSource);
     }
 
     createSortedLists (publishers) {
@@ -259,7 +274,7 @@ class ComicCollection {
             this._comicsByOriginal[comic.originalString] = comic;
             let publisher = comic.publisher;
             collection.comicsByPublisher[publisher].push(comic);
-            comic.needsStorageEvent.attach(storageInterface.sendStorageRequest.bind(storageInterface));
+            comic.needsStorageEvent.attach(this._storageInterface.sendStorageRequest.bind(this._storageInterface));
         }.bind(this));
     }
 }

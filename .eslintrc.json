@@ -1,10 +1,13 @@
 {
     "env": {
         "es6": true,
+        "mocha": true,
         "node": true
     },
     "globals": {
-        "$": false
+        "$": false,
+        "document": false,
+        "window": false
     },
     "rules": {
         "accessor-pairs": "off",
@@ -89,7 +92,7 @@
         "no-compare-neg-zero": "error",
         "no-cond-assign": "error",
         "no-confusing-arrow": "off",
-        "no-console": "error",
+        "no-console": "warn",
         "no-const-assign": "error",
         "no-constant-condition": "error",
         "no-continue": "off",
@@ -198,7 +201,7 @@
         "no-unsafe-negation": "error",
         "no-unused-expressions": "off",
         "no-unused-labels": "error",
-        "no-unused-vars": "error",
+        "no-unused-vars": "warn",
         "no-use-before-define": "off",
         "no-useless-call": "off",
         "no-useless-computed-key": "off",

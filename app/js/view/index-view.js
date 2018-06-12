@@ -10,17 +10,17 @@ const RulesController = require('../controller/rules-controller');
 const ComicDataService = require('../model/main-window/comic-data-service');
 const ComicCollection = require('../model/main-window/comic-collection');
 const RuleCollection = require('../model/main-window/rule-collection');
+const StorageInterface = require('../model/main-window/storage-interface');
 const ReleasesView = require('./releases-view');
 const PulledView = require('./pulled-view');
 const RulesView = require('./rules-view');
-const storageWindow = remote.getGlobal ('storageWindow');
 const userPrefs = remote.getGlobal('userPrefs');
 const ipcChannels = require('../misc/ipc-channels');
-
-let indexView = null;
+// eslint-disable-next-line no-unused-vars
+const logger = require('../misc/logger');
 
 $(function () {
-    indexView = new IndexView();
+    new IndexView();
 });
 
 class IndexView {
@@ -83,11 +83,17 @@ class IndexView {
     }
 
     initMVC () {
-        Injector.register('ComicDataService', ComicDataService);
-        Injector.register('ComicCollection', ComicCollection, [ 'ComicDataService' ]);
+        let UserPrefs = remote.getGlobal('userPrefs');
+
+        // console.log(StorageInterface);
+
+        Injector.register('UserPrefs', UserPrefs);
+        Injector.register('StorageInterface', StorageInterface)
+        Injector.register('ComicDataService', ComicDataService, [ 'StorageInterface', 'UserPrefs' ]);
+        Injector.register('ComicCollection', ComicCollection, [ 'ComicDataService', 'StorageInterface' ]);
         Injector.register('RuleCollection', RuleCollection);
-        Injector.register('ReleasesView', ReleasesView, [ 'ComicCollection' ]);
-        Injector.register('PulledView', PulledView, [ 'ComicCollection' ]);
+        Injector.register('ReleasesView', ReleasesView, [ 'ComicCollection', 'StorageInterface' ]);
+        Injector.register('PulledView', PulledView, [ 'ComicCollection', 'StorageInterface' ]);
         Injector.register('RulesView', RulesView, [ 'RuleCollection' ]);
         Injector.register('ReleasesController', ReleasesController, [ 'ComicCollection', 'ReleasesView', 'RuleCollection' ]);
         Injector.register('PulledController', PulledController, [ 'ComicCollection', 'PulledView' ]);

@@ -1,6 +1,3 @@
-//@ts-check
-
-const { remote } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
 const Utilities = require('../../misc/utilities');
@@ -10,14 +7,13 @@ const newReleasesUrl = 'https://www.previewsworld.com/shipping/newreleases.txt';
 const detailUrlBase = 'http://www.previewsworld.com/Catalog/';
 const previewsWorldBase = "http://www.previewsworld.com";
 
-//@ts-ignore
 // noinspection JSUnresolvedVariable
 global.detailUrlBase = detailUrlBase;
 
-const userPrefs = remote.getGlobal('userPrefs');
-
 class ComicDataService {
-    constructor () {
+    constructor (storageService, userPrefs) {
+        this._storageService = storageService; 
+        this._userPrefs = userPrefs
         this.callerString = 'ComicDataService';
         this.comicDict = {};
         this.publishers = [];
@@ -35,7 +31,7 @@ class ComicDataService {
         this.processedComics = 0;
         this.comicDict = {};
 
-        let includeOnlyComics = userPrefs.includeOnlyComics;
+        let includeOnlyComics = this._userPrefs.includeOnlyComics;
 
         if (Utilities.exists(comicsByOriginalString)) { // noinspection JSUnusedGlobalSymbols
             this.comicsByOriginal = comicsByOriginalString;

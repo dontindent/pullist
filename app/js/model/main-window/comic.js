@@ -1,6 +1,6 @@
 const Utilities = require('../../misc/utilities');
 const Event = require('../../misc/event-dispatcher');
-const storageInterface = require('./storage-interface');
+
 
 class Comic {
     constructor() {
@@ -120,17 +120,6 @@ class Comic {
         } else {
             return false;
         }
-    }
-
-    loadLastIssueData() {
-        storageInterface.sendLoadLastPulledRequest(this.series, this.number, this.lastIssueDataLoaded.bind(this));
-    }
-
-    lastIssueDataLoaded (comicObject) {
-        this.lastPulledNumber = comicObject.Number;
-        this.lastPulledDate = new Date(comicObject.ReleaseDate);
-
-        this.lastIssueUpdatedEvent.notify(this);
     }
 
     static assembleVariants(comicsList) {

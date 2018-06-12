@@ -32,9 +32,9 @@ class Comic {
         this.lastPulledDate = new Date(-8640000000000000);
 
         this.needsStorageEvent = new Event(this);
-        this.pullStatusChanged = new Event(this);
-        this.watchStatusChange = new Event(this);
-        this.lastIssueUpdated = new Event(this);
+        this.pullStatusChangedEvent = new Event(this);
+        this.watchStatusChangedEvent = new Event(this);
+        this.lastIssueUpdatedEvent = new Event(this);
     }
 
     get key() {
@@ -48,7 +48,7 @@ class Comic {
     }
 
     get lastPulled() {
-        if (this.lastPulledNumber !== -1) {
+        if (this.lastPulledNumber && this.lastPulledNumber !== -1) {
             return 'Issue ' + this.lastPulledNumber + ' pulled on ' + this.lastPulledDate.toLocaleDateString("en-US");
         }
 
@@ -58,14 +58,14 @@ class Comic {
     pull(pulled) {
         pulled = typeof pulled === typeof true ? pulled : this.pulled;
         this.pulled = pulled;
-        this.pullStatusChanged.notify(pulled);
+        this.pullStatusChangedEvent.notify(pulled);
         this.needsStorageEvent.notify();
     }
 
     watch(watched) {
         watched = typeof watched === typeof true ? watched : this.watched;
         this.watched = watched;
-        this.watchStatusChange.notify(watched);
+        this.watchStatusChangedEvent.notify(watched);
         this.needsStorageEvent.notify();
     }
 

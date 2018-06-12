@@ -220,6 +220,7 @@ class ComicListView extends View  {
         this.modelComicPulledHandler = this.modelComicPulled.bind(this);
         this.modelComicWatchedHandler = this.modelComicWatched.bind(this);
         this.comicPullButtonHandler = this.comicPullButton.bind(this);
+        this.modelComicLastPulledUpdateHandler = this.omModelComicLastPulledUpdate.bind(this);
 
         this.watchSelectedModeComicHandler = this.watchSelectedModeComic.bind(this);
         this.unWatchSelectedModelComicHandler = this.unWatchSelectedModelComic.bind(this);
@@ -294,8 +295,9 @@ class ComicListView extends View  {
 
             let comic = this._comicCollection.comicDict[comicKey];
 
-            comic.pullStatusChanged.unattach(this.modelComicPulledHandler);
-            comic.watchStatusChange.unattach(this.modelComicWatchedHandler);
+            comic.pullStatusChangedEvent.unattach(this.modelComicPulledHandler);
+            comic.watchStatusChangedEvent.unattach(this.modelComicWatchedHandler);
+            comic.lastIssueUpdatedEvent.unattach(this.modelComicLastPulledUpdateHandler);
         }
     }
 
@@ -472,8 +474,9 @@ class ComicListView extends View  {
                     $($comicListTemplateClone).find('.comic-writer-list').text(comic.writer);
                     $($comicListTemplateClone).find('.comic-artist-list').text(comic.artist);
 
-                    comic.pullStatusChanged.attach(view.modelComicPulledHandler);
-                    comic.watchStatusChange.attach(view.modelComicWatchedHandler);
+                    comic.pullStatusChangedEvent.attach(view.modelComicPulledHandler);
+                    comic.watchStatusChangedEvent.attach(view.modelComicWatchedHandler);
+                    comic.lastIssueUpdatedEvent.attach(view.modelComicLastPulledUpdateHandler);
 
                     $comicListTemplateClone[0].comic = comic;
 
@@ -525,8 +528,6 @@ class ComicListView extends View  {
             this.needLastComicPulledEvent.notify(comic);
         }
 
-        // TODO Act on last comic data being pulled (notified via lastIssueUpdatedEvent)
-
         this.$comicDetailsNone.hide();
     }
 
@@ -555,6 +556,13 @@ class ComicListView extends View  {
 
         if (comicElement === this._selectedComicElement) {
             ComicListView.updateHeaderButtons(comic);
+        }
+    }
+
+    omModelComicLastPulledUpdate (sender, args) {
+        let comic = args;
+        if (this._selectedComicElement.comic === comic) {
+            this._selectedComicContainer.update(comic);
         }
     }
 

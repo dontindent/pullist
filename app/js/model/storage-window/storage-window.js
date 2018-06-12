@@ -1,3 +1,5 @@
+//@ts-check
+
 const { remote, ipcRenderer } = require('electron');
 const ComicDatabase = require('./database-manager');
 let ipcChannels = require('../../misc/ipc-channels');
@@ -18,6 +20,7 @@ class StorageWindow {
         this.storageReadyHandler = StorageWindow.storageReady.bind(this);
         this.storageRequestHandler = this.storageRequest.bind(this);
         this.loadRequestHandler = this.loadRequest.bind(this);
+        this.loadLastRequestHandler = this.loadLastRequest.bind(this);
         this.deleteRequestHandler = this.deleteRequest.bind(this);
         this.datesRequestHandler = this.datesRequest.bind(this);
 
@@ -25,15 +28,17 @@ class StorageWindow {
 
         ipcRenderer.on (ipcChannels.storeRequest, this.storageRequestHandler);
         ipcRenderer.on (ipcChannels.loadRequest, this.loadRequestHandler);
+        ipcRenderer.on (ipcChannels.loadLastRequest, this.loadLastRequestHandler);
         ipcRenderer.on (ipcChannels.deleteRequest, this.deleteRequestHandler);
         ipcRenderer.on (ipcChannels.datesRequest, this.datesRequestHandler);
 
         this.dbManager.initDB();
     }
 
+    // eslint-disable-next-line no-unused-vars
     // noinspection JSUnusedLocalSymbols
     static storageReady (sender, args) {
-        sendMessage(ipcChannels.storageReady, null);
+        sendMessage(ipcChannels.storageReady, args);
     }
 
     storageRequest (event, comic) {
@@ -55,7 +60,7 @@ class StorageWindow {
 
             let queryResult = function (result) {
                 if (result) {
-                    comic.id = result['Id'];
+                    comic.id = result.Id;
                     logger.log(['StorageWindow updating:', comic.originalString], caller);
                     storageWindow.dbManager.updateComic(comic, storageWindow.storeComplete.bind(storageWindow));
                 } else {
@@ -70,7 +75,7 @@ class StorageWindow {
             else {
                 let date = comic.releaseDate;
 
-                if(typeof date !== typeof 1) date = new Date(message).valueOf();
+                if(typeof date !== typeof 1) date = new Date(date).valueOf();
 
                 this.dbManager.getComicByOriginalAndDate(comic.originalString, date, queryResult);
             }
@@ -95,6 +100,7 @@ class StorageWindow {
     }
 
     // noinspection JSUnusedLocalSymbols
+    // eslint-disable-next-line no-unused-vars
     datesRequest (event, message) {
         logger.log([ 'Got request to retrieve all available dates' ], caller);
 
@@ -120,6 +126,18 @@ class StorageWindow {
     // noinspection JSMethodCanBeStatic
     loadComplete (comics) {
         sendMessage(ipcChannels.loadResponse, comics);
+    }
+
+    loadLastRequest (event, message) {
+        let { series, number } = message;
+
+        logger.log([ 'Got load last pulled request for:', series, 'where number !=', number ], caller);
+
+        this.dbManager.getLastComicBySeriesAndNumber(series, number, this.loadLastComplete.bind(this));
+    }
+
+    loadLastComplete (comic) {
+        sendMessage(ipcChannels.loadLastResponse, comic);
     }
 
     deleteRequest (event, message) {
@@ -152,4 +170,4 @@ function sendMessage (channel, message) {
 
 
 // noinspection JSUnusedLocalSymbols
-let storageWindow = new StorageWindow();
+let storageWindow = new StorageWindow(); // eslint-disable-line no-unused-vars

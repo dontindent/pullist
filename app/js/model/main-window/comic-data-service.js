@@ -78,7 +78,7 @@ function processList(comicService, rawList) {
         let line = lines[i];
 
         if (!dateFound) {
-            const dateRegex = /New Releases for ([\d\/]+)/gmi;
+            const dateRegex = /New Releases for ([\d/]+)/gmi;
             let dateMatch = dateRegex.exec(line);
 
             if(dateMatch) {

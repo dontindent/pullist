@@ -1,5 +1,6 @@
 const Utilities = require('../../misc/utilities');
 const Event = require('../../misc/event-dispatcher');
+const storageInterface = require('./storage-interface');
 
 class Comic {
     constructor() {
@@ -33,6 +34,7 @@ class Comic {
         this.needsStorageEvent = new Event(this);
         this.pullStatusChanged = new Event(this);
         this.watchStatusChange = new Event(this);
+        this.lastIssueUpdated = new Event(this);
     }
 
     get key() {
@@ -47,7 +49,7 @@ class Comic {
 
     get lastPulled() {
         if (this.lastPulledNumber !== -1) {
-            return 'Issue ' + this.lastPulledNumber + ' pulled on ' + this.lastPulledDate.toLocaleDateString("en-US")
+            return 'Issue ' + this.lastPulledNumber + ' pulled on ' + this.lastPulledDate.toLocaleDateString("en-US");
         }
 
         return '';
@@ -120,6 +122,17 @@ class Comic {
         }
     }
 
+    loadLastIssueData() {
+        storageInterface.sendLoadLastPulledRequest(this.series, this.number, this.lastIssueDataLoaded.bind(this));
+    }
+
+    lastIssueDataLoaded (comicObject) {
+        this.lastPulledNumber = comicObject.Number;
+        this.lastPulledDate = new Date(comicObject.ReleaseDate);
+
+        this.lastIssueUpdatedEvent.notify(this);
+    }
+
     static assembleVariants(comicsList) {
         comicsList = Utilities.removeDuplicates(comicsList, 'originalString');
 
@@ -141,25 +154,25 @@ class Comic {
     static fromGeneric(object) {
         let result = new Comic();
 
-        result.id = object['Id'];
-        result.series = object['Series'];
-        result.number = object['Number'];
-        result.writer = object['Writer'];
-        result.artist = object['Artist'];
-        result.coverArtist = object['CoverArtist'];
-        result.publisher = object['Publisher'];
-        result.description = object['Description'];
-        result.price = object['Price'];
-        result.pulled = !!object['Pulled'];
-        result.watched = !!object['Watched'];
-        result.code = object['Code'];
-        result.coverURL = object['CoverURL'];
-        result.reprint = !!object['Reprint'];
-        result.variant = !!object['Variant'];
-        result.releaseDate = new Date(object['ReleaseDate']);
-        result.originalString = object['OriginalString'];
+        result.id = object.Id;
+        result.series = object.Series;
+        result.number = object.Number;
+        result.writer = object.Writer;
+        result.artist = object.Artist;
+        result.coverArtist = object.CoverArtist;
+        result.publisher = object.Publisher;
+        result.description = object.Description;
+        result.price = object.Price;
+        result.pulled = !!object.Pulled;
+        result.watched = !!object.Watched;
+        result.code = object.Code;
+        result.coverURL = object.CoverURL;
+        result.reprint = !!object.Reprint;
+        result.variant = !!object.Variant;
+        result.releaseDate = new Date(object.ReleaseDate);
+        result.originalString = object.OriginalString;
 
-        result.mainID = object['MainId'];
+        result.mainID = object.MainId;
 
         return result;
     }

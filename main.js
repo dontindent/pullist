@@ -104,7 +104,7 @@ function createWindows (width, height) {
     }));
 
     mainWindow.webContents.openDevTools({mode: 'undocked'});
-    // storageWindow.webContents.openDevTools({mode: 'undocked'});
+    storageWindow.webContents.openDevTools({mode: 'undocked'});
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();

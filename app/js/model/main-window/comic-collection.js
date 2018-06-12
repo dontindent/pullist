@@ -5,6 +5,7 @@ const Utilities = require('../../misc/utilities');
 
 const storageInterface = require('./storage-interface');
 const logger = require('../../misc/logger');
+// eslint-disable-next-line no-unused-vars
 const userPrefs = remote.getGlobal('userPrefs');
 const sender = 'ComicCollection';
 

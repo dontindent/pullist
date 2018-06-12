@@ -3,18 +3,18 @@ const SQL = require('../../../../node_modules/sql.js/js/sql');
 const path = require('path');
 const fs = require('fs');
 const Event = require('../../misc/event-dispatcher');
+// eslint-disable-next-line no-unused-vars
 const Utilities = require('../../misc/utilities');
 
 const logger = require('../../misc/logger');
 
 const sender = 'ComicDatabase';
 
-// The following is base HEAVILY off of https://github.com/patrickmoffitt/local-sqlite-example
+// The following file is based HEAVILY off of https://github.com/patrickmoffitt/local-sqlite-example
 
 function _rowsFromSqlDataObject(object) {
     let data = {};
     let i = 0;
-    // let j = 0;
 
     for (let valueArray of object.values) {
         data[i] = {};
@@ -70,7 +70,7 @@ SQL.dbClose = function (databaseHandle, databaseFileName) {
         return true;
     } catch (error) {
         logger.log('Can\'t close database file.\n' + error, sender);
-        return null
+        return null;
     }
 };
 
@@ -108,7 +108,7 @@ class ComicDatabase {
                 this.createDB();
             } else {
                 logger.log (['The database has', tableCount, 'tables'], sender);
-                this.storageReady.notify();
+                this.storageReady.notify(null);
             }
 
             this.closeDB();
@@ -128,10 +128,10 @@ class ComicDatabase {
             typeof result.constructor === 'function' &&
             this.closeDB()) {
             // SQL.dbClose(this.dbManager, this.dbPath)) {
-            this.storageReady.notify();
+            this.storageReady.notify(null);
             logger.log('Created a new database', sender);
         } else {
-            this.storageError.notify();
+            this.storageError.notify(null);
             logger.log ('ComicDatabase.createDB failed', sender);
         }
     }
@@ -151,8 +151,8 @@ class ComicDatabase {
                     let values = [statement.get()];
                     let columns = statement.getColumnNames();
                     let result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
-
-                    result['ReleaseDate'] = Date.fromMSDateTimeOffset(result['ReleaseDate']).valueOf();
+                    
+                    result.ReleaseDate = Date.fromMSDateTimeOffset(result.ReleaseDate).valueOf();
 
                     results.push(result);
                 }
@@ -165,7 +165,7 @@ class ComicDatabase {
                 this.closeDB();
             }
         } else {
-            this.storageError.notify();
+            this.storageError.notify(null);
             logger.log ('Couldn\'t open database for select', sender);
         }
     }
@@ -201,7 +201,7 @@ class ComicDatabase {
                 // console.log('ComicDatabase.insertComic', error.message);
             }
         } else {
-            this.storageError.notify();
+            this.storageError.notify(null);
             logger.log ('Couldn\'t open database for insert', sender);
         }
     }
@@ -249,7 +249,7 @@ class ComicDatabase {
                 // console.log('ComicDatabase.insertComic', error.message);
             }
         } else {
-            this.storageError.notify();
+            this.storageError.notify(null);
             logger.log ('Couldn\'t open database for insert', sender);
         }
     }
@@ -269,7 +269,7 @@ class ComicDatabase {
                     let values = [statement.get()];
                     let columns = statement.getColumnNames();
                     result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
-                    result['ReleaseDate'] = Date.fromMSDateTimeOffset(result['ReleaseDate']).valueOf();
+                    result.ReleaseDate = Date.fromMSDateTimeOffset(result.ReleaseDate).valueOf();
                 }
 
                 if (typeof callback === 'function') {
@@ -280,7 +280,7 @@ class ComicDatabase {
                 throw (error);
             }
         } else {
-            this.storageError.notify();
+            this.storageError.notify(null);
             logger.log ('Couldn\'t open database for select', sender);
         }
     }
@@ -292,7 +292,7 @@ class ComicDatabase {
 
         if (this.db) {
             let query = 'SELECT * FROM `Comic` WHERE `OriginalString` IS ? and `ReleaseDate` IS ?';
-            let statement = this.db.prepare(query, [originalString, (new Date(date)).toMSDateTimeOffset() ]);
+            let statement = this.db.prepare(query, [ originalString, (new Date(date)).toMSDateTimeOffset() ]);
             try {
                 let result = null;
 
@@ -300,7 +300,7 @@ class ComicDatabase {
                     let values = [statement.get()];
                     let columns = statement.getColumnNames();
                     result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
-                    result['ReleaseDate'] = Date.fromMSDateTimeOffset(result['ReleaseDate']).valueOf();
+                    result.ReleaseDate = Date.fromMSDateTimeOffset(result.ReleaseDate).valueOf();
                 }
 
                 if (typeof callback === 'function') {
@@ -313,7 +313,40 @@ class ComicDatabase {
                 throw (error);
             }
         } else {
-            this.storageError.notify();
+            this.storageError.notify(null);
+            logger.log ('Couldn\'t open database for select', sender);
+        }
+    }
+
+    getLastComicBySeriesAndNumber (series, number, callback) {
+        if (!this.db) {
+            this.db = SQL.dbOpen(this.dbPath);
+        }
+
+        if (this.db) {
+            let query = 'SELECT *, MAX(`ReleaseDate`) FROM `Comic` WHERE `Series` = ? AND `Number` != ?';
+            let statement = this.db.prepare(query, [ series, number ]);
+            try {
+                let result = null;
+
+                if (statement.step()) {
+                    let values = [statement.get()];
+                    let columns = statement.getColumnNames();
+                    result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
+                    result.ReleaseDate = Date.fromMSDateTimeOffset(result.ReleaseDate).valueOf();
+                }
+
+                if (typeof callback === 'function') {
+                    callback(result);
+                }
+            } catch (error) {
+                logger.log([ 'ComicDatabase.getLastComicBySeries',
+                             'No data found for Series =', series,
+                             'and Number =', number ], sender);
+                throw (error);
+            }
+        } else {
+            this.storageError.notify(null);
             logger.log ('Couldn\'t open database for select', sender);
         }
     }
@@ -334,7 +367,7 @@ class ComicDatabase {
                     let columns = statement.getColumnNames();
                     let result = _rowsFromSqlDataObject({values: values, columns: columns})[0];
 
-                    result['ReleaseDate'] = Date.fromMSDateTimeOffset(result['ReleaseDate']).valueOf();
+                    result.ReleaseDate = Date.fromMSDateTimeOffset(result.ReleaseDate).valueOf();
                     results.push(result);
                 }
 
@@ -347,7 +380,7 @@ class ComicDatabase {
                 this.closeDB();
             }
         } else {
-            this.storageError.notify();
+            this.storageError.notify(null);
             logger.log ('Couldn\'t open database for select', sender);
         }
     }
@@ -379,7 +412,7 @@ class ComicDatabase {
             }
 
         } else {
-            this.storageError.notify();
+            this.storageError.notify(null);
             logger.log ('Couldn\'t open database for select', sender);
         }
     }

@@ -5,6 +5,7 @@ const userPrefs = remote.getGlobal('userPrefs');
 const Event = require('../misc/event-dispatcher');
 const logger = require('../misc/logger');
 const storageInterface = require('../model/main-window/storage-interface');
+// eslint-disable-next-line no-unused-vars
 const Utilities = require('../misc/utilities');
 const ipcChannels = require('../misc/ipc-channels');
 
@@ -136,19 +137,6 @@ class ComicListViewState {
     }
 
     restore (releasesView) {
-        let saveState = this;
-
-        // let scheduledRestore = function (sender, args) {
-        //     saveState.restore(releasesView);
-        //     releasesView.refreshedListEvent.unattach(scheduledRestore);
-        // };
-
-        // if (!releasesView.refreshedListEvent.fired || 
-        //     !Date.compareDates(this.date, releasesView._comicCollection.currentDate)) {
-        //     releasesView.refreshedListEvent.attach(scheduledRestore.bind(saveState));
-        //     return;
-        // }
-
         if (this.selectedComicOriginalString) this.restoreSelectedComic(releasesView);
 
         releasesView.$searchInput[0].value = this.filterString;
@@ -183,7 +171,7 @@ class ComicListViewState {
     }
 }
 
-// TODO Ensure that state is properly restored when comic list date has been changed
+// TODO Implement determining last pulled issue
 class ComicListView extends View  {
     constructor (comicCollection) {
         super();
@@ -198,7 +186,7 @@ class ComicListView extends View  {
         this.state = new ComicListViewState();
 
         this.refreshedListEvent = new Event(this);
-
+        this.needLastComicPulledEvent = new Event(this);
     }
 
     createChildren () {
@@ -312,11 +300,13 @@ class ComicListView extends View  {
     }
 
     // noinspection JSUnusedLocalSymbols
+    // eslint-disable-next-line no-unused-vars
     searchInputFocusIn (event) {
         this.$searchAndButtons.addClass('focus');
     }
 
     // noinspection JSUnusedLocalSymbols
+    // eslint-disable-next-line no-unused-vars
     searchInputFocusOut (event) {
         this.$searchAndButtons.removeClass('focus');
     }
@@ -437,11 +427,13 @@ class ComicListView extends View  {
     }
 
     // noinspection JSUnusedLocalSymbols
+    // eslint-disable-next-line no-unused-vars
     comicsUnstable (sender, args) {
         this.retrieveActive = false;
     }
 
     // noinspection JSUnusedLocalSymbols
+    // eslint-disable-next-line no-unused-vars
     comicsStable (sender, args) {
         logger.log('Storage stable', this.callerString);
 
@@ -504,7 +496,7 @@ class ComicListView extends View  {
         }
 
         logger.log([ 'Created', elementCount, 'comic elements for list' ], this.callerString);
-        this.refreshedListEvent.notify();
+        this.refreshedListEvent.notify(null);
     }
 
     comicElementSelected (event) {
@@ -528,6 +520,13 @@ class ComicListView extends View  {
 
         this._selectedComicContainer.select(this._selectedComicElement);
 
+        let comic = this._selectedComicElement.comic;
+        if (Date.compareDates(comic.lastPulledDate, new Date(-8640000000000000))) {
+            this.needLastComicPulledEvent.notify(comic);
+        }
+
+        // TODO Act on last comic data being pulled (notified via lastIssueUpdatedEvent)
+
         this.$comicDetailsNone.hide();
     }
 
@@ -549,6 +548,7 @@ class ComicListView extends View  {
     }
 
     // noinspection JSUnusedLocalSymbols
+    // eslint-disable-next-line no-unused-vars
     modelComicWatched (sender, args) {
         let comic = sender;
         let comicElement = findComicElement(this, comic.originalString);
@@ -579,6 +579,7 @@ class ComicListView extends View  {
     }
 
     // noinspection JSUnusedLocalSymbols
+    // eslint-disable-next-line no-unused-vars
     comicListScrolled (event) {
         this._scrollPos = $(this.$comicList[0]).scrollTop();
     }
@@ -586,7 +587,7 @@ class ComicListView extends View  {
     // This can't be static because the methods that override it may rely on class data
     // noinspection JSMethodCanBeStatic
     generateDateString () {
-        return 'Uh oh, this wasn\' overriden correctly!';
+        return 'Uh oh, this wasn\'t overriden correctly!';
     }
 
     // This can't be static because the methods that override it may rely on class data

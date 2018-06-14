@@ -171,11 +171,14 @@ class ModalOverlay {
         }
 
         this._populateContent();
-
-        this.$modal.css('visibility', 'visible');
-        this.$modalBackground.css('opacity', 0.5);
+        
         this.$modalBackground.on('click', this._modalBackgroundClickedHandler);
         $(document).on('keyup', this._modalBackgroundKeyUpHandler);
+        this.$modal.css('visibility', 'visible');
+        
+        setTimeout(this._modalVisible.bind(this), 0);
+
+        // this._modalVisible();
         modalInUse = true;
     }
 
@@ -184,11 +187,16 @@ class ModalOverlay {
         this.$modalBackground.css('opacity', 1.0);
         this.$modalBackground.off('click', this._modalBackgroundClickedHandler);
         $(document).off('keyup', this._modalBackgroundKeyUpHandler);
+        this.$modalContent.empty();
         modalInUse = false;
     }
 
     _populateContent () {
         this.$modalContent.empty();
+    }
+
+    _modalVisible () {
+        this.$modalBackground.css('opacity', 0.5);
     }
 }
 
@@ -207,7 +215,8 @@ class CoverOverlay extends ModalOverlay {
 
     _setupHandlers () {
         super._setupHandlers();
-
+        this._closeButtonClicedkHandler = this._onCloseButtonClicked.bind(this);
+        
     }
 
     _enable () {
@@ -228,21 +237,43 @@ class CoverOverlay extends ModalOverlay {
 
     //#endregion
 
+    //#region Event Handlers
+
+    _onCloseButtonClicked (event) {
+        event.preventDefault();
+        this.hide();
+    }
+
+    //#endregion
+
     _populateContent () {
         super._populateContent();
 
         let $modalContentRoot = $($('#cover-overlay-template').prop('content')).find('div#cover-overlay-container');
         let $modalContentRootClone = $modalContentRoot.clone();
 
-        let $modalCoverImage = $modalContentRootClone.find('img#cover-overlay-cover-image');
-        let $modalTitle = $modalContentRootClone.find('h2#cover-overlay-title');
+        let $modalTitle = $modalContentRootClone.find('h2#cover-overlay-title-text');
+        this.$modalCoverImage = $modalContentRootClone.find('img#cover-overlay-cover-image');
+        this.$closeButton = $modalContentRootClone.find('a#cover-overlay-close-button');
         
-        $modalCoverImage.attr('src', this.comic.coverURL);
+        this.$closeButton.on('click', this._closeButtonClicedkHandler);
+
         $modalTitle.text(this.comic.originalString);
+        this.$modalCoverImage.attr('src', this.comic.coverURL);
 
         $modalContentRootClone.appendTo(this.$modalContent);
+    }
+
+    _modalVisible () {
+        super._modalVisible();
+        this.$modalCoverImage.css('opacity', 1.0);     
+    }
+
+    hide () {
+        this.$closeButton.off('click', this._closeButtonClicedkHandler);
+
+        super.hide();
     }
 }
 
 exports.AlertService = module.exports.AlertService = AlertService;
-// exports.ConfirmAlertWindow = module.exports.ConfirmAlertWindow = ConfirmAlertWindow;

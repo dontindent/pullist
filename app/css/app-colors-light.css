@@ -6,16 +6,10 @@
     --app-background-color-inverted: var(--app-foreground-color);
     --app-foreground-color-inverted: var(--app-background-color);
     --app-background-color-overlay: #FDFDFD;
-
+    
     --app-border-color: #DDDDDD;
     --app-border-active-color: #000000;
-
-    --app-font-color: var(--app-foreground-color);
-    --app-font-color-cancel:#FF0000;
-    --app-font-color-cancel-active: #CC0000;
-    --app-font-color-highlight: var(--accent-color-light-1);
-    --app-font-color-active: var(--accent-color);
-
+    
     --app-button-background-color: #DDDDDD;
     --app-button-foreground-color: var(--app-foreground-color);
     --app-button-background-color-default: var(--accent-color);
@@ -25,6 +19,15 @@
     --app-button-background-color-hover: rgba(255, 255, 255, 0.25);
     --app-button-foreground-color-hover: var(--app-button-foreground-color);
 
+    --app-calendar-background-color: #DFDFDF;
+    --app-calendar-background-color-disabled: #F4F4F4;
+    --app-calendar-foreground-color-disabled: var(--app-font-color);
+    --app-calendar-background-color-current: var(--accent-color-light-1);
+    --app-calendar-foreground-color-current: var(--app-foreground-color-inverted);
+    --app-calendar-border-color: var(--app-calendar-background-color);
+    --app-calendar-border-color-hover: #000000;
+    --app-calendar-border-color-selected: var(--accent-color-light-1);
+    
     --app-command-button-background-color: none;
     --app-command-button-foreground-color: var(--app-foreground-color);
     --app-command-button-background-color-hover: #F1F1F1;
@@ -33,7 +36,20 @@
     --app-command-button-foreground-color-active: var(--app-command-button-foreground-color);
     --app-command-button-background-color-disabled: none;
     --app-command-button-foreground-color-disabled: #BBBBBB;
+    
+    --app-font-color: var(--app-foreground-color);
+    --app-font-color-cancel:#FF0000;
+    --app-font-color-cancel-active: #CC0000;
+    --app-font-color-highlight: var(--accent-color-light-1);
+    --app-font-color-active: var(--accent-color);
 
+    --app-header-foreground-color: var(--app-font-color);
+    --app-header-foreground-color-hover: var(--accent-color);
+    --app-header-foreground-color-active: var(--accent-color-dark-2);
+    
+    --app-image-button-background-color-hover: rgba(0, 0, 0, 0.5);
+    --app-image-button-background-color-active: rgba(0, 0, 0, 0.75);
+    
     --app-list-header-background-color: #F8F8F8;
     --app-list-header-foreground-color: var(--app-foreground-color);
     --app-list-item-background-color: none;
@@ -47,21 +63,10 @@
     --app-list-detail-background-color: none;
     --app-list-detail-foreground-color: #AAAAAA;
 
-    --app-header-foreground-color: var(--app-font-color);
-    --app-header-foreground-color-hover: var(--accent-color);
-    --app-header-foreground-color-active: var(--accent-color-dark-2);
-
-    --app-image-button-background-color-hover: rgba(0, 0, 0, 0.5);
-    --app-image-button-background-color-active: rgba(0, 0, 0, 0.75);
-
-    --app-calendar-background-color: #DFDFDF;
-    --app-calendar-background-color-disabled: #F4F4F4;
-    --app-calendar-foreground-color-disabled: var(--app-font-color);
-    --app-calendar-background-color-current: var(--accent-color-light-1);
-    --app-calendar-foreground-color-current: var(--app-foreground-color-inverted);
-    --app-calendar-border-color: var(--app-calendar-background-color);
-    --app-calendar-border-color-hover: #000000;
-    --app-calendar-border-color-selected: var(--accent-color-light-1);
+    --app-modal-content-background-color: var(--app-background-color-inverted);
+    --app-modal-content-foreground-color: var(--app-foreground-color-inverted);
+    --app-modal-content-close-button-color-hover: rgba(255, 255, 255, 0.10);
+    --app-modal-content-close-button-color-active: rgba(255, 255, 255, 0.25);
 
     --app-progressbar-color: var(--accent-color);
 

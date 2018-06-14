@@ -21,10 +21,6 @@ class Utilities {
     }
 }
 
-Array.prototype.clone = function() {
-    return this.slice(0);
-};
-
 Object.size = Utilities.getObjectLength;
 
 // The following two functions are based on the Microsoft implementation of DateTimeOffset.

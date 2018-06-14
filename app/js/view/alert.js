@@ -1,13 +1,26 @@
-const electron = require('electron');
 const path = require('path');
 const url = require('url');
 
-class Alert {
+let modalInUse = false;
+
+class AlertService {
     constructor() {
+        this._coverOverlay = null;
 
     }
 
-    static confirm(title, message, callback) {
+    showCoverOverlay (comic) {
+        if (!this._coverOverlay) this._coverOverlay = new CoverOverlay(comic);
+        else this._coverOverlay.comic = comic;
+
+        this._coverOverlay.show();
+    }
+
+    hideCoverOverlay () {
+        if (!this._coverOverlay) return;
+    }
+
+    confirm(title, message, callback) {
         let newWindow = new ConfirmAlertWindow(title, message, callback);
         newWindow.show();
 
@@ -30,7 +43,6 @@ class ConfirmAlertWindow {
     }
 
     show() {
-
         // Because of a custom handler in main.js, this will create a BrowserWindow using the native window.open,
         // which allows us to access the DOM directly.
         this.modalWindow = window.open(url.format({
@@ -46,8 +58,7 @@ class ConfirmAlertWindow {
         // We want to make sure that transition has occurred before we try to act on the DOM
         if (dialog.location.href.includes('alert')) alert.populateInfo();
         else {
-            // noinspection JSUnusedLocalSymbols
-            dialog.onload = function (event) {
+            dialog.onload = function () {
                 if (dialog.location.href.includes('alert')) {
                     alert.populateInfo();
                     dialog.onload = null;
@@ -76,13 +87,13 @@ class ConfirmAlertWindow {
     }
 
     // noinspection JSUnusedLocalSymbols
-    ok (event) {
+    ok () {
         this.callback(true);
         this.modalWindow.close();
     }
 
     // noinspection JSUnusedLocalSymbols
-    cancel (event) {
+    cancel () {
         this.callback(false);
         this.modalWindow.close();
     }
@@ -109,5 +120,129 @@ class ConfirmAlertWindow {
     }
 }
 
-exports.Alert = module.exports.Alert = Alert;
+class ModalOverlay {
+    constructor () {
+        this._init();
+    }
+
+    //#region Setup
+
+    _init () {
+        this._createChildren();
+        this._setupHandlers();
+        this._enable();
+    }
+
+    _createChildren () {
+        this.$modal = $('div#modal');
+        this.$modalBackground = $('div#modal-background');
+        this.$modalContent = $('div#modal-content');
+    }
+
+    _setupHandlers () {
+        this._modalBackgroundClickedHandler = this._onModalBackgroundClicked.bind(this);
+        this._modalBackgroundKeyUpHandler = this._onModalBackgroundKeyUp.bind(this);
+    }
+
+    _enable () {
+
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    _onModalBackgroundClicked (event) {
+        event.preventDefault();
+        this.hide();
+    }
+
+    _onModalBackgroundKeyUp (event) {
+        if (event.which === 27) {
+            this.hide();
+        }
+    }
+
+    //#endregion
+
+    show () {
+        if (modalInUse) {
+            throw 'Modal currently in use!'
+        }
+
+        this._populateContent();
+
+        this.$modal.css('visibility', 'visible');
+        this.$modalBackground.css('opacity', 0.5);
+        this.$modalBackground.on('click', this._modalBackgroundClickedHandler);
+        $(document).on('keyup', this._modalBackgroundKeyUpHandler);
+        modalInUse = true;
+    }
+
+    hide () {
+        this.$modal.css('visibility', 'hidden');
+        this.$modalBackground.css('opacity', 1.0);
+        this.$modalBackground.off('click', this._modalBackgroundClickedHandler);
+        $(document).off('keyup', this._modalBackgroundKeyUpHandler);
+        modalInUse = false;
+    }
+
+    _populateContent () {
+        this.$modalContent.empty();
+    }
+}
+
+class CoverOverlay extends ModalOverlay {
+    constructor (comic) {
+        super();
+
+        this._comic = comic;
+    }
+
+    //#region Setup
+
+    _createChildren () {
+        super._createChildren();
+    }
+
+    _setupHandlers () {
+        super._setupHandlers();
+
+    }
+
+    _enable () {
+        super._enable();
+    }
+
+    //#endregion
+
+    //#region Properties
+
+    get comic () {
+        return this._comic;
+    }
+
+    set comic (value) {
+        this._comic = value;
+    }
+
+    //#endregion
+
+    _populateContent () {
+        super._populateContent();
+
+        let $modalContentRoot = $($('#cover-overlay-template').prop('content')).find('div#cover-overlay-container');
+        let $modalContentRootClone = $modalContentRoot.clone();
+
+        let $modalCoverImage = $modalContentRootClone.find('img#cover-overlay-cover-image');
+        let $modalTitle = $modalContentRootClone.find('h2#cover-overlay-title');
+        
+        $modalCoverImage.attr('src', this.comic.coverURL);
+        $modalTitle.text(this.comic.originalString);
+
+        $modalContentRootClone.appendTo(this.$modalContent);
+    }
+}
+
+exports.AlertService = module.exports.AlertService = AlertService;
 // exports.ConfirmAlertWindow = module.exports.ConfirmAlertWindow = ConfirmAlertWindow;

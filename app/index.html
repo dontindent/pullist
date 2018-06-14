@@ -22,10 +22,9 @@
 <div id="splashscreen" class="interface">
     <img src="img/Pullist.png">
 </div>
-<div id="modalBackground">
-    <div id="modalContent">
-
-    </div>
+<div id="modal">
+    <div id="modal-background"></div>
+    <div id="modal-content"></div>
 </div>
 <div id="wrapper">
     <div id="nav-container">
@@ -57,5 +56,12 @@
     <div id="main-container"></div>
 </div>
 <script>require('./js/view/index-view')</script>
+
+<template id="cover-overlay-template">
+    <div id="cover-overlay-container">
+        <h2 id="cover-overlay-title"></h2>
+        <img id="cover-overlay-cover-image">
+    </div>
+</template>
 </body>
 </html>

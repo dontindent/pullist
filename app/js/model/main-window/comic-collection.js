@@ -30,7 +30,7 @@ class ComicCollection {
         this.retrievedComicsEvent = new Event(this, true);
         this.comicsStoredEvent = new Event (this, true);
         this.comicStoredEvent = new Event (this, true);
-        this.lastIssueUpdatedEvent = new Event(this, true);
+        this.lastIssueUpdatedEvent = new Event(this, false);
         this.comicListProcessedEvent = this._comicService.comicListProcessedEvent;
         this.comicProcessedEvent = this._comicService.comicProcessedEvent;
 

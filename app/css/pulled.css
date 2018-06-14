@@ -96,7 +96,7 @@ div#comic-pulled-info-container {
     height: 50px;
     background: var(--app-background-color-overlay);
     border-top: var(--app-border-style);
-    z-index: 6;
+    z-index: var(--layer-3);
     display: flex;
     flex-direction: column;
     justify-content: center;

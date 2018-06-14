@@ -8,8 +8,8 @@ const Utilities = require("../misc/utilities");
 // TODO Implemented variant cover browser
 
 class ReleasesView extends ComicListView {
-    constructor (comicCollection, storageInterface) {
-        super(comicCollection, storageInterface);
+    constructor (comicCollection, storageInterface, alertService) {
+        super(comicCollection, storageInterface, alertService);
 
         // noinspection JSUnusedGlobalSymbols
         this.callerString = 'ReleasesView';

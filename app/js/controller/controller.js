@@ -14,6 +14,7 @@ class Controller {
 
     setupHandlers () {
         this.navigatedToHandler = this.onNavigatedTo.bind(this);
+        this.navigatingFromHandler = this.onNavigatingFrom.bind(this);
         this.needLastComicPulledHandler = this.onNeedLastComicPulled.bind(this);
     }
 
@@ -28,6 +29,10 @@ class Controller {
     // eslint-disable-next-line no-unused-vars
     onNavigatedTo (sender, args) {
 
+    }
+
+    onNavigatingFrom (sender, args) {
+        
     }
 
     onNeedLastComicPulled(sender, args) {

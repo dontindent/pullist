@@ -2,7 +2,7 @@
     /* Colors */
     --app-background-color: #FFFFFF;
     --app-foreground-color: #000000;
-    --app-background-color-model: rgba(255, 255, 255, 0.5);
+    --app-background-color-modal: var(--app-background-color);
     --app-background-color-inverted: var(--app-foreground-color);
     --app-foreground-color-inverted: var(--app-background-color);
     --app-background-color-overlay: #FDFDFD;
@@ -50,6 +50,9 @@
     --app-header-foreground-color: var(--app-font-color);
     --app-header-foreground-color-hover: var(--accent-color);
     --app-header-foreground-color-active: var(--accent-color-dark-2);
+
+    --app-image-button-background-color-hover: rgba(0, 0, 0, 0.5);
+    --app-image-button-background-color-active: rgba(0, 0, 0, 0.75);
 
     --app-calendar-background-color: #DFDFDF;
     --app-calendar-background-color-disabled: #F4F4F4;

@@ -23,7 +23,7 @@ div#comic-retrieve-status-container {
     right: 0;
     height: 50px;
     background: var(--app-background-color);
-    z-index: 6;
+    z-index: var(--layer-3);
     display: block;
     text-align: center;
     min-width: 0;

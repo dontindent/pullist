@@ -9,7 +9,7 @@ div#comic-list-wrapper {
     padding-top: 40px;
     margin: 0 0 0 2px;
     overflow: hidden;
-    z-index: 2;
+    z-index: var(--layer-1);
     background: var(--app-background-color);
 }
 
@@ -177,7 +177,7 @@ h2.publisher-heading {
     opacity: 1.0;
     border-top: var(--app-border-style);
     border-bottom: var(--app-border-style);
-    z-index: 5;
+    z-index: var(--layer-2);
 }
 
 div.publisher-list {
@@ -192,7 +192,7 @@ div.list-comic {
     padding: 5px 5px 5px 20px;
     display: flex;
     flex-direction: row;
-    z-index: 4;
+    z-index: var(--layer-1);
     align-items: center;
     justify-content: center;
     color: var(--app-list-item-foreground-color);
@@ -204,11 +204,11 @@ div.list-comic-wrapper {
     flex-direction: column;
     flex: 1;
     min-width: 0;       /* For the love of god never remove this. https://codepen.io/aj-foster/pen/emBYPW */
-    z-index: 1;
+    z-index: var(--layer-1);
 }
 
 div.list-comic-bg {
-    z-index: 0;
+    z-index: var(--layer-0);
     position: absolute;
     top: 0;
     left: 0;
@@ -263,7 +263,6 @@ p.comic-writer-list {
     display: block;
     overflow: hidden;
     white-space: nowrap;
-    vertical-align: middle;
 }
 
 p.comic-artist-list {
@@ -271,7 +270,6 @@ p.comic-artist-list {
     display: block;
     overflow: hidden;
     white-space: nowrap;
-    vertical-align: middle;
 }
 
 span.comic-detail-spacer-list {
@@ -286,7 +284,7 @@ div.comic-list-button {
     display: none;
     justify-content: center;
     justify-items: center;
-    z-index: 100;
+    z-index: var(--layer-2);
     font-weight: 100;
     color: var(--app-font-color);
 }

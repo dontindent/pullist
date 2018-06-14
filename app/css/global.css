@@ -17,6 +17,19 @@
     --accent-color-dark-3: #202D3B;
     --app-font: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
     --system-symbol-font: "Segoe MDL2 Assets";
+
+    --layer-0: 0;
+    --layer-1: 1;
+    --layer-2: 2;
+    --layer-3: 3;
+    --z-index-5: 5;
+    --z-index-6: 6;
+    --z-index-50: 50;
+    --z-index-51: 51;
+    --z-index-100: 100;
+    --layer-898: 898;
+    --layer-899: 899;
+    --layer-900: 900;
 }
 
 html, body {

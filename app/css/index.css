@@ -1,10 +1,11 @@
 @import url('releases.css');
 @import url('pulled.css');
 @import url('alert.css');
+@import url('modal.css');
 @import url("../font/pullist/css/styles.min.css");
 
 div#electron-titlebar {
-    z-index: 900;
+    z-index: var(--layer-900);
     background: none;
     border: none;
     outline: none;
@@ -23,7 +24,7 @@ div#splashscreen {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 899;
+    z-index: var(--layer-899);
     background: var(--accent-color);
     display: flex;
     align-items: center;
@@ -36,19 +37,7 @@ div#splashscreen img {
 
     /* Don't remove this! https://stackoverflow.com/questions/17932018/animate-opacity-in-jquery-leaves-ghost-elements */
     -webkit-backface-visibility: hidden;
-}
-
-div#modalBackground {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 898;
-    background: var(--app-background-color-model);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    backface-visibility: hidden;
 }
 
 div#wrapper {
@@ -56,7 +45,7 @@ div#wrapper {
     flex-grow: 1;
     height: 100%;
     position: relative;
-    z-index: 1;
+    z-index: var(--layer-1);
     overflow: hidden;
     box-sizing: border-box;
     border: 1px solid var(--accent-color-light-1);

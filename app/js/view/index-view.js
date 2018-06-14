@@ -11,6 +11,7 @@ const ComicDataService = require('../model/main-window/comic-data-service');
 const ComicCollection = require('../model/main-window/comic-collection');
 const RuleCollection = require('../model/main-window/rule-collection');
 const StorageInterface = require('../model/main-window/storage-interface');
+const { AlertService } = require('./alert');
 const ReleasesView = require('./releases-view');
 const PulledView = require('./pulled-view');
 const RulesView = require('./rules-view');
@@ -91,9 +92,10 @@ class IndexView {
         Injector.register('StorageInterface', StorageInterface)
         Injector.register('ComicDataService', ComicDataService, [ 'StorageInterface', 'UserPrefs' ]);
         Injector.register('ComicCollection', ComicCollection, [ 'ComicDataService', 'StorageInterface' ]);
+        Injector.register('AlertService', AlertService);
         Injector.register('RuleCollection', RuleCollection);
-        Injector.register('ReleasesView', ReleasesView, [ 'ComicCollection', 'StorageInterface' ]);
-        Injector.register('PulledView', PulledView, [ 'ComicCollection', 'StorageInterface' ]);
+        Injector.register('ReleasesView', ReleasesView, [ 'ComicCollection', 'StorageInterface', 'AlertService' ]);
+        Injector.register('PulledView', PulledView, [ 'ComicCollection', 'StorageInterface', 'AlertService' ]);
         Injector.register('RulesView', RulesView, [ 'RuleCollection' ]);
         Injector.register('ReleasesController', ReleasesController, [ 'ComicCollection', 'ReleasesView', 'RuleCollection' ]);
         Injector.register('PulledController', PulledController, [ 'ComicCollection', 'PulledView' ]);

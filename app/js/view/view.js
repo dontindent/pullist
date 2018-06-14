@@ -7,6 +7,7 @@ class View {
         this._readytoView = false;
         this.readyToViewEvent = new Event (this);
         this.navigatedToEvent = new Event (this);
+        this.navigatingFromEvent = new Event(this);
     }
 
     init() {
@@ -35,7 +36,9 @@ class View {
     }
 
     navigatingFrom () {
+        logger.log('Navigating from', this.callerString);
 
+        this.navigatingFromEvent.notify();
     }
 
     get readyToView () {

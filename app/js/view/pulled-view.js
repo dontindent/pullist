@@ -4,7 +4,6 @@ const logger = require("../misc/logger");
 // eslint-disable-next-line no-unused-vars
 const Utilities = require('../misc/utilities');
 const { ComicListView } = require('./comic-list-view');
-const { Alert } = require('./alert');
 const Pikaday = require('pikaday');
 
 // eslint-disable-next-line no-unused-vars
@@ -38,8 +37,8 @@ const isWindows = remote.getGlobal('isWindows');
 
 // TODO Save and restore state based on navigation
 class PulledView extends ComicListView {
-    constructor (comicCollection, storageInterface) {
-        super(comicCollection, storageInterface);
+    constructor (comicCollection, storageInterface, alertService) {
+        super(comicCollection, storageInterface, alertService);
 
         this.callerString = 'PulledView';
         // noinspection JSUnusedGlobalSymbols
@@ -247,8 +246,8 @@ class PulledView extends ComicListView {
     confirmUnPull (comic, event, funIfTrue) {
         let title = 'Unpull comic?';
         let message = 'Are you sure you want to remove ' + comic.title + ' from your pull list?';
-
-        Alert.confirm(title, message, function (result) {
+        
+        this._alertService.confirm(title, message, function (result) {
             if (result) funIfTrue(event);
             else event.preventDefault();
         });

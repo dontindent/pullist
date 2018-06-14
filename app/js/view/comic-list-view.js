@@ -9,11 +9,13 @@ const Utilities = require('../misc/utilities');
 const ipcChannels = require('../misc/ipc-channels');
 
 class ComicContainer {
-    constructor(view) {
+    constructor (view, alertService) {
         this.view = view;
+        this.alertService = alertService;
 
         this.$detailBackground = $('img#details-background-img');
         this.$detailTitle = $('div#details-content h1');
+        this.$detailCoverLink = $('a#detail-cover-link');
         this.$detailCover = $('img#detail-cover');
         this.$detailWriter = $('div#writer-div p.detail');
         this.$detailArtist = $('div#artist-div p.detail');
@@ -40,7 +42,37 @@ class ComicContainer {
         else {
             ipcRenderer.send(ipcChannels.prefSet, { key: 'includeReprints', value: this.includeReprints });
         }
+
+        this._detailBackgroundLoadedHandler = this._onDetailBackgroundLoaded.bind(this);
+        this._detailCoverLoadedHandler = this._onDetailCoverLoaded.bind(this);
+        this._openInBrowserHandler = this._openInBrowser.bind(this);
+        this._detailCoverLinkClickHandler = this._onDetailCoverLinkClick.bind(this);
     }
+
+    //#region Private Event Handlers
+
+    _onDetailBackgroundLoaded () {
+        this.$detailBackground.removeClass('details-hidden');
+    }
+
+    _onDetailCoverLoaded () {
+        this.$detailCover.removeClass('details-hidden');
+    }
+
+    _openInBrowser (event) {
+        event.preventDefault();
+        let link = event.delegateTarget;
+
+        shell.openExternal(link.href);
+    }
+    
+    _onDetailCoverLinkClick (event) {
+        event.preventDefault();
+        
+        this.alertService.showCoverOverlay(this.view._selectedComicElement.comic);
+    }
+
+    //#endregion
 
     select (selectedComicElement) {
         let comic = selectedComicElement.comic;
@@ -50,26 +82,17 @@ class ComicContainer {
         this.update (comic);
     }
 
-    update(comic) {
-        let container = this;
-
-        this.detailBackgroundLoadedFunction = function() {
-            container.$detailBackground.removeClass('details-hidden');
-        };
-
-        this.detailCoverLoadedFunction = function() {
-            container.$detailCover.removeClass('details-hidden');
-        };
-
-        this.openInBrowserFunction = function(event) {
-            event.preventDefault();
-            let link = event.delegateTarget;
-
-            shell.openExternal(link.href);
-        };
-
-        this.$detailBackground.on('load', this.detailBackgroundLoadedFunction);
-        this.$detailCover.on('load', this.detailCoverLoadedFunction);
+    update (comic, handlers = true) {
+        if (handlers) {
+            this.$detailBackground.on('load', this._detailBackgroundLoadedHandler);
+            this.$detailCover.on('load', this._detailCoverLoadedHandler);
+            this.$detailCoverLink.on('click', this._detailCoverLinkClickHandler);
+            this.$watchButton.on('click', this.view.watchSelectedModeComicHandler);
+            this.$unWatchButton.on('click', this.view.unWatchSelectedModelComicHandler);
+            this.$pullButton.on('click', this.view.pullSelectedModelComicHandler);
+            this.$unPullButton.on('click', this.view.unPullSelectedModelComicHandler);
+            this.$detailCodeLink.on('click', this._openInBrowserHandler);
+        }
 
         this.$detailBackground.addClass('details-hidden');
         this.$detailBackground.attr('src', comic.coverURL);
@@ -80,7 +103,6 @@ class ComicContainer {
         this.$detailArtist.text(comic.artist);
         this.$detailPublisher.text(comic.publisher);
         this.$detailCode.text(comic.code);
-        //@ts-ignore
         this.$detailCodeLink.attr('href', global.detailUrlBase + comic.code);
         this.$detailPrice.text('$' + comic.price.toFixed(2));
         this.$detailDescription.text(comic.description);
@@ -93,26 +115,21 @@ class ComicContainer {
             this.$lastPulledDiv.addClass('details-hidden');
         }
 
-        this.$watchButton.on('click', this.view.watchSelectedModeComicHandler);
-        this.$unWatchButton.on('click', this.view.unWatchSelectedModelComicHandler);
-        this.$pullButton.on('click', this.view.pullSelectedModelComicHandler);
-        this.$unPullButton.on('click', this.view.unPullSelectedModelComicHandler);
-        this.$detailCodeLink.on('click', this.openInBrowserFunction);
-
         ComicListView.updateHeaderButtons(comic);
     }
 
-    unSelect(selectedComicElement) {
-        $(selectedComicElement).removeClass('selected-comic');
+    unSelect (selectedComicElement, refresh = false) {
+        if (!refresh) $(selectedComicElement).removeClass('selected-comic');
 
-        this.$detailBackground.off('load', this.detailBackgroundLoadedFunction);
-        this.$detailCover.off('load', this.detailCoverLoadedFunction);
+        this.$detailBackground.off('load', this._detailBackgroundLoadedHandler);
+        this.$detailCover.off('load', this._detailCoverLoadedHandler);
+        this.$detailCoverLink.off('click', this._detailCoverLinkClickHandler);
 
         this.$watchButton.off('click', this.view.watchSelectedModeComicHandler);
         this.$unWatchButton.off('click', this.view.unWatchSelectedModelComicHandler);
         this.$pullButton.off('click', this.view.pullSelectedModelComicHandler);
         this.$unPullButton.off('click', this.view.unPullSelectedModelComicHandler);
-        this.$detailCodeLink.off('click', this.openInBrowserFunction);
+        this.$detailCodeLink.off('click', this._openInBrowserHandler);
     }
 }
 
@@ -171,12 +188,13 @@ class ComicListViewState {
 }
 
 class ComicListView extends View  {
-    constructor (comicCollection, storageInterface) {
+    constructor (comicCollection, storageInterface, alertService) {
         super();
 
         this.callerString = 'ComicListView';
         this._comicCollection = comicCollection;
         this._storageInterface = storageInterface;
+        this._alertService = alertService;
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
         this._filtered = false;
@@ -187,6 +205,8 @@ class ComicListView extends View  {
         this.refreshedListEvent = new Event(this);
         this.needLastComicPulledEvent = new Event(this);
     }
+
+    //#region Setup
 
     createChildren () {
         this.$searchAndButtons = $('div#search-and-buttons');
@@ -245,7 +265,6 @@ class ComicListView extends View  {
         this._storageInterface.storageUnstableEvent.attach(this.comicsUnstableHandler);
         this._storageInterface.storageStableEvent.attach(this.comicsStableHandler);
 
-        //@ts-ignore
         this.$comicListWrapper.resizable({
             containment: 'parent',
             handles: 'e',
@@ -253,6 +272,8 @@ class ComicListView extends View  {
 
         return this;
     }
+
+    //#endregion
 
     navigatedTo () {
         super.navigatedTo();
@@ -278,6 +299,7 @@ class ComicListView extends View  {
         this._comicCollection.retrievedComicsEvent.unattach(this.retrievedComicsHandler);
         this._comicCollection.comicListProcessedEvent.unattach(this.comicListProcessedHandler);
         this._comicCollection.comicProcessedEvent.unattach(this.comicProcessedHandler);
+        this._comicCollection.lastIssueUpdatedEvent.unattach(this.modelComicLastPulledUpdateHandler);
         this._storageInterface.storageUnstableEvent.unattach(this.comicsUnstableHandler);
         this._storageInterface.storageStableEvent.unattach(this.comicsStableHandler);
 
@@ -297,7 +319,6 @@ class ComicListView extends View  {
 
             comic.pullStatusChangedEvent.unattach(this.modelComicPulledHandler);
             comic.watchStatusChangedEvent.unattach(this.modelComicWatchedHandler);
-            // comic.lastIssueUpdatedEvent.unattach(this.modelComicLastPulledUpdateHandler);
         }
     }
 
@@ -446,59 +467,68 @@ class ComicListView extends View  {
     createList (comicsByPublisher) {
         if (!this.shouldCreateList()) return;
         
+        let view = this;
         let elementCount = 0;
         let $comicList = $('#comic-list-container');
         let $publisherTemplate = $($('#publisher-template').prop('content')).find('.publisher-group');
-        let $comicListTemplate = $($('#comic-list-template').prop('content')).find('.list-comic');
 
         $comicList.empty();
 
         for (let publisher in comicsByPublisher) {
             if (!comicsByPublisher.hasOwnProperty(publisher)) continue;
-
             let $publisherTemplateClone = $publisherTemplate.clone();
 
-            $($publisherTemplateClone).find('.publisher-heading').text(publisher);
-
-            let $publisherComics = $($publisherTemplateClone).find('.publisher-list');
-            let view = this;
-            let comicCount = 0;
-
-            // jshint -W083
-            comicsByPublisher[publisher].forEach(function (comic) {
-                if (view.defaultComicListFilter(comic)) {
-                    let $comicListTemplateClone = $comicListTemplate.clone();
-                    let $pullButton = $($comicListTemplateClone).find('.comic-list-button');
-
-                    $($comicListTemplateClone).find('.comic-title-list').text(comic.title);
-                    $($comicListTemplateClone).find('.comic-writer-list').text(comic.writer);
-                    $($comicListTemplateClone).find('.comic-artist-list').text(comic.artist);
-
-                    comic.pullStatusChangedEvent.attach(view.modelComicPulledHandler);
-                    comic.watchStatusChangedEvent.attach(view.modelComicWatchedHandler);
-
-                    $comicListTemplateClone[0].comic = comic;
-
-                    $comicListTemplateClone.on('click', view.comicElementSelectedHandler);
-                    $pullButton.on('click', {comic: comic}, view.comicPullButtonHandler);
-
-                    if (comic.pulled) {
-                        $pullButton.addClass('active');
-                    }
-
-                    $comicListTemplateClone.appendTo($publisherComics);
-                    comicCount++;
-                }
-            });            
-            // jshint +W083
-
-            if (comicCount) $publisherTemplateClone.appendTo($comicList);
+            let comicCount = this.createPublisherGroup($publisherTemplateClone, view, publisher, comicsByPublisher);
             
             elementCount += comicCount;
+
+            if (comicCount) {
+                $publisherTemplateClone.appendTo($comicList);
+            }        
         }
 
         logger.log([ 'Created', elementCount, 'comic elements for list' ], this.callerString);
         this.refreshedListEvent.notify(null);
+    }
+
+    createPublisherGroup ($publisherTemplate, view, publisher, comicsByPublisher) {
+        $($publisherTemplate).find('.publisher-heading').text(publisher);
+
+        let $publisherComics = $($publisherTemplate).find('.publisher-list');
+        let comicCount = 0;
+        let $comicListTemplate = $($('#comic-list-template').prop('content')).find('.list-comic');
+
+        for (let comic of comicsByPublisher[publisher]) {
+            comicCount += this.createComicElement(view, comic, $comicListTemplate, $publisherComics);
+        }
+        
+        return comicCount;
+    }
+
+    createComicElement(view, comic, $comicListTemplate, $publisherComics) {
+        if (view.defaultComicListFilter(comic)) {
+            let $comicListTemplateClone = $comicListTemplate.clone();
+            let $pullButton = $($comicListTemplateClone).find('.comic-list-button');
+
+            $($comicListTemplateClone).find('.comic-title-list').text(comic.title);
+            $($comicListTemplateClone).find('.comic-writer-list').text(comic.writer);
+            $($comicListTemplateClone).find('.comic-artist-list').text(comic.artist);
+
+            comic.pullStatusChangedEvent.attach(view.modelComicPulledHandler);
+            comic.watchStatusChangedEvent.attach(view.modelComicWatchedHandler);
+            $comicListTemplateClone[0].comic = comic;
+            $comicListTemplateClone.on('click', view.comicElementSelectedHandler);
+            $pullButton.on('click', { comic: comic }, view.comicPullButtonHandler);
+
+            if (comic.pulled) {
+                $pullButton.addClass('active');
+            }
+            $comicListTemplateClone.appendTo($publisherComics);
+
+            return 1;
+        }
+
+        return 0;
     }
 
     comicElementSelected (event) {
@@ -514,7 +544,7 @@ class ComicListView extends View  {
         let oldSelectedComicContainer = this._selectedComicContainer;
 
         this._selectedComicElement = event.delegateTarget;
-        this._selectedComicContainer = new ComicContainer(this);
+        this._selectedComicContainer = new ComicContainer(this, this._alertService);
 
         if (oldSelectedComicContainer) {
             oldSelectedComicContainer.unSelect(oldSelectedComicElement);
@@ -526,6 +556,8 @@ class ComicListView extends View  {
         if (Date.compareDates(comic.lastPulledDate, new Date(-8640000000000000))) {
             this.needLastComicPulledEvent.notify(comic);
         }
+
+        logger.log([ 'New element selected for:', comic.title ], this.callerString);
 
         this.$comicDetailsNone.hide();
     }
@@ -561,7 +593,7 @@ class ComicListView extends View  {
     omModelComicLastPulledUpdate (sender, args) {
         let comic = args;
         if (this._selectedComicElement.comic === comic) {
-            this._selectedComicContainer.update(comic);
+            this._selectedComicContainer.update(comic, false);
         }
     }
 

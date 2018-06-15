@@ -149,6 +149,7 @@ div#comic-list-container {
     box-sizing: content-box;
     overflow-x: hidden;
     overflow-y: auto;
+    scroll-behavior: smooth;
     flex: 1;
     height: auto !important;
 }

@@ -1,5 +1,11 @@
+const { clipboard, remote, screen } = require('electron');
+const { Menu, MenuItem } = remote;
+
 const path = require('path');
 const url = require('url');
+const scrollSnapPolyfill = require('css-scroll-snap-polyfill');
+const smoothscroll = require('smoothscroll-polyfill');
+require('jquery.scrollto');
 
 let modalInUse = false;
 
@@ -10,8 +16,8 @@ class AlertService {
     }
 
     showCoverOverlay (comic) {
-        if (!this._coverOverlay) this._coverOverlay = new CoverOverlay(comic);
-        else this._coverOverlay.comic = comic;
+        this._coverOverlay = new CoverOverlay(comic);
+        this._coverOverlay.comic = comic;
 
         this._coverOverlay.show();
     }
@@ -123,6 +129,7 @@ class ConfirmAlertWindow {
 class ModalOverlay {
     constructor () {
         this._init();
+        this._isVisible = false;
     }
 
     //#region Setup
@@ -197,14 +204,19 @@ class ModalOverlay {
 
     _modalVisible () {
         this.$modalBackground.css('opacity', 0.5);
+        this._isVisible = true;
     }
 }
 
+// TODO Try to figure out how to get CSS to properly scale with window
 class CoverOverlay extends ModalOverlay {
     constructor (comic) {
         super();
 
+        this._originalComic = comic;
         this._comic = comic;
+        this._prevQueue = [];
+        this._nextQueue = [];
     }
 
     //#region Setup
@@ -215,8 +227,11 @@ class CoverOverlay extends ModalOverlay {
 
     _setupHandlers () {
         super._setupHandlers();
-        this._closeButtonClicedkHandler = this._onCloseButtonClicked.bind(this);
-        
+        this._closeButtonClickedHandler = this._onCloseButtonClick.bind(this);
+        this._coverImageLoadedHandler = this._onCoverImageLoad.bind(this);
+        this._prevButtonClickedHandler = this._onPrevButtonClick.bind(this);
+        this._nextButtonClickedHandler = this._onNextButtonClick.bind(this);
+        this._carouselRightClickedHandler = this._onCarouselRightClick.bind(this);
     }
 
     _enable () {
@@ -239,9 +254,47 @@ class CoverOverlay extends ModalOverlay {
 
     //#region Event Handlers
 
-    _onCloseButtonClicked (event) {
+    _onCloseButtonClick (event) {
         event.preventDefault();
         this.hide();
+    }
+
+    _onCoverImageLoad () {
+        this.$coverCarousel.css('opacity', 1.0); 
+    }
+    
+    _onPrevButtonClick (event) {
+        event.preventDefault();
+
+        if (!this._prevQueue.length) throw 'No previous comic cover to load.'
+
+        let tempComic = this._prevQueue.pop();
+        this._nextQueue.unshift(this.comic);
+        this.comic = tempComic;
+        
+        this.$coverCarousel.scrollTo(this._imageDict[tempComic.originalString], 200);
+
+        this._updateComic();
+    }
+
+    _onNextButtonClick (event) {
+        event.preventDefault();
+        
+        if (!this._nextQueue.length) throw 'No next comic cover to load.'
+
+        let tempComic = this._nextQueue.shift();
+        this._prevQueue.push(this.comic);
+        this.comic = tempComic;
+
+        this.$coverCarousel.scrollTo(this._imageDict[tempComic.originalString], 200);
+
+        this._updateComic();
+    }
+
+    _onCarouselRightClick (event) {
+        event.preventDefault;
+
+        this.comicImageContextMenu.popup(remote.getCurrentWindow());
     }
 
     //#endregion
@@ -249,30 +302,112 @@ class CoverOverlay extends ModalOverlay {
     _populateContent () {
         super._populateContent();
 
+        this._prevQueue = [];
+        this._nextQueue = [].concat(this.comic.variantList);
+        this._imageDict = new Map();
+
+        let imageArray = [ this.comic ].concat(this.comic.variantList);
+        
         let $modalContentRoot = $($('#cover-overlay-template').prop('content')).find('div#cover-overlay-container');
         let $modalContentRootClone = $modalContentRoot.clone();
-
-        let $modalTitle = $modalContentRootClone.find('h2#cover-overlay-title-text');
-        this.$modalCoverImage = $modalContentRootClone.find('img#cover-overlay-cover-image');
-        this.$closeButton = $modalContentRootClone.find('a#cover-overlay-close-button');
         
-        this.$closeButton.on('click', this._closeButtonClicedkHandler);
+        this.$modalTitle = $modalContentRootClone.find('h2#cover-overlay-title-text');
+        this.$closeButton = $modalContentRootClone.find('a#cover-overlay-close-button');
+        this.$coverCarousel = $modalContentRootClone.find('div#cover-image-carousel');
+        this.$coverImagesContainer = $modalContentRootClone.find('div#cover-images-container');
+        this.$transitionCoverImage = $modalContentRootClone.find('img#cover-overlay-transition-image');
+        this.$prevButton = $modalContentRootClone.find('a#previous-cover');
+        this.$nextButton = $modalContentRootClone.find('a#next-cover');
 
-        $modalTitle.text(this.comic.originalString);
-        this.$modalCoverImage.attr('src', this.comic.coverURL);
+        for (let variant of imageArray) {
+            this._constructCoverImage(variant);
+        }
+
+        this.$modalCoverImage = this.$coverImagesContainer.children(':first');
+        this.$coverCarousel.css('opacity', 0.0);
+        
+        this.$closeButton.on('click', this._closeButtonClickedHandler);
+        this.$modalCoverImage.on('load', this._coverImageLoadedHandler);
+        this.$prevButton.on('click', this._prevButtonClickedHandler);
+        this.$nextButton.on('click', this._nextButtonClickedHandler);
+        this.$coverCarousel.on('contextmenu', this._carouselRightClickedHandler);
+
+        this._updateComic();
+
+        this._constructContextMenu();
 
         $modalContentRootClone.appendTo(this.$modalContent);
     }
 
-    _modalVisible () {
-        super._modalVisible();
-        this.$modalCoverImage.css('opacity', 1.0);     
+    _constructCoverImage (variant) {
+        let coverImage = new Image();
+        coverImage.className = 'cover-overlay-cover-image';
+        coverImage.src = variant.coverURL;
+        coverImage.id = variant.originalString;
+        this._imageDict[variant.originalString] = coverImage;
+        $(coverImage).appendTo(this.$coverImagesContainer);
     }
 
-    hide () {
-        this.$closeButton.off('click', this._closeButtonClicedkHandler);
+    _constructContextMenu () {
+        let modal = this;
+        this.comicImageContextMenu = new Menu();
+        this.comicImageContextMenu.append(new MenuItem({
+            label: 'Copy URL',
+            click () {
+                clipboard.writeText(modal.$modalCoverImage[0].src);
+            }
+        }));
+        this.comicImageContextMenu.append(new MenuItem({
+            label: 'Copy Image',
+            click () {
+                let contents = remote.getCurrentWebContents();
+                let pointer = screen.getCursorScreenPoint();
+                contents.copyImageAt(pointer.x, pointer.y);
+            }
+        }));
+    }
 
+    _updateComic () {        
+        this.$modalTitle.text(this.comic.originalString);
+
+        if (this._isVisible) {
+            this.$modalCoverImage = this.$coverImagesContainer.find($(this._imageDict[this.comic.originalString]));
+            this.$coverCarousel.css('width', this.$modalCoverImage.width());
+            this.$coverCarousel.css('max-width', this.$modalCoverImage.width());
+        }
+
+        if (!this._prevQueue.length) {
+            this.$prevButton.addClass('modal-disabled');
+        }
+        else {
+            this.$prevButton.removeClass('modal-disabled');
+        }
+
+        if (!this._nextQueue.length) {
+            this.$nextButton.addClass('modal-disabled');
+        }
+        else {
+            this.$nextButton.removeClass('modal-disabled');
+        }
+    }
+    
+    hide () {
+        this.$closeButton.off('click', this._closeButtonClickedHandler);
+        this.$modalCoverImage.off('load', this._coverImageLoadedHandler);
+        this.$prevButton.off('click', this._prevButtonClickedHandler);
+        this.$nextButton.off('click', this._nextButtonClickedHandler);
+        
         super.hide();
+    }
+
+    _modalVisible () {
+        scrollSnapPolyfill();
+        smoothscroll.polyfill();
+        super._modalVisible();
+
+        this.$coverCarousel.css('width', this.$modalCoverImage.width());
+        this.$coverCarousel.css('max-width', this.$modalCoverImage.width());
+        this.$coverCarousel.css('opacity', 1.0);
     }
 }
 

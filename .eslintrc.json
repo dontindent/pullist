@@ -6,8 +6,10 @@
     },
     "globals": {
         "$": false,
+        "jquery": false,
         "document": false,
-        "window": false
+        "window": false,
+        "Image": false
     },
     "rules": {
         "accessor-pairs": "off",

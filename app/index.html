@@ -10,6 +10,7 @@
     <script>
         global.jQuery = require('jquery');
         global.$ = require('jquery');
+        require('jquery.scrollTo');
     </script>
 
     <link rel="stylesheet" type="text/css" href="js/lib/jquery-ui-1.12.1/jquery-ui.min.css" />
@@ -65,8 +66,20 @@
                 <i class="icons8-cancel"></i>
             </a>
         </div>
-        <img id="cover-overlay-cover-image" src="">
+        <div id="cover-display-container">
+            <div id="cover-image-carousel">
+                <div id="cover-images-container"></div>
+            </div>
+            <a id="previous-cover" class="cover-overlay-nav-button">
+                <i class="icons8-left-arrow"></i>
+            </a>
+            <a id="next-cover" class="cover-overlay-nav-button">
+                <i class="icons8-arrow-pointing-to-right"></i>
+            </a>
+        </div>
     </div>
 </template>
+<script>
+</script>
 </body>
 </html>

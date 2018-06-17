@@ -3,8 +3,6 @@ const { Menu, MenuItem } = remote;
 
 const path = require('path');
 const url = require('url');
-const scrollSnapPolyfill = require('css-scroll-snap-polyfill');
-const smoothscroll = require('smoothscroll-polyfill');
 require('jquery.scrollto');
 
 let modalInUse = false;
@@ -272,7 +270,9 @@ class CoverOverlay extends ModalOverlay {
         this._nextQueue.unshift(this.comic);
         this.comic = tempComic;
         
-        this.$coverCarousel.scrollTo(this._imageDict[tempComic.originalString], 200);
+        this.$coverCarousel.scrollTo(this._imageDict[tempComic.originalString], 600,  {
+            easing: 'easeOutExpo'
+        });
 
         this._updateComic();
     }
@@ -286,7 +286,9 @@ class CoverOverlay extends ModalOverlay {
         this._prevQueue.push(this.comic);
         this.comic = tempComic;
 
-        this.$coverCarousel.scrollTo(this._imageDict[tempComic.originalString], 200);
+        this.$coverCarousel.scrollTo(this._imageDict[tempComic.originalString], 600, {
+            easing: 'easeOutExpo'
+        });
 
         this._updateComic();
     }
@@ -311,13 +313,15 @@ class CoverOverlay extends ModalOverlay {
         let $modalContentRoot = $($('#cover-overlay-template').prop('content')).find('div#cover-overlay-container');
         let $modalContentRootClone = $modalContentRoot.clone();
         
+        this.$modalContentRoot = $modalContentRootClone;
         this.$modalTitle = $modalContentRootClone.find('h2#cover-overlay-title-text');
         this.$closeButton = $modalContentRootClone.find('a#cover-overlay-close-button');
+        this.$coverDisplayContainer = $modalContentRootClone.find('div#cover-display-container');
         this.$coverCarousel = $modalContentRootClone.find('div#cover-image-carousel');
         this.$coverImagesContainer = $modalContentRootClone.find('div#cover-images-container');
-        this.$transitionCoverImage = $modalContentRootClone.find('img#cover-overlay-transition-image');
         this.$prevButton = $modalContentRootClone.find('a#previous-cover');
         this.$nextButton = $modalContentRootClone.find('a#next-cover');
+        this.$modalPrice = $modalContentRootClone.find('span#cover-overlay-price');
 
         for (let variant of imageArray) {
             this._constructCoverImage(variant);
@@ -367,13 +371,17 @@ class CoverOverlay extends ModalOverlay {
         }));
     }
 
-    _updateComic () {        
+    _updateComic () {
         this.$modalTitle.text(this.comic.originalString);
+        this.$modalPrice.text(this.comic.price.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }));
 
         if (this._isVisible) {
             this.$modalCoverImage = this.$coverImagesContainer.find($(this._imageDict[this.comic.originalString]));
-            this.$coverCarousel.css('width', this.$modalCoverImage.width());
-            this.$coverCarousel.css('max-width', this.$modalCoverImage.width());
+            this.$modalContentRoot.css('width', this.$modalCoverImage.width());
+            this.$modalContentRoot.css('max-width', this.$modalCoverImage.width());
         }
 
         if (!this._prevQueue.length) {
@@ -401,12 +409,17 @@ class CoverOverlay extends ModalOverlay {
     }
 
     _modalVisible () {
-        scrollSnapPolyfill();
-        smoothscroll.polyfill();
-        super._modalVisible();
+        let $details = this.$modalContentRoot.find('div#cover-overlay-details');
+        let vhHeight = this.$coverDisplayContainer.height() - $details.height();
 
-        this.$coverCarousel.css('width', this.$modalCoverImage.width());
-        this.$coverCarousel.css('max-width', this.$modalCoverImage.width());
+        for (let image of this.$coverImagesContainer[0].children) {
+            image.style.height = vhHeight + 'px';
+        }
+        
+        this.$modalContentRoot.css('width', this.$modalCoverImage.width());
+        this.$modalContentRoot.css('max-width', this.$modalCoverImage.width());
+
+        super._modalVisible();
         this.$coverCarousel.css('opacity', 1.0);
     }
 }

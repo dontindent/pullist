@@ -26,25 +26,28 @@ div#modal-background {
 div#modal-content {
     position: relative;
     display: flex;
+    height: 100vh;
     max-height: 100vh;
-    max-width: 100vw;
 }
 
 div#cover-overlay-container {
     position: relative;
     background: var(--app-modal-content-background-color);
-    height: 100%;
-    max-height: 100vh;
-    max-width: 100vw;
+    width: auto;
+    min-height: 0;
+    max-width: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     overflow: hidden;
-    transition: width 0.2s, height 0.2s;
-    will-change: width, height;
+    /* transition: max-width 0.2s, height 0.2s;
+    -webkit-transition: max-width 0.2s, height 0.2s;
+    will-change: max-width, height; */
 }
 
 div#cover-overlay-title-container {
     position: relative;
+    flex: 0 0 auto;
     display: grid;
     grid-template-columns: auto 1fr auto;
 }
@@ -56,13 +59,14 @@ h2#cover-overlay-title-text {
     margin-bottom: auto;
     margin-left: 20px;
     color: var(--app-modal-content-foreground-color);
-    font-size: 12pt;
+    font-size: 11pt;
     font-weight: 400;
     white-space: pre-line;
     min-width: 0;
 }
 
 a#cover-overlay-close-button {
+    position: relative;
     grid-column: 3;
     height: 40px;
     width: 40px;
@@ -86,11 +90,11 @@ a#cover-overlay-close-button:active {
 
 div#cover-display-container {
     position: relative;
-    height: 100%;
-    max-height: 100vh;
-    max-width: 100vw;
+    min-height: 0;
+    flex: 1 1 auto;
     display: grid;
     grid-template-columns: auto 1fr auto;
+    grid-template-rows: 1fr auto;
 }
 
 div#cover-image-carousel {
@@ -98,38 +102,37 @@ div#cover-image-carousel {
     grid-column-start: 1;
     grid-column-end: 4;
     grid-row: 1;
-    height: 100%;
-    max-height: 100vh;
-    max-width: 0px;
-    display: flex;
-    overflow-x: scroll;    
-    /* scroll-behavior: smooth; */
-    /* scroll-snap-type: x mandatory; */
+    min-height: 0;
+    overflow-x: scroll;
     touch-action: none;
-    -webkit-transition: opacity 0.2s;
-    transition: opacity 0.2s;
-    will-change: opacity;
+    display: flex;
+    -webkit-transition: opacity 0.2s, width 0.2s, height 0.2s;
+    transition: opacity 0.2s, width 0.2s, height 0.2s;
+    will-change: opacity, width, height;
 }
 
 div#cover-image-carousel::-webkit-scrollbar {
-    width: 0 !important;
+    display: none;
 }
 
 div#cover-images-container {
-    position: relative;
-    flex: 1;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: row;
-    transition: translate 0.2s;
-    will-change: translate;
+    min-height: 0;
+    /* max-height: inherit; */
+    max-width: fit-content;
 }
 
 img.cover-overlay-cover-image {
     position: relative;
-    max-height: 100vh;
+    min-height: 0;
+    flex: 0 0 auto;
     user-select: none;
-    /* scroll-snap-align: start; */
-    z-index: var(--layer-1);
+    /* object-fit: scale-down; */
 }
 
 a.cover-overlay-nav-button {
@@ -138,6 +141,8 @@ a.cover-overlay-nav-button {
     margin-bottom: auto;
     height: 100px;
     width: 50px;
+    grid-row-start: 1;
+    grid-row-end: 3;
     background: rgba(0, 0, 0, 0.4);
     color: var(--app-modal-content-foreground-color);
     font-size: 16pt;
@@ -170,10 +175,28 @@ div#cover-display-container:hover
 
 a#previous-cover {
     grid-column: 1;
-    grid-row: 1;
 }
 
 a#next-cover {
     grid-column: 3;
-    grid-row: 1;
+}
+
+div#cover-overlay-details {
+    position: relative;
+    grid-column-start: 1;
+    grid-column-end: 4;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.4);
+    align-self: end;
+    z-index: var(--layer-2);
+    justify-content: center;
+    align-items: center;
+}
+
+span#cover-overlay-price {
+    color: var(--app-modal-content-foreground-color);
+    font-size: 16pt;
+    margin: 10px 20px;
 }

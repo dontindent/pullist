@@ -42,6 +42,10 @@ class StorageWindow {
 
     storageRequest (event, comic) {
         comic.releaseDate = new Date(comic.releaseDate).valueOf();
+        comic.pulled = comic._pulled;
+        comic.watched = comic._watched;
+
+        console.log(comic);
 
         this.storeQueue.push(comic);
 

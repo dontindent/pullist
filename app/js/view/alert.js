@@ -236,7 +236,6 @@ class ModalOverlay {
     }
 }
 
-// TODO Try to figure out how to get CSS to properly scale with window
 class CoverOverlay extends ModalOverlay {
     constructor(electronHelper, comic, pullCallback = null) {
         super(electronHelper);
@@ -338,6 +337,7 @@ class CoverOverlay extends ModalOverlay {
         if (typeof this._pullCallback === typeof this._onPullButtonClick) {
             this._pullCallback(this.comic);
             this._updateComic();
+            this.hide();
         }
     }
 

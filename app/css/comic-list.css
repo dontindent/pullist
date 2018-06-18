@@ -260,16 +260,18 @@ div.comic-details-list {
 }
 
 p.comic-writer-list {
-    margin: 0;
     display: block;
+    margin: 0;
     overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 p.comic-artist-list {
-    margin: 0;
     display: block;
+    margin: 0;
     overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 

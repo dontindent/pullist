@@ -1,27 +1,29 @@
-const { remote, ipcRenderer } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const ipcChannels = require('../../misc/ipc-channels');
 // eslint-disable-next-line no-unused-vars
 const Utilities = require('../../misc/utilities');
-
-const storageWindow = remote.getGlobal ('storageWindow');
 const logger = require('../../misc/logger');
 
 class StorageInterface {
-    constructor () {
-        this.callerString = 'StorageInterface';
-        this._storageQueue = [];
-        this._storageCallbacksByOriginal = {};
-        this._loadCallbacks = [];
-        this._deleteCallback = null;
+    constructor (electronHelper) {
         this._datesCallback = null;
+        this._deleteCallback = null;
+        this._electronHelper = electronHelper;
+        this._ipcRenderer = this._electronHelper.ipcRenderer;
+        this._loadCallbacks = [];
+        this._storageCallbacksByOriginal = {};
+        this._storageQueue = [];
+        this._storageWindow = this._electronHelper.remote.getGlobal('storageWindow');
         this._storeInProgress = false;
+        this.callerString = 'StorageInterface';
         this.storageReady = false;
 
         this.createEvents();
         this.setupHandlers();
         this.enable();
     }
+
+    // #region Setup
 
     createEvents () {
         this.storageReadyEvent = new Event(this);
@@ -41,14 +43,16 @@ class StorageInterface {
     }
 
     enable () {
-        ipcRenderer.on(ipcChannels.storageReady, this.storageReadyHandler);
+        this._ipcRenderer.on(ipcChannels.storageReady, this.storageReadyHandler);
 
-        ipcRenderer.on(ipcChannels.storeResponse, this.storageResponseHandler);
-        ipcRenderer.on(ipcChannels.loadResponse, this.loadResponseHandler);
-        ipcRenderer.on(ipcChannels.loadLastResponse, this.loadLastResponseHandler);
-        ipcRenderer.on(ipcChannels.deleteResponse, this.deleteResponseHandler);
-        ipcRenderer.on(ipcChannels.datesResponse, this.datesResponseHandler);
+        this._ipcRenderer.on(ipcChannels.storeResponse, this.storageResponseHandler);
+        this._ipcRenderer.on(ipcChannels.loadResponse, this.loadResponseHandler);
+        this._ipcRenderer.on(ipcChannels.loadLastResponse, this.loadLastResponseHandler);
+        this._ipcRenderer.on(ipcChannels.deleteResponse, this.deleteResponseHandler);
+        this._ipcRenderer.on(ipcChannels.datesResponse, this.datesResponseHandler);
     }
+
+    // #endregion
 
     get storeInProgress () { 
         return this._storeInProgress;
@@ -84,7 +88,7 @@ class StorageInterface {
             let comicToStore = prepComicForSend(this._storageQueue.shift());
 
             logger.log([ 'Sending store request for:', comicToStore.originalString ], this.callerString);
-            storageWindow.webContents.send(ipcChannels.storeRequest, comicToStore);
+            this._storageWindow.webContents.send(ipcChannels.storeRequest, comicToStore);
             this.storeInProgress = true;
         }
     }
@@ -93,7 +97,7 @@ class StorageInterface {
         this._datesCallback = callback;
 
         logger.log([ 'Sending request for all available dates' ], this.callerString);
-        storageWindow.webContents.send(ipcChannels.datesRequest, null);
+        this._storageWindow.webContents.send(ipcChannels.datesRequest, null);
 
         return true;
     }
@@ -102,7 +106,7 @@ class StorageInterface {
         this._loadCallbacks.push(callback);
 
         logger.log([ 'Sending load request for comics from:', new Date(date) ], this.callerString);
-        storageWindow.webContents.send(ipcChannels.loadRequest, date);
+        this._storageWindow.webContents.send(ipcChannels.loadRequest, date);
 
         return true;
     }
@@ -111,7 +115,7 @@ class StorageInterface {
         this._loadCallbacks.push(callback);
 
         logger.log([ 'Sending load request for previous comic to', series, number ], this.callerString);
-        storageWindow.webContents.send(ipcChannels.loadLastRequest, { series: series, number: number });
+        this._storageWindow.webContents.send(ipcChannels.loadLastRequest, { series: series, number: number });
 
         return true;
     }
@@ -120,7 +124,7 @@ class StorageInterface {
         this._deleteCallback = callback;
 
         logger.log([ 'Sending delete request for comics not from:', date ], this.callerString);
-        storageWindow.webContents.send(ipcChannels.deleteRequest, date);
+        this._storageWindow.webContents.send(ipcChannels.deleteRequest, date);
     }
 
     storageResponse (event, message) {
@@ -196,7 +200,7 @@ function prepComicForSend (comic) {
     return cloneComic;
 }
 
-const storageInterface = new StorageInterface();
+// const storageInterface = new StorageInterface();
 // Object.freeze(storageInterface);
 
-exports = module.exports = storageInterface;
+exports = module.exports = StorageInterface;

@@ -87,10 +87,8 @@ class IndexView {
     initMVC () {
         let UserPrefs = remote.getGlobal('userPrefs');
 
-        // console.log(StorageInterface);
-
         Injector.register('UserPrefs', UserPrefs);
-        Injector.register('StorageInterface', StorageInterface)
+        Injector.register('StorageInterface', StorageInterface, [ 'ElectronHelper' ]);
         Injector.register('ComicDataService', ComicDataService, [ 
             'StorageInterface', 
             'UserPrefs' 

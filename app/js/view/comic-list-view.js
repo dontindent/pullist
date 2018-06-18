@@ -238,36 +238,30 @@ class ComicListView extends View {
     }
 
     setupHandlers() {
-        this.searchInputFocusInHandler = this._onSearchInputFocusIn.bind(this);
-        this.searchInputFocusOutHandler = this._onSearchInputFocusOut.bind(
-            this);
-        this.searchInputKeyHandler = this._onSearchInputKeyUp.bind(this);
         this.searchButtonHandler = this._onSearch.bind(this);
         this.searchCancelHandler = this._omClearSearch.bind(this);
+        this.searchInputFocusInHandler = this._onSearchInputFocusIn.bind(this);
+        this.searchInputFocusOutHandler = this._onSearchInputFocusOut.bind(this);
+        this.searchInputKeyHandler = this._onSearchInputKeyUp.bind(this);
 
-        this.retrievedComicsHandler = this._onRetrievedComics.bind(this);
         this.comicListProcessedHandler = this._onAllComicsProcessed.bind(this);
-        this.comicProcessedHandler = this._onSingleComicProcessed.bind(this);
-        this.comicsUnstableHandler = this._onComicsUnstable.bind(this);
-        this.comicsStableHandler = this._onComicsStable.bind(this);
         this.comicListScrolledHandler = this._onComicListScrolled.bind(this);
+        this.comicProcessedHandler = this._onSingleComicProcessed.bind(this);
+        this.comicsStableHandler = this._onComicsStable.bind(this);
+        this.comicsUnstableHandler = this._onComicsUnstable.bind(this);
+        this.retrievedComicsHandler = this._onRetrievedComics.bind(this);
 
-        this.comicElementSelectedHandler = this._onComicElementSelected.bind(
-            this);
+        this.comicElementSelectedHandler = this._onComicElementSelected.bind(this);
+        this.comicPullButtonHandler = this._onComicPullButtonClick.bind(this);
+        this.modelComicLastPulledUpdateHandler = this._omModelComicLastPulledUpdate.bind(this);
+        this.modelComicMainChangedHandler= this._onModelComicMainChanged.bind(this);
         this.modelComicPulledHandler = this._onModelComicPulled.bind(this);
         this.modelComicWatchedHandler = this._onModelComicWatched.bind(this);
-        this.comicPullButtonHandler = this._onComicPullButtonClick.bind(this);
-        this.modelComicLastPulledUpdateHandler = this._omModelComicLastPulledUpdate
-            .bind(this);
-
-        this.watchSelectedModeComicHandler = this._onWatchSelectedModelComic.bind(
-            this);
-        this.unWatchSelectedModelComicHandler = this._onUnWatchSelectedModelComic
-            .bind(this);
-        this.pullSelectedModelComicHandler = this._onPullSelectedModelComic.bind(
-            this);
-        this.unPullSelectedModelComicHandler = this._onUnPullSelectedModelComic
-            .bind(this);
+        
+        this.pullSelectedModelComicHandler = this._onPullSelectedModelComic.bind(this);
+        this.unPullSelectedModelComicHandler = this._onUnPullSelectedModelComic.bind(this);
+        this.unWatchSelectedModelComicHandler = this._onUnWatchSelectedModelComic.bind(this);
+        this.watchSelectedModeComicHandler = this._onWatchSelectedModelComic.bind(this);
 
         return this;
     }
@@ -327,8 +321,7 @@ class ComicListView extends View {
 
         // We don't want to select a comic in cases where the target is the pull button
         if (event.target.classList.contains('comic-list-button') ||
-            event.target.parentNode.classList.contains('comic-list-button')
-        ) {
+            event.target.parentNode.classList.contains('comic-list-button')) {
             return;
         }
 
@@ -366,13 +359,9 @@ class ComicListView extends View {
 
     _onComicsStable () {
         logger.log('Storage stable', this.callerString);
-
-        this.retrieveActive = true;
-        this.$comicList.removeClass('disabled');
     }
 
     _onComicsUnstable () {
-        this.retrieveActive = false;
     }
 
     _omModelComicLastPulledUpdate (sender, args) {
@@ -380,6 +369,14 @@ class ComicListView extends View {
         if (this._selectedComicElement.comic === comic) {
             this._selectedComicContainer.update(comic, false);
         }
+    }
+
+    _onModelComicMainChanged (sender) {
+        let oldMain = sender;
+
+        this.updateComicElement(this, oldMain.mainComic, this._selectedComicElement);
+        this._selectedComicContainer.update(oldMain.mainComic);
+
     }
 
     _onModelComicPulled (sender, args) {
@@ -569,8 +566,9 @@ class ComicListView extends View {
         let view = this;
         let elementCount = 0;
         let $comicList = $('#comic-list-container');
-        let $publisherTemplate = $($('#publisher-template').prop('content'))
-            .find('.publisher-group');
+        let $publisherTemplate = $($('#publisher-template').prop('content')).find(
+            '.publisher-group'
+        );
 
         $comicList.empty();
 
@@ -615,18 +613,15 @@ class ComicListView extends View {
     createComicElement (view, comic, $comicListTemplate, $publisherComics) {
         if (view.defaultComicListFilter(comic)) {
             let $comicListTemplateClone = $comicListTemplate.clone();
-            let $pullButton = $($comicListTemplateClone).find(
-                '.comic-list-button');
+            let $pullButton = $($comicListTemplateClone).find('.comic-list-button');
 
-            $($comicListTemplateClone).find('.comic-title-list').text(comic
-                .title);
-            $($comicListTemplateClone).find('.comic-writer-list').text(
-                comic.writer);
-            $($comicListTemplateClone).find('.comic-artist-list').text(
-                comic.artist);
+            $($comicListTemplateClone).find('.comic-title-list').text(comic.title);
+            $($comicListTemplateClone).find('.comic-writer-list').text(comic.writer);
+            $($comicListTemplateClone).find('.comic-artist-list').text(comic.artist);
 
             comic.pullStatusChangedEvent.attach(view.modelComicPulledHandler);
             comic.watchStatusChangedEvent.attach(view.modelComicWatchedHandler);
+            comic.mainUpdatedEvent.attach(view.modelComicMainChangedHandler);
             $comicListTemplateClone[0].comic = comic;
             $comicListTemplateClone.on('click', view.comicElementSelectedHandler);
             $pullButton.on('click', {
@@ -636,12 +631,40 @@ class ComicListView extends View {
             if (comic.pulled) {
                 $pullButton.addClass('active');
             }
+
             $comicListTemplateClone.appendTo($publisherComics);
 
             return 1;
         }
 
         return 0;
+    }
+
+    updateComicElement (view, comic, comicElement) {
+        let $pullButton = $(comicElement).find('.comic-list-button');
+
+        // Unattach the previous listenters from the old comic
+        comic.pullStatusChangedEvent.unattach(view.modelComicPulledHandler);
+        comic.watchStatusChangedEvent.unattach(view.modelComicWatchedHandler);
+        comic.mainUpdatedEvent.unattach(view.modelComicMainChangedHandler);
+        $pullButton.off('click', view.comicPullButtonHandler);
+
+        // Attach event listeners to the new comic
+        comic.pullStatusChangedEvent.attach(view.modelComicPulledHandler);
+        comic.watchStatusChangedEvent.attach(view.modelComicWatchedHandler);
+        comic.mainUpdatedEvent.attach(view.modelComicMainChangedHandler);
+        comicElement.comic = comic;
+        $pullButton.on('click', {
+            comic: comic
+        }, view.comicPullButtonHandler);
+
+        if (comic.pulled) {
+            $pullButton.addClass('active');
+        }
+        else {
+            $pullButton.removeClass('active');
+        }
+
     }
 
     // This can't be static because the methods that override it may rely on class data

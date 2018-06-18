@@ -226,7 +226,10 @@ class PulledView extends ComicListView {
                 weekdays      : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
                 weekdaysShort : ['Su','Mo','Tu','We','Th','Fr','Sa']
             },
-            onSelect: (date) => pulledView.selectedDate = date
+            onSelect: (date) => {
+                pulledView.selectedDate = date;
+                pulledView.picker.isOpen = false;
+            }
         });
         this.picker.isOpen = false;
 
@@ -304,8 +307,8 @@ class PulledView extends ComicListView {
     }
 
     updateDateElements () {
-
-        // If no date is selected, we assume that no data exists in the database, and that there are no other pull lists to select from
+        // If no date is selected, we assume that no data exists in the database, 
+        // and that there are no other pull lists to select from
         if (!this.selectedDate) {
             this.$calendarIcon.hide();
             this.$nextDateButton.addClass('disabled');
@@ -330,9 +333,7 @@ class PulledView extends ComicListView {
             this.$prevDateButton.removeClass('disabled');
         }
 
-        // noinspection JSUnresolvedFunction
         this.picker.setDate(this.selectedDate);
-        // noinspection JSUnresolvedFunction
         this.picker.gotoDate(this.selectedDate);
     }
 }

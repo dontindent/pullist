@@ -276,7 +276,7 @@ function removeNonComics(comicService) {
     comicService.comicCount = 0;
 
     for (let comic of comicService.comicsByOriginal.values()) {
-        if (!comic.writer && !comic.artist && !comic.coverArtist) {
+        if (!comic.writer && !comic.artist) {
             comicService.comicsByOriginal.delete(comic.originalString);
             comicService.comicDict.delete(comic.key);
         }

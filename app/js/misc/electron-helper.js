@@ -1,4 +1,4 @@
-const { clipboard, remote, screen } = require('electron');
+const { clipboard, remote, screen, ipcRenderer } = require('electron');
 const { Menu, MenuItem } = remote;
 const path = require('path');
 const url = require('url');
@@ -15,6 +15,18 @@ class ElectronHelper {
         return clipboard;
     }
     
+    get ipcRenderer () {
+        return ipcRenderer;
+    }
+
+    get Menu () {
+        return Menu;
+    }
+
+    get MenuItem () {
+        return MenuItem;
+    }
+    
     get remote () {
         return remote;
     }
@@ -25,14 +37,6 @@ class ElectronHelper {
 
     get window () {
         return remote.getCurrentWindow();
-    }
-
-    get Menu () {
-        return Menu;
-    }
-
-    get MenuItem () {
-        return MenuItem;
     }
 }
 

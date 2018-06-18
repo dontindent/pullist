@@ -53,6 +53,9 @@ class ReleasesView extends ComicListView {
 
     _onComicsStable (sender, args) {
         super._onComicsStable(sender, args);
+
+        this.retrieveActive = true;
+        this.$comicList.removeClass('disabled');
         this.$retrieveButton.removeClass('disabled');
     }
 
@@ -63,6 +66,8 @@ class ReleasesView extends ComicListView {
 
     _onComicsUnstable (sender, args) {
         super._onComicsUnstable(sender, args);
+
+        this.retrieveActive = false;
         this.$retrieveButton.addClass('disabled');
     }
 
@@ -102,6 +107,8 @@ class ReleasesView extends ComicListView {
 
         if (this.processedComics === this.numComics) {
             this.$retrieveStatusMessage.text('Storing comics');
+            
+            this.$comicList.removeClass('disabled');
         }
         else {
             let percentComplete = (this.processedComics / this.numComics) * 100;

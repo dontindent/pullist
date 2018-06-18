@@ -1,4 +1,4 @@
-const { app, ipcMain, BrowserWindow, systemPreferences } = require('electron');
+const { app, ipcMain, BrowserWindow, systemPreferences, dialog } = require('electron');
 const path = require('path');
 const url = require('url');
 const Store = require('./app/js/misc/pref-store');
@@ -10,16 +10,20 @@ app.commandLine.appendSwitch('remote-debugging-port', '9222');
 
 let mainWindow = null;
 let storageWindow = null;
+let storageStable = false;
 
 const sender = 'main';
 
 const isWindows = global.isWindows = (process.platform === 'win32');
 const isMac = global.isMac = (process.platform === 'darwin');
 // noinspection JSUnusedLocalSymbols
+// eslint-disable-next-line no-unused-vars
 const isLinux = global.isLinux = (process.platform === 'linux');
 // noinspection JSUnusedLocalSymbols
+// eslint-disable-next-line no-unused-vars
 const isBSD = global.isBSD = (process.platform === 'freebsd');
 // noinspection JSUnusedLocalSymbols
+// eslint-disable-next-line no-unused-vars
 const isSun = global.isSun = (process.platform === 'sunos');
 
 const store = new Store({
@@ -34,7 +38,7 @@ const store = new Store({
 
 global.userPrefs = store.data;
 
-ipcMain.on (ipcChannels.prefGet, function(event, message) {
+ipcMain.on (ipcChannels.prefGet, function (event, message) {
     let key = message;
     let value = store.get(key);
     logger.log('Getting preferences for: \'' + key + '\': ' + value, sender);
@@ -48,7 +52,7 @@ ipcMain.on (ipcChannels.prefSet, function(event, message) {
     event.sender.send(ipcChannels.prefSetSuccess, store.get(key));
 }.bind(this));
 
-ipcMain.on (ipcChannels.prefDelete, function(event, message) {
+ipcMain.on (ipcChannels.prefDelete, function (event, message) {
     let key = message;
     logger.log('Deleting preferences for: \'' + key + '\'', sender);
     let value = store.delete(key);
@@ -59,6 +63,9 @@ ipcMain.on (ipcChannels.prefDelete, function(event, message) {
 ipcMain.on (ipcChannels.getAccentColor, function (event) {
     event.sender.send(ipcChannels.accentColorChanged, systemPreferences.getAccentColor());
 }.bind(this));
+
+ipcMain.on (ipcChannels.storageReady, () => storageStable = true );
+ipcMain.on (ipcChannels.storageStability, (event, message) => storageStable = message );
 
 if (isWindows) {
     systemPreferences.on('accent-color-changed', function (event, newColor) {
@@ -110,8 +117,7 @@ function createWindows (width, height) {
         mainWindow.show();
     });
 
-    mainWindow.on('close', function(event) {
-
+    mainWindow.on('close', function () {
     });
 
     mainWindow.on('closed', () => {
@@ -130,8 +136,15 @@ function createWindows (width, height) {
         store.set('windowBounds', { width, height });
     });
 
-    // noinspection JSUnusedLocalSymbols
-    mainWindow.webContents.on('new-window', (event, url, frameName, disposition, options, additionalFeatures) => {
+    mainWindow.webContents.on('new-window', (
+        event, 
+        url, 
+        frameName, 
+        disposition, 
+        options, 
+        // eslint-disable-next-line no-unused-vars
+        additionalFeatures
+    ) => {
         if (frameName === 'confirm') {
             // Open window as modal
             event.preventDefault();

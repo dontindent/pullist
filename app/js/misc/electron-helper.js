@@ -38,6 +38,10 @@ class ElectronHelper {
     get window () {
         return remote.getCurrentWindow();
     }
+
+    getGlobal (value) {
+        return remote.getGlobal(value);
+    }
 }
 
 exports = module.exports = ElectronHelper;

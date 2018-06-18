@@ -1,50 +1,29 @@
-const storageReady = 'storageReady';
+const IPCChannels = Object.freeze({
+    storageReady: 'storageReady', 
+    storageStability: 'storageStability', 
+    
+    storeRequest: 'storageRequest', 
+    loadRequest: 'loadRequest', 
+    loadLastRequest: 'loadLastRequest', 
+    deleteRequest: 'deleteRequest', 
+    datesRequest: 'datesRequest', 
+    
+    storeResponse: 'storageResponse', 
+    loadResponse: 'loadResponse', 
+    loadLastResponse: 'loadLastResponse', 
+    deleteResponse: 'deleteResponse', 
+    datesResponse: 'datesResponse', 
+    
+    prefGet: 'prefGet', 
+    prefSet: 'prefSet', 
+    prefDelete: 'prefDelete', 
+    
+    prefGetSuccess: 'prefGetSuccess', 
+    prefSetSuccess: 'prefSetSuccess', 
+    prefDeleteSuccess: 'prefDeleteSuccess', 
+    
+    getAccentColor: 'getAccentColor', 
+    accentColorChanged: 'accentColorChanged'
+});
 
-const storeRequest = 'storageRequest';
-const loadRequest = 'loadRequest';
-const loadLastRequest = 'loadLastRequest';
-const deleteRequest = 'deleteRequest';
-const datesRequest = 'datesRequest';
-
-const storeResponse = 'storageResponse';
-const loadResponse = 'loadResponse';
-const loadLastResponse = 'loadLastResponse';
-const deleteResponse = 'deleteResponse';
-const datesResponse = 'datesResponse';
-
-const prefGet = 'prefGet';
-const prefSet = 'prefSet';
-const prefDelete = 'prefDelete';
-
-const prefGetSuccess = 'prefGetSuccess';
-const prefSetSuccess = 'prefSetSuccess';
-const prefDeleteSuccess = 'prefDeleteSuccess';
-
-const getAccentColor = 'getAccentColor';
-const accentColorChanged = 'accentColorChanged';
-
-
-exports.storageReady = module.exports.storageReady = storageReady;
-
-exports.storeRequest = module.exports.storeRequest = storeRequest;
-exports.loadRequest = module.exports.loadRequest = loadRequest;
-exports.loadLastRequest = module.exports.loadLastRequest = loadLastRequest;
-exports.deleteRequest = module.exports.deleteRequest = deleteRequest;
-exports.datesRequest = module.exports.datesRequest = datesRequest;
-
-exports.storeResponse = module.exports.storeResponse = storeResponse;
-exports.loadResponse = module.exports.loadResponse = loadResponse;
-exports.loadLastResponse = module.exports.loadLastResponse = loadLastResponse;
-exports.deleteResponse = module.exports.deleteResponse = deleteResponse;
-exports.datesResponse = module.exports.datesResponse = datesResponse;
-
-exports.prefGet = module.exports.prefGet = prefGet;
-exports.prefSet = module.exports.prefSet = prefSet;
-exports.prefDelete = module.exports.prefDelete = prefDelete;
-
-exports.prefGetSuccess = module.exports.prefGetSuccess = prefGetSuccess;
-exports.prefSetSuccess = module.exports.prefSetSuccess = prefSetSuccess;
-exports.prefDeleteSuccess = module.exports.prefDeleteSuccess = prefDeleteSuccess;
-
-exports.getAccentColor = module.exports.getAccentColor = getAccentColor;
-exports.accentColorChanged = module.exports.accentColorChanged = accentColorChanged;
+exports = module.exports = IPCChannels;

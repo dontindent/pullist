@@ -13,7 +13,7 @@ class StorageInterface {
         this._loadCallbacks = [];
         this._storageCallbacksByOriginal = {};
         this._storageQueue = [];
-        this._storageWindow = this._electronHelper.remote.getGlobal('storageWindow');
+        this._storageWindow = this._electronHelper.getGlobal('storageWindow');
         this._storeInProgress = false;
         this.callerString = 'StorageInterface';
         this.storageReady = false;
@@ -64,6 +64,7 @@ class StorageInterface {
 
             if (this._storeInProgress === true) {
                 this.storageUnstableEvent.notify(null);
+                this._ipcRenderer.send(ipcChannels.storageStability, false);
             }
             // else {
             //     this.storageStableEvent.notify(null);
@@ -143,6 +144,7 @@ class StorageInterface {
 
         if (!this._storageQueue.length) {
             this.storageStableEvent.notify(null);
+            this._ipcRenderer.send(ipcChannels.storageStability, true);
         }
         else {
             logger.log([this._storageQueue.length, 'comics remaining in storage queue'], this.callerString);

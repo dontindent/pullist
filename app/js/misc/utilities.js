@@ -21,16 +21,13 @@ class Utilities {
     }
 }
 
-Object.size = Utilities.getObjectLength;
 
-// The following two functions are based on the Microsoft implementation of DateTimeOffset.
-// A previous version of this idea was implemented as a UWP and historical databases had their times stored as
-// DateTimeOffsets. I want to be able to use those old databases.
+// fromMSDateTimeOffset and toMSDateTimeOffset are based on the Microsoft implementation of 
+// DateTimeOffset. A previous version of this idea was implemented as a UWP and historical databases
+// had their times stored as DateTimeOffsets. I want to be able to use those old databases.
 //
-// DateTimeOffset implementation can be found here: https://referencesource.microsoft.com/#mscorlib/system/datetimeoffset.cs
-Date.prototype.toMSDateTimeOffset = function () {
-    return (this.valueOf() * 10000) + msUnixEpochTicks;
-};
+// DateTimeOffset implementation can be found here: 
+// https://referencesource.microsoft.com/#mscorlib/system/datetimeoffset.cs
 
 Date.fromMSDateTimeOffset = function (ticks) {
     let ticksToMs = (ticks - msUnixEpochTicks) / 10000;
@@ -42,5 +39,23 @@ Date.compareDates = function (d1, d2) {
         d1.getMonth() === d2.getMonth() &&
         d1.getFullYear() === d2.getFullYear();
 };
+
+Date.prototype.toMSDateTimeOffset = function () {
+    return (this.valueOf() * 10000) + msUnixEpochTicks;
+};
+
+Map.fromObject = function (object) {
+    let map = new Map();
+
+    for (let key in object) {
+        if (object.hasOwnProperty(key)) {
+            map[key] = object[key];
+        }
+    }
+
+    return map;
+}
+ 
+Object.size = Utilities.getObjectLength;
 
 exports = module.exports = Utilities;

@@ -31,8 +31,10 @@
     --app-command-button-background-color: none;
     --app-command-button-foreground-color: var(--app-foreground-color);
     --app-command-button-background-color-hover: #F1F1F1;
+    --app-command-button-background-color-transparent-hover: rgba(255, 255, 255, 0.25);
     --app-command-button-foreground-color-hover: var(--app-command-button-foreground-color);
     --app-command-button-background-color-active: #EEEEEE;
+    --app-command-button-background-color-transparent-active: rgba(255, 255, 255, 0.50);
     --app-command-button-foreground-color-active: var(--app-command-button-foreground-color);
     --app-command-button-background-color-disabled: none;
     --app-command-button-foreground-color-disabled: #BBBBBB;

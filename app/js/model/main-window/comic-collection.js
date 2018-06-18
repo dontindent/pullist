@@ -1,41 +1,40 @@
-const { remote } = require('electron');
 const Event = require('../../misc/event-dispatcher');
 const Comic = require('./comic');
 const Utilities = require('../../misc/utilities');
 const logger = require('../../misc/logger');
-// eslint-disable-next-line no-unused-vars
-const userPrefs = remote.getGlobal('userPrefs');
 const sender = 'ComicCollection';
 
 let tempDate = null;
 
 class ComicCollection {
-    constructor (comicService, storageInterface) {
+    constructor(comicService, storageInterface) {
         this._comicService = comicService;
         this._storageInterface = storageInterface;
-        this._comicsByOriginal = {};
+        this._comicsByOriginal = new Map();
         this._comicsLastPulledQueue = [];
-
+        
+        this._currentDate = null;
         this._earliestDate = null;
         this._latestDate = null;
-        this._currentDate = null;
         this.availableDates = [];
-        this.comicDict = {};
-        this.comicsByPublisher = {};
-        this.comicsToStore = 0;
+        this.comicDict = new Map();
+        this.comicsByPublisher = new Map();
         this.comicsStored = 0;
+        this.comicsToStore = 0;
 
-        this.currentDateUpdatedEvent = new Event(this, true);
-        this.latestDateUpdatedEvent = new Event(this, true);
-        this.retrievedComicsEvent = new Event(this, true);
-        this.comicsStoredEvent = new Event (this, true);
-        this.comicStoredEvent = new Event (this, true);
-        this.lastIssueUpdatedEvent = new Event(this, false);
         this.comicListProcessedEvent = this._comicService.comicListProcessedEvent;
         this.comicProcessedEvent = this._comicService.comicProcessedEvent;
+        this.comicStoredEvent = new Event(this, true);
+        this.comicsStoredEvent = new Event(this, true);
+        this.currentDateUpdatedEvent = new Event(this, true);
+        this.lastIssueUpdatedEvent = new Event(this, false);
+        this.latestDateUpdatedEvent = new Event(this, true);
+        this.retrievedComicsEvent = new Event(this, true);
 
         this.init();
     }
+
+    //#region Setup
 
     init() {
         this.setupHandlers();
@@ -43,78 +42,83 @@ class ComicCollection {
     }
 
     setupHandlers() {
-        this.storageReadyHandler = this.storageReady.bind(this);
-        this.storeIndividualCompleteHandler = this.storeIndividualComplete.bind(this);
-        this.storeCompleteHandler = this.storeComplete.bind(this);
-        this.loadCompleteHandler = this.loadComplete.bind(this);
-        this.deleteCompleteHandler = this.deleteComplete.bind(this);
-        this.datesCompleteHandler = this.datesComplete.bind(this);
+        this._datesCompleteHandler = this._onDatesComplete.bind(this);
+        this._deleteCompleteHandler = this._onDeleteComplete.bind(this);
+        this._latestComicsRetrievedHandler = this._onLatestComicsRetrieved.bind(this);
+        this._loadCompleteHandler = this._onLoadComplete.bind(this);
+        this._mainUpdatedHandler = this._onMainUpdated.bind(this);
+        this._storageReadyHandler = this._onStorageReady.bind(this);
+        this._storeCompleteHandler = this._onStoreComplete.bind(this);
+        this._storeIndividualCompleteHandler = this._onStoreIndividualComplete.bind(this);
     }
 
     enable() {
-        this._storageInterface.storageReadyEvent.attach(this.storageReadyHandler);
+        this._storageInterface.storageReadyEvent.attach(this._storageReadyHandler);
     }
 
-    get earliestDate () {
-        return this._earliestDate;
-    }
+    //#endregion
 
-    set earliestDate (value) {
-        this._earliestDate = dateCheck(value);
-    }
+    //#region Properties
 
-    get latestDate () {
-        return this._latestDate;
-    }
-
-    set latestDate (value) {
-        this._latestDate = dateCheck(value);
-        this.latestDateUpdatedEvent.notify(this._latestDate);
-    }
-
-    get currentDate () {
+    get currentDate() {
         return this._currentDate;
     }
 
-    set currentDate (value) {
+    set currentDate(value) {
         this._currentDate = dateCheck(value);
         this.currentDateUpdatedEvent.notify(this._currentDate);
     }
 
-    storageReady() {
-        this._storageInterface.sendDatesRequest(this.datesCompleteHandler);
+    get earliestDate() {
+        return this._earliestDate;
     }
 
-    loadComicsForDate (date) {
-        if (!this._storageInterface.storageReady) return;
-
-        if (!Utilities.exists(date) || !(date instanceof Date)) {
-            throw 'Date object required.';
-        }
-
-        this.retrievedComicsEvent.clear();
-
-        this._storageInterface.sendLoadRequest(date.valueOf(), this.loadCompleteHandler);
-        tempDate = date;
+    set earliestDate(value) {
+        this._earliestDate = dateCheck(value);
     }
 
-    populateComics () {
-        let cboCopy = Object.assign({}, this._comicsByOriginal);
-        this.retrievedComicsEvent.clear();
-        this._comicService.getNewComicList(cboCopy).done(this.comicsProcessed.bind(this));
+    get latestDate() {
+        return this._latestDate;
+    }
+
+    set latestDate(value) {
+        this._latestDate = dateCheck(value);
+        this.latestDateUpdatedEvent.notify(this._latestDate);
+    }
+
+    //#endregion
+
+    //#region Handlers
+
+    _onDatesComplete(datesList) {
+        this.availableDates = datesList;
+        this.earliestDate = Math.min(...this.availableDates);
+        this.latestDate = Math.max(...this.availableDates);
+
+        this.loadComicsForDate(this.latestDate);
+    }
+
+    _onDeleteComplete(status) {
+        if (!status) this._storageInterface.sendDeleteRequest(this.latestDate,
+            this._deleteCompleteHandler);
     }
 
     /** Called after a new comics list has been retreived by the comic service. */
-    comicsProcessed (args) {
+    _onLatestComicsRetrieved (args) {
         let [ comicDict, publishers ] = args;
 
-        this.comicDict = Object.assign({}, comicDict);
-        this.comicsByPublisher = {};
+        this.comicDict = new Map(comicDict);
+        this.comicsByPublisher.clear();
+
+        for (let comic in this.comicDict.values()) {
+            comic.mainUpdatedEvent.attach(this._mainUpdatedHandler);
+        }
 
         this.createSortedLists(publishers);
 
         if (this.latestDate !== this._comicService.retrievalDate) {
-            this._storageInterface.sendDeleteRequest(this._comicService.retrievalDate, this.deleteCompleteHandler);
+            this._storageInterface.sendDeleteRequest(this._comicService.retrievalDate,
+                this._deleteCompleteHandler);
         }
 
         this.latestDate = this._comicService.retrievalDate;
@@ -126,85 +130,21 @@ class ComicCollection {
         if (this._storageInterface.storageReady) this.storeCollection();
     }
 
-    storeComic (comic) {
-        this._storageInterface.sendStorageRequest(comic, this.storeIndividualCompleteHandler);
-
-        this.comicsToStore++;
-    }
-
-    storeIndividualComplete (comicRemote) {
-        let comicLocal = this._comicsByOriginal[comicRemote.originalString];
-        comicLocal.id = comicRemote.id;
-
-        this.comicsStored++;
-        this.comicStoredEvent.notify(comicLocal);
-
-        if (this.comicsStored === this.comicsToStore) {
-            this.comicsStoredEvent.notify();
-            this.comicsToStore = 0;
-            this.comicsStored = 0;
-        }
-    }
-
-    storeCollection () {
-        this.comicsToStore = 0;
-        this.comicsStored = 0;
-
-        for(let key in this.comicDict) {
-            if (!this.comicDict.hasOwnProperty(key)) continue;
-
-            let comic = this.comicDict[key];
-
-            this._storageInterface.sendStorageRequest(comic, this.storeCompleteHandler);
-
-            this.comicsToStore++;
-        }
-    }
-
-    storeComplete (comicRemote) {
-        let comicLocal = this._comicsByOriginal[comicRemote.originalString];
-        comicLocal.id = comicRemote.id;
-
-        comicLocal.variantList.forEach(function (variant) {
-                this._comicsByOriginal[variant.originalString] = variant;
-                variant.mainID = comicLocal.id;
-                this._storageInterface.sendStorageRequest(variant, this.storeCompleteHandler);
-                this.comicsToStore++;
-            }.bind(this));
-
-        this.comicsStored++;
-        this.comicStoredEvent.notify(comicLocal);
-
-        if (this.comicsStored === this.comicsToStore) {
-            this.comicsStoredEvent.notify();
-            this.comicsToStore = 0;
-            this.comicsStored = 0;
-        }
-    }
-
-    datesComplete (datesList) {
-        this.availableDates = datesList;
-        this.earliestDate = Math.min(...this.availableDates);
-        this.latestDate = Math.max(...this.availableDates);
-
-        this.loadComicsForDate(this.latestDate);
-    }
-
-    loadComplete (comicList) {
+    _onLoadComplete (comicList) {
         let variantQueue = [];
         let publishers = [];
-        let comicsById = {};
+        let comicsById = new Map();
         let collection = this;
 
-        this._comicsByOriginal = {};
-        this.comicDict = {};
+        this._comicsByOriginal.clear();
+        this.comicDict.clear();
 
-        comicList.forEach(function (comic) {
+        for (let comic of comicList) {
             let newComic = Comic.fromGeneric(comic, collection._storageInterface);
 
             if (!publishers.includes(newComic.publisher)) publishers.push(newComic.publisher);
 
-            collection._comicsByOriginal[newComic.originalString] = newComic;
+            collection._comicsByOriginal.set(newComic.originalString, newComic);
 
             if (newComic.coverURL === null) {
                 collection._comicService.reScrapeComic(newComic).done(function () {
@@ -214,39 +154,132 @@ class ComicCollection {
 
             if (newComic.variant) {
                 variantQueue.push(newComic);
-            }
+            } 
             else {
-                comicsById[newComic.id] = newComic;
-                collection.comicDict[newComic.key] = newComic;
+                comicsById.set(newComic.id, newComic);
+                collection.comicDict.set(newComic.key, newComic);
+                newComic.mainUpdatedEvent.attach(this._mainUpdatedHandler);
             }
-        });
+        }
 
-        variantQueue.forEach(function (variant) {
-            let mainComic = comicsById[variant.mainID];
-            mainComic.addVariant(variant);
-        });
+        for (let variant of variantQueue) {
+            let mainComic = comicsById.get(variant.mainID);
+            try {
+                variant.pulled = false;
+                mainComic.addVariant(variant);
+            } 
+            catch (error) {
+                throw error;
+            }
+        }
 
         if (!comicList.length) {
             this.currentDate = null;
-        }
+        } 
         else {
             this.currentDate = tempDate;
             tempDate = null;
         }
 
-        logger.log('Loaded ' + comicList.length + ' comics', sender);
+        logger.log('Loaded ' + collection.comicDict.size + ' comics', sender);
 
         this.createSortedLists(publishers);
+        logger.log(this.comicsByPublisher.length);
         this.retrievedComicsEvent.notify();
     }
 
-    deleteComplete (status) {
-        if (!status) this._storageInterface.sendDeleteRequest(this.latestDate, this.deleteCompleteHandler);
+    _onMainUpdated (sender) {
+        let oldMain = sender;
+        let oldMainPubList = this.comicsByPublisher.get(oldMain.publisher);
+
+        this.comicDict.set(oldMain.key, oldMain.mainComic);
+        oldMainPubList[oldMainPubList.indexOf(oldMain)] = oldMain.mainComic;
     }
 
+    _onStorageReady() {
+        this._storageInterface.sendDatesRequest(this._datesCompleteHandler);
+    }
+
+    _onStoreComplete (comicRemote) {
+        let comicLocal = this._comicsByOriginal.get(comicRemote.originalString);
+        comicLocal.id = comicRemote.id;
+
+        for (let variant of comicLocal.variantList) {
+            this._comicsByOriginal.set(variant.originalString, variant);
+            variant.mainID = comicLocal.id;
+            this._storageInterface.sendStorageRequest(variant, this._storeCompleteHandler);
+            this.comicsToStore++;
+        }
+
+        this.comicsStored++;
+        this.comicStoredEvent.notify(comicLocal);
+
+        if (this.comicsStored === this.comicsToStore) {
+            this.comicsStoredEvent.notify();
+            this.comicsToStore = 0;
+            this.comicsStored = 0;
+        }
+    }
+
+    _onStoreIndividualComplete (comicRemote) {
+        let comicLocal = this._comicsByOriginal.get(comicRemote.originalString);
+        comicLocal.id = comicRemote.id;
+
+        this.comicsStored++;
+        this.comicStoredEvent.notify(comicLocal);
+
+        if (this.comicsStored === this.comicsToStore) {
+            this.comicsStoredEvent.notify();
+            this.comicsToStore = 0;
+            this.comicsStored = 0;
+        }
+    }
+
+    //#endregion
+
+    loadComicsForDate(date) {
+        if (!this._storageInterface.storageReady) return;
+
+        if (!Utilities.exists(date) || !(date instanceof Date)) {
+            throw 'Date object required.';
+        }
+
+        this.retrievedComicsEvent.clear();
+
+        this._storageInterface.sendLoadRequest(date.valueOf(), 
+                                               this._loadCompleteHandler);
+        tempDate = date;
+    }
+
+    retrieveLatestComics() {
+        let cboCopy = new Map(this._comicsByOriginal);
+        this.retrievedComicsEvent.clear();
+        this._comicService.getNewComicList(cboCopy).done(
+            this._latestComicsRetrievedHandler
+        );
+    }
+    
+    storeCollection () {
+        this.comicsToStore = 0;
+        this.comicsStored = 0;
+        
+        for (let comic of this.comicDict.values()) {
+            this._storageInterface.sendStorageRequest(comic, this._storeCompleteHandler);
+            
+            this.comicsToStore++;
+        }
+    }
+
+    storeComic (comic) {
+        this._storageInterface.sendStorageRequest(comic, this._storeIndividualCompleteHandler);
+
+        this.comicsToStore++;
+    }
+    
     loadLastPulledIssue (comic) {
         this._comicsLastPulledQueue.push(comic);
-        this._storageInterface.sendLoadLastPulledRequest(comic.series, comic.number, this.onLastPulledIssueLoaded.bind(this));
+        this._storageInterface.sendLoadLastPulledRequest(comic.series,
+            comic.number, this.onLastPulledIssueLoaded.bind(this));
     }
 
     onLastPulledIssueLoaded (comicObject) {
@@ -262,31 +295,35 @@ class ComicCollection {
         let collection = this;
         publishers = publishers.sort();
 
-        collection.comicsByPublisher = {};
+        collection.comicsByPublisher.clear();
 
-        publishers.forEach(function(publisher){
-            collection.comicsByPublisher[publisher] = [];
-        });
+        for (let publisher of publishers) {
+            collection.comicsByPublisher.set(publisher, []);
+        }
 
-        let sortedComics = Object.values(collection.comicDict).sort(Comic.compare);
+        let sortedComics = Array.from(collection.comicDict.values()).sort(Comic.compare);
 
-        sortedComics.forEach(function(comic){
-            this._comicsByOriginal[comic.originalString] = comic;
+        for (let comic of sortedComics) {
+            this._comicsByOriginal.set(comic.originalString, comic);
             let publisher = comic.publisher;
-            collection.comicsByPublisher[publisher].push(comic);
-            comic.needsStorageEvent.attach(this._storageInterface.sendStorageRequest.bind(this._storageInterface));
-        }.bind(this));
+            collection.comicsByPublisher.get(publisher).push(comic);
+            comic.needsStorageEvent.attach(this._storageInterface.sendStorageRequest
+                .bind(this._storageInterface));
+
+            for (let variant of comic.variantList) {
+                variant.needsStorageEvent.attach(this._storageInterface.sendStorageRequest
+                    .bind(this._storageInterface));
+            }
+        }
     }
 }
 
-function dateCheck (value) {
-    if (typeof value === typeof -8640000000000000) {
+function dateCheck(value) {
+    if (typeof value === typeof - 8640000000000000) {
         return new Date(value);
-    }
-    else if (value instanceof Date) {
+    } else if (value instanceof Date) {
         return value;
-    }
-    else {
+    } else {
         throw value + ' is not convertible to Date.';
     }
 }

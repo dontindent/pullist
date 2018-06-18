@@ -44,41 +44,17 @@ div#header-container {
     justify-content: flex-end;
 }
 
-a.detail-header-button {
-    padding: 6px;
-    cursor: default;
-    display: block;
-    color: rgba(0, 0, 0, 1.0);
-    font-weight: 100;
-    /*color: rgba(255, 255, 255, 0.7);*/
-}
-
-a.detail-header-button:hover {
-    background: rgba(65, 90, 119, 0.3);
-}
-
-a.detail-header-button:active {
-    background: rgba(65, 90, 119, 0.5);
-}
-
-i.detail-header-icon {
-    font-size: 14pt;
-    margin: 5px 0 5px 5px;
-    vertical-align: middle;
-    font-weight: 100;
-}
-
 i.icon-overlay {
     font-size: 14pt;
     margin: 0 5px 0 -17.1pt;
 }
 
 span.detail-header-text {
-    font-size: 12pt;
+    font-size: 9pt;
     vertical-align: middle;
     margin-right: 6px;
+    margin-left: 2px;
 }
-
 
 div#details-content {
     grid-row: 2;

@@ -1,0 +1,67 @@
+/* #region App Bar Button */
+
+button.app-bar-button {
+    align-items: center;
+    background: none;
+    border: none;
+    border-collapse: collapse;
+    color: rgba(0, 0, 0, 1.0);
+    cursor: default;
+    display: flex;
+    font-size: 9pt;
+    justify-content: center;
+    outline: none;
+    position: relative;
+}
+
+button.app-bar-button:hover,
+button.app-bar-button:focus  {
+    background: rgba(65, 90, 119, 0.3);
+    outline: none;
+}
+
+button.app-bar-button:active {
+    background: rgba(65, 90, 119, 0.5);
+    outline: none;
+}
+
+button.app-bar-button.disabled {
+    opacity: 0.5;
+    background: none !important;
+    pointer-events: none;
+}
+
+button.app-bar-button i {
+    display: inline-block;
+    line-height: 1;
+}
+
+button.app-bar-button i::before {
+    font-weight: 100;
+    font-size: 18pt;
+}
+
+/* #endregion */
+
+/* #region App Bar Button Row */
+
+button.app-bar-button.row {
+    height: 48px;
+    flex-direction: row;
+    padding: 0 10px;
+}
+
+button.app-bar-button.row i {
+    margin: 0 6px 0 0;
+}
+
+/* #endregion */
+
+/* #region App Bar Button Column */
+
+button.app-bar-button.column {
+    flex-direction: column;
+    width: 64px;
+}
+
+/* #endregion */

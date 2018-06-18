@@ -60,12 +60,6 @@
 
 <template id="cover-overlay-template">
     <div id="cover-overlay-container">
-        <div id="cover-overlay-title-container">
-            <h2 id="cover-overlay-title-text"></h2>
-            <a id="cover-overlay-close-button">
-                <i class="icons8-cancel"></i>
-            </a>
-        </div>
         <div id="cover-display-container">
             <div id="cover-image-carousel">
                 <div id="cover-images-container"></div>
@@ -76,8 +70,18 @@
             <a id="next-cover" class="cover-overlay-nav-button">
                 <i class="icons8-arrow-pointing-to-right"></i>
             </a>
+            <a id="cover-overlay-close-button">
+                <i class="icons8-cancel"></i>
+            </a>
             <div id="cover-overlay-details">
-                <span id="cover-overlay-price"></span>
+                <div id="cover-overlay-details-content">
+                    <span id="cover-overlay-title-text" class="cover-overlay-text"></span>
+                    <span id="cover-overlay-price" class="cover-overlay-text"></span>
+                </div>
+                <button id="cover-overlay-make-main-button" class="app-bar-button column interface">
+                    <i class="icons8-box icon"></i>
+                    Pull
+                </button>
             </div>
         </div>
     </div>

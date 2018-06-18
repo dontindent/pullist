@@ -186,10 +186,10 @@ class RuleGroup {
 
 function markComic (comic, resultType) {
     if (resultType === RuleResultType.pull) {
-        comic.pull(true);
+        comic.pulled = true;
     }
     else if (resultType === RuleResultType.watch) {
-        comic.watch(true);
+        comic.watched = true;
     }
 }
 

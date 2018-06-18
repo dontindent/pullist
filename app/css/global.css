@@ -93,14 +93,10 @@ a, a:hover, a:visited {
     cursor: default;
 }
 
-.details-hidden {
+.hidden-opacity {
     opacity: 0.0 !important;
 }
 
-.button-hidden {
-    display: none !important;
-}
-
-.hidden {
+.hidden-display {
     display: none !important;
 }

@@ -40,7 +40,7 @@ class ReleasesController extends Controller {
     // noinspection JSUnusedLocalSymbols
     retrieveComics (sender, args) {
         this.retrieveStarted = true;
-        this._model.populateComics();
+        this._model.retrieveLatestComics();
     }
     
     /** Function to be executed after a retrieve comics command has finished in the view
@@ -55,10 +55,8 @@ class ReleasesController extends Controller {
 
         this.retrieveStarted = false;
 
-        for (let key in this._model.comicDict) {
-            if (!this._model.comicDict.hasOwnProperty(key)) continue;
-
-            this.ruleCollection.rootRule.apply(this._model.comicDict[key]);
+        for (let key of this._model.comicDict.keys()) {
+            this.ruleCollection.rootRule.apply(this._model.comicDict.get(key));
         }
     }
 }

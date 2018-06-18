@@ -3,7 +3,7 @@ const Event = require('../../misc/event-dispatcher');
 
 
 class Comic {
-    constructor() {
+    constructor () {
         this.id = 0;
         this.series = "";
         this.number = -1.0;
@@ -14,8 +14,8 @@ class Comic {
         // noinspection JSUnusedGlobalSymbols
         this.description = "";
         this.price = 0.0;
-        this.pulled = false;
-        this.watched = false;
+        this._pulled = false;
+        this._watched = false;
         this.code = "";
         this.coverURL = "";
         this.reprint = false;
@@ -35,19 +35,22 @@ class Comic {
         this.pullStatusChangedEvent = new Event(this);
         this.watchStatusChangedEvent = new Event(this);
         this.lastIssueUpdatedEvent = new Event(this);
+        this.mainUpdatedEvent = new Event(this);
     }
 
-    get key() {
+    // #region Properties
+
+    get key () {
         if (this.number === -1.0) return this.series;
         else return this.series + ' ' + this.number;
     }
 
-    get title() {
+    get title () {
         if (this.number === -1.0) return this.series;
         return this.series + ' #' + this.number;
     }
 
-    get lastPulled() {
+    get lastPulled () {
         if (this.lastPulledNumber && this.lastPulledNumber !== -1) {
             return 'Issue ' + this.lastPulledNumber + ' pulled on ' + this.lastPulledDate.toLocaleDateString("en-US");
         }
@@ -55,51 +58,33 @@ class Comic {
         return '';
     }
 
-    pull(pulled) {
-        pulled = typeof pulled === typeof true ? pulled : this.pulled;
-        this.pulled = pulled;
-        this.pullStatusChangedEvent.notify(pulled);
+    get pulled () {
+        return this._pulled;
+    }
+
+    set pulled (value) {
+        if (this._pulled === value) return; 
+
+        this._pulled = value;
+        this.pullStatusChangedEvent.notify(this._pulled);
         this.needsStorageEvent.notify();
     }
 
-    watch(watched) {
-        watched = typeof watched === typeof true ? watched : this.watched;
-        this.watched = watched;
-        this.watchStatusChangedEvent.notify(watched);
+    get watched () {
+        return this._watched;
+    }
+
+    set watched (value) {
+        if (this._watched === value) return;
+
+        this._watched = value;
+        this.watchStatusChangedEvent.notify(this._watched);
         this.needsStorageEvent.notify();
     }
 
-    equals(comic) {
-        return this.originalString === comic.originalString && this.releaseDate === comic.releaseDate;
-    }
+    // #endregion
 
-    hasVariant(comic) {
-        this.variantList.forEach(function (variant) {
-            if (variant.equals(comic)) return variant;
-        });
-    }
-
-    copyDetails(comic) {
-        this.series = comic.series;
-        this.number = comic.number;
-        this.writer = comic.writer;
-        this.artist = comic.artist;
-        this.coverArtist = comic.coverArtist;
-        this.publisher = comic.publisher;
-        // noinspection JSUnusedGlobalSymbols
-        this.description = comic.description;
-        this.price = comic.price;
-        this.pulled = comic.pulled;
-        this.watched = comic.watched;
-        this.code = comic.code;
-        this.coverURL = comic.coverURL;
-        this.reprint = comic.reprint;
-        this.variant = comic.variant;
-        this.releaseDate = comic.releaseDate;
-        this.originalString = comic.originalString;
-    }
-
-    addVariant(comic) {
+    addVariant (comic) {
         let thisComic = this;
 
         if (thisComic.equals(comic)) return false;
@@ -122,7 +107,7 @@ class Comic {
         }
     }
 
-    static assembleVariants(comicsList) {
+    static assembleVariants (comicsList) {
         comicsList = Utilities.removeDuplicates(comicsList, 'originalString');
 
         comicsList.sort((a, b) => {
@@ -140,7 +125,56 @@ class Comic {
         return newMain;
     }
 
-    static fromGeneric(object) {
+    static compare (a, b) {
+        let aName = (a.key).toLowerCase();
+        let bName = (b.key).toLowerCase();
+
+        if (aName < bName) return -1;
+        if (aName > bName) return 1;
+
+        return 0;
+    }
+
+    static compareByPrice (a, b) {
+        let aOriginal = (a.originalString).toLowerCase();
+        let bOriginal = (b.originalString).toLowerCase();
+
+        let difference = a.price - b.price;
+
+        if (difference === 0) {
+            if (aOriginal < bOriginal) return -1;
+            if (aOriginal > bOriginal) return 1;
+            return 0;
+        }
+
+        return difference;
+    }
+
+    copyDetails (comic) {
+        this.series = comic.series;
+        this.number = comic.number;
+        this.writer = comic.writer;
+        this.artist = comic.artist;
+        this.coverArtist = comic.coverArtist;
+        this.publisher = comic.publisher;
+        // noinspection JSUnusedGlobalSymbols
+        this.description = comic.description;
+        this.price = comic.price;
+        this.pulled = comic.pulled;
+        this.watched = comic.watched;
+        this.code = comic.code;
+        this.coverURL = comic.coverURL;
+        this.reprint = comic.reprint;
+        this.variant = comic.variant;
+        this.releaseDate = comic.releaseDate;
+        this.originalString = comic.originalString;
+    }
+
+    equals (comic) {
+        return this.originalString === comic.originalString && this.releaseDate === comic.releaseDate;
+    }
+
+    static fromGeneric (object) {
         let result = new Comic();
 
         result.id = object.Id;
@@ -166,29 +200,36 @@ class Comic {
         return result;
     }
 
-    static compare(a, b) {
-        let aName = (a.key).toLowerCase();
-        let bName = (b.key).toLowerCase();
-
-        if (aName < bName) return -1;
-        if (aName > bName) return 1;
-
-        return 0;
+    hasVariant (comic) {
+        this.variantList.forEach(function (variant) {
+            if (variant.equals(comic)) return variant;
+        });
     }
 
-    static compareByPrice(a, b) {
-        let aOriginal = (a.originalString).toLowerCase();
-        let bOriginal = (b.originalString).toLowerCase();
+    makeMain () {
+        if (!this.mainComic) return;
 
-        let difference = a.price - b.price;
+        let oldMain = this.mainComic;
+        let variantList = this.mainComic.variantList.slice(0);
+        variantList.unshift(this.mainComic);
+        variantList.splice(variantList.indexOf(this), 1);
+        variantList = variantList.sort(Comic.compareByPrice);
 
-        if (difference === 0) {
-            if (aOriginal < bOriginal) return -1;
-            if (aOriginal > bOriginal) return 1;
-            return 0;
+        for (let variant of variantList) {
+            variant.mainComic = this;
+            variant.mainID = this.id;
+            variant.variant = true;
+            variant.variantList = [];
+            variant.needsStorageEvent.notify();
         }
 
-        return difference;
+        this.mainComic = null;
+        this.mainID = 0;
+        this.variant = false;
+        this.variantList = variantList;
+
+        this.needsStorageEvent.notify();
+        oldMain.mainUpdatedEvent.notify();
     }
 }
 

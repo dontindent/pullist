@@ -12,6 +12,7 @@ const ComicCollection = require('../model/main-window/comic-collection');
 const RuleCollection = require('../model/main-window/rule-collection');
 const StorageInterface = require('../model/main-window/storage-interface');
 const { AlertService } = require('./alert');
+const ElectronHelper = require('../misc/electron-helper');
 const ReleasesView = require('./releases-view');
 const PulledView = require('./pulled-view');
 const RulesView = require('./rules-view');
@@ -90,16 +91,43 @@ class IndexView {
 
         Injector.register('UserPrefs', UserPrefs);
         Injector.register('StorageInterface', StorageInterface)
-        Injector.register('ComicDataService', ComicDataService, [ 'StorageInterface', 'UserPrefs' ]);
-        Injector.register('ComicCollection', ComicCollection, [ 'ComicDataService', 'StorageInterface' ]);
+        Injector.register('ComicDataService', ComicDataService, [ 
+            'StorageInterface', 
+            'UserPrefs' 
+        ]);
+        Injector.register('ComicCollection', ComicCollection, [ 
+            'ComicDataService', 
+            'StorageInterface'
+        ]);
         Injector.register('AlertService', AlertService);
+        Injector.register('ElectronHelper', ElectronHelper);
         Injector.register('RuleCollection', RuleCollection);
-        Injector.register('ReleasesView', ReleasesView, [ 'ComicCollection', 'StorageInterface', 'AlertService' ]);
-        Injector.register('PulledView', PulledView, [ 'ComicCollection', 'StorageInterface', 'AlertService' ]);
+        Injector.register('ReleasesView', ReleasesView, [ 
+            'ComicCollection', 
+            'StorageInterface', 
+            'AlertService', 
+            'ElectronHelper' 
+        ]);
+        Injector.register('PulledView', PulledView, [ 
+            'ComicCollection', 
+            'StorageInterface', 
+            'AlertService', 
+            'ElectronHelper' 
+        ]);
         Injector.register('RulesView', RulesView, [ 'RuleCollection' ]);
-        Injector.register('ReleasesController', ReleasesController, [ 'ComicCollection', 'ReleasesView', 'RuleCollection' ]);
-        Injector.register('PulledController', PulledController, [ 'ComicCollection', 'PulledView' ]);
-        Injector.register('RulesController', RulesController, [ 'RuleCollection', 'RulesView' ]);
+        Injector.register('ReleasesController', ReleasesController, [ 
+            'ComicCollection', 
+            'ReleasesView', 
+            'RuleCollection' 
+        ]);
+        Injector.register('PulledController', PulledController, [ 
+            'ComicCollection', 
+            'PulledView' 
+        ]);
+        Injector.register('RulesController', RulesController, [ 
+            'RuleCollection', 
+            'RulesView' 
+        ]);
 
         this._controllers['releases.html'] = Injector.resolve('ReleasesController');
         this._controllers['pulled.html'] = Injector.resolve('PulledController');

@@ -37,8 +37,8 @@ const isWindows = remote.getGlobal('isWindows');
 
 // TODO Save and restore state based on navigation
 class PulledView extends ComicListView {
-    constructor (comicCollection, storageInterface, alertService) {
-        super(comicCollection, storageInterface, alertService);
+    constructor (comicCollection, storageInterface, alertService, electronHelper) {
+        super(comicCollection, storageInterface, alertService, electronHelper);
 
         this.callerString = 'PulledView';
         // noinspection JSUnusedGlobalSymbols
@@ -49,6 +49,8 @@ class PulledView extends ComicListView {
 
         this.selectedDateChangedEvent = new Event(this);
     }
+
+    // #region Setup
 
     createChildren () {
         super.createChildren();
@@ -65,11 +67,11 @@ class PulledView extends ComicListView {
     setupHandlers () {
         super.setupHandlers();
 
-        this.shareListButtonHandler = this.shareListButtonClick.bind(this);
-        this.datePickerClickHandler = this.datePickerClick.bind(this);
+        this.shareListButtonHandler = this._onShareListButtonClick.bind(this);
+        this.datePickerClickHandler = this._onDatePickerClick.bind(this);
         this.isValidDateHandler = this.isSelectableDate.bind(this);
-        this.prevDateButtonClickHandler = this.prevDateButtonClick.bind(this);
-        this.nextDateButtonClickHandler = this.nextDateButtonClick.bind(this);
+        this.prevDateButtonClickHandler = this._onPrevDateButtonClick.bind(this);
+        this.nextDateButtonClickHandler = this._onNextDateButtonClick.bind(this);
     }
 
     enable () {
@@ -80,6 +82,10 @@ class PulledView extends ComicListView {
         this.$prevDateButton.on('click', this.prevDateButtonClickHandler);
         this.$nextDateButton.on('click', this.nextDateButtonClickHandler);
     }
+
+    // #endregion
+
+    // #region Properties
 
     get selectedDate () {
         return this._selectedDate;
@@ -93,7 +99,110 @@ class PulledView extends ComicListView {
         this.selectedDateChangedEvent.notify(date);
     }
 
-    navigatedTo() {
+    // #endregion
+
+    // #region Handlers
+
+    _onComicPullButtonClick (event) {
+        let comic = event.data.comic;
+        let superComicPullButton = super.comicPullButton.bind(this);
+
+        if (comic.pulled) {
+            this.confirmUnPull(comic, event, superComicPullButton);
+        }
+        else {
+            super._onComicPullButtonClick(event);
+        }
+    }
+
+    _onDatePickerClick (event) {
+        event.preventDefault();
+
+        if (!this.picker) return;
+
+        // noinspection JSUnresolvedVariable
+        if (this.picker.isOpen) {
+            event.delegateTarget.blur();
+            this.picker.isOpen = false;
+        }
+        else this.picker.isOpen = true;
+    }
+    
+    _onModelComicPulled (sender, args) {
+        super._onModelComicPulled(sender, args);
+
+        this.createList(this._comicCollection.comicsByPublisher);
+        this.assessPullList();
+    }
+    
+    _onPrevDateButtonClick (event) {
+        event.preventDefault();
+
+        let availableDates = this._comicCollection.availableDates;
+        let numDates = this._comicCollection.availableDates.length;
+        let dateElements = [];
+
+        for (let i = 0; i < numDates; i++) {
+            if (Date.compareDates(availableDates[i], this.selectedDate)) {
+                this.selectedDate = dateElements.pop();
+                break;
+            }
+            else {
+                dateElements.push(availableDates[i]);
+            }
+        }
+
+        this.updateDateElements();
+    }
+
+    _onNextDateButtonClick (event) {
+        event.preventDefault();
+
+        let availableDates = this._comicCollection.availableDates;
+        let numDates = this._comicCollection.availableDates.length;
+        let dateElements = [];
+
+        for (let i = numDates - 1; i >=  0; i--) {
+            if (Date.compareDates(availableDates[i], this.selectedDate)) {
+                this.selectedDate = dateElements.pop();
+                break;
+            }
+            else {
+                dateElements.push(availableDates[i]);
+            }
+        }
+
+        this.updateDateElements();
+    }
+
+    _onRetrievedComics (sender, args) {
+        super._onRetrievedComics (sender, args);
+
+        this.assessPullList();
+    }
+
+    _onShareListButtonClick (event) {
+        event.preventDefault();
+
+        let mailString = 'mailto:?subject=' +
+            encodeURIComponent('Pull List for ' + this._comicCollection.currentDate.toLocaleDateString("en-US")) +
+            '&body=' +
+            encodeURIComponent(this.generatePullListString());
+
+        shell.openExternal(mailString);
+    }
+
+    _onUnPullSelectedModelComic (event) {
+        let comic = this._selectedComicElement.comic;
+        let superUnPull = super._onUnPullSelectedModelComic.bind(this);
+
+        this.confirmUnPull(comic, event, superUnPull);
+    }
+
+    // #endregion
+
+
+    navigatedTo () {
         this._selectedDate = this._comicCollection.currentDate;
 
         super.navigatedTo();
@@ -131,116 +240,12 @@ class PulledView extends ComicListView {
         this.navigatedFrom = true;
     }
 
-    comicPullButton (event) {
-        let comic = event.data.comic;
-        let superComicPullButton = super.comicPullButton.bind(this);
-
-        if (comic.pulled === true) {
-            this.confirmUnPull(comic, event, superComicPullButton);
-        }
-        else {
-            super.comicPullButton(event);
-        }
-    }
-
-    retrievedComics (sender, args) {
-        super.retrievedComics (sender, args);
-
-        this.assessPullList();
-    }
-
-    shareListButtonClick (event) {
-        event.preventDefault();
-
-        let mailString = 'mailto:?subject=' +
-            encodeURIComponent('Pull List for ' + this._comicCollection.currentDate.toLocaleDateString("en-US")) +
-            '&body=' +
-            encodeURIComponent(this.generatePullListString());
-
-        shell.openExternal(mailString);
-    }
-
-    datePickerClick (event) {
-        event.preventDefault();
-
-        if (!this.picker) return;
-
-        // noinspection JSUnresolvedVariable
-        if (this.picker.isOpen) {
-            event.delegateTarget.blur();
-            this.picker.isOpen = false;
-        }
-        else this.picker.isOpen = true;
-    }
-
-    prevDateButtonClick (event) {
-        event.preventDefault();
-
-        let availableDates = this._comicCollection.availableDates;
-        let numDates = this._comicCollection.availableDates.length;
-        let dateElements = [];
-
-        for (let i = 0; i < numDates; i++) {
-            if (Date.compareDates(availableDates[i], this.selectedDate)) {
-                this.selectedDate = dateElements.pop();
-                break;
-            }
-            else {
-                dateElements.push(availableDates[i]);
-            }
-        }
-
-        this.updateDateElements();
-    }
-
-    nextDateButtonClick (event) {
-        event.preventDefault();
-
-        let availableDates = this._comicCollection.availableDates;
-        let numDates = this._comicCollection.availableDates.length;
-        let dateElements = [];
-
-        for (let i = numDates - 1; i >=  0; i--) {
-            if (Date.compareDates(availableDates[i], this.selectedDate)) {
-                this.selectedDate = dateElements.pop();
-                break;
-            }
-            else {
-                dateElements.push(availableDates[i]);
-            }
-        }
-
-        this.updateDateElements();
-    }
-
     isSelectableDate (date) {
         for (let availableDate of this._comicCollection.availableDates) {
             if (Date.compareDates(date, availableDate)) return false;
         }
 
         return true;
-    }
-
-    comicsStable (sender, args) {
-        super.comicsStable(sender, args);
-    }
-
-    comicsUnstable (sender, args) {
-        super.comicsUnstable(sender, args);
-    }
-
-    modelComicPulled(sender, args) {
-        super.modelComicPulled(sender, args);
-
-        this.createList(this._comicCollection.comicsByPublisher);
-        this.assessPullList();
-    }
-
-    unPullSelectedModelComic (event) {
-        let comic = this._selectedComicElement.comic;
-        let superUnPull = super.unPullSelectedModelComic.bind(this);
-
-        this.confirmUnPull(comic, event, superUnPull);
     }
 
     confirmUnPull (comic, event, funIfTrue) {
@@ -265,11 +270,7 @@ class PulledView extends ComicListView {
         this.listPrice = 0;
         this.listCount = 0;
 
-        for (let comicKey in this._comicCollection.comicDict) {
-            if (!this._comicCollection.comicDict.hasOwnProperty(comicKey)) continue;
-
-            let comic = this._comicCollection.comicDict[comicKey];
-
+        for (let comic of this._comicCollection.comicDict.values()) {
             if (this.defaultComicListFilter(comic)) {
                 this.listPrice += comic.price;
                 this.listCount++;
@@ -288,13 +289,11 @@ class PulledView extends ComicListView {
         logger.log('Assessed pull list', this.callerString);
     }
 
-    generatePullListString() {
+    generatePullListString () {
         let pullListString = '';
 
-        for (let publisher in this._comicCollection.comicsByPublisher) {
-            if (!this._comicCollection.comicsByPublisher.hasOwnProperty(publisher)) continue;
-
-            for (let comic of this._comicCollection.comicsByPublisher[publisher]) {
+        for (let publisher of this._comicCollection.comicsByPublisher.keys()) {
+            for (let comic of this._comicCollection.comicsByPublisher.get(publisher)) {
                 if (this.defaultComicListFilter(comic)) {
                     pullListString += comic.title + '\n';
                 }

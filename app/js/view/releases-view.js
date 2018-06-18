@@ -4,12 +4,9 @@ const Event = require('../misc/event-dispatcher');
 const logger = require("../misc/logger");
 const Utilities = require("../misc/utilities");
 
-// TODO Implement click handler for cover art to allow viewing at a higher resolution
-// TODO Implemented variant cover browser
-
 class ReleasesView extends ComicListView {
-    constructor (comicCollection, storageInterface, alertService) {
-        super(comicCollection, storageInterface, alertService);
+    constructor (comicCollection, storageInterface, alertService, electronHelper) {
+        super(comicCollection, storageInterface, alertService, electronHelper);
 
         // noinspection JSUnusedGlobalSymbols
         this.callerString = 'ReleasesView';
@@ -19,6 +16,8 @@ class ReleasesView extends ComicListView {
         this.notLatestDateEvent = new Event(this);
         this.retrieveComicsEvent = new Event(this);
     }
+
+    // #region Setup
 
     createChildren () {
         super.createChildren();
@@ -30,8 +29,8 @@ class ReleasesView extends ComicListView {
 
     setupHandlers () {
         super.setupHandlers();
-        this.retrieveComicsButtonHandler = this.retrieveComicsButton.bind(this);
-        this.comicsStoredHandler = this.comicsStored.bind(this);
+        this.retrieveComicsButtonHandler = this._onRetrieveComicsButtonClick.bind(this);
+        this.comicsStoredHandler = this._onComicsStored.bind(this);
     }
 
     enable () {
@@ -40,6 +39,77 @@ class ReleasesView extends ComicListView {
         this.$retrieveButton.on('click', this.retrieveComicsButtonHandler);
         this._comicCollection.comicsStoredEvent.attach(this.comicsStoredHandler);
     }
+
+    // #endregion
+
+    // #region Handlers
+
+    _onAllComicsProcessed (sender, numComics) {
+        super._onAllComicsProcessed(sender, numComics);
+
+        this.processedComics = 0;
+        this.$retrieveStatusMessage.text('Comic list retrieved');
+    }
+
+    _onComicsStable (sender, args) {
+        super._onComicsStable(sender, args);
+        this.$retrieveButton.removeClass('disabled');
+    }
+
+    _onComicsStored () {
+        this.$retrieveStatusContainer.addClass('status-hidden');
+        this.$progressBarContainer[0].style.width = '0%';
+    }
+
+    _onComicsUnstable (sender, args) {
+        super._onComicsUnstable(sender, args);
+        this.$retrieveButton.addClass('disabled');
+    }
+
+    _onRetrievedComics (sender, args) {
+        super._onRetrievedComics(sender, args);
+
+        if (!Date.compareDates(
+            this._comicCollection.currentDate, 
+            this._comicCollection.latestDate
+        )) {
+            this.notLatestDateEvent.notify();
+        }        
+        else if (this.state.saved && this.readyToRestore()) {
+            this.state.restore(this);
+        }
+    }
+
+    // TODO Make sure that other views can't disrupt the comic retrieval process...
+    _onRetrieveComicsButtonClick (event) {
+        event.preventDefault();
+
+        if (this.retrieveActive) {
+            this.$retrieveStatusContainer.removeClass('status-hidden');
+            this.$retrieveStatusMessage.text('Retrieving comic list');
+            this.disconnectComics();
+            this.retrieveComicsEvent.notify();
+            this._onComicsUnstable();
+            this.$comicList.addClass('disabled');
+        }
+    }
+
+    _onSingleComicProcessed (sender, comic) {
+        super._onSingleComicProcessed(sender, comic);
+
+        this.processedComics++;
+        this.$retrieveStatusMessage.text(comic.title);
+
+        if (this.processedComics === this.numComics) {
+            this.$retrieveStatusMessage.text('Storing comics');
+        }
+        else {
+            let percentComplete = (this.processedComics / this.numComics) * 100;
+            this.$progressBarContainer[0].style.width = percentComplete.toString() + '%';
+        }
+    }
+
+    // #endregion
 
     navigatedTo () {
         super.navigatedTo();
@@ -54,69 +124,6 @@ class ReleasesView extends ComicListView {
     navigatingFrom () {
         super.navigatingFrom();
         this.$retrieveButton.off('click', this.retrieveComicsButtonHandler);
-    }
-
-    comicsStable (sender, args) {
-        super.comicsStable(sender, args);
-        this.$retrieveButton.removeClass('disabled');
-    }
-
-    comicsUnstable (sender, args) {
-        super.comicsUnstable(sender, args);
-        this.$retrieveButton.addClass('disabled');
-    }
-
-    // TODO Make sure that other views can't disrupt the comic retrieval process...
-    retrieveComicsButton (event) {
-        event.preventDefault();
-
-        if (this.retrieveActive) {
-            this.$retrieveStatusContainer.removeClass('status-hidden');
-            this.$retrieveStatusMessage.text('Retrieving comic list');
-            this.disconnectComics();
-            this.retrieveComicsEvent.notify();
-            this.comicsUnstable();
-            this.$comicList.addClass('disabled');
-        }
-    }
-
-    retrievedComics (sender, args) {
-        super.retrievedComics(sender, args);
-
-        if (!Date.compareDates(this._comicCollection.currentDate, this._comicCollection.latestDate)) {
-            this.notLatestDateEvent.notify();
-        }        
-        else if (this.state.saved && this.readyToRestore()) {
-            this.state.restore(this);
-        }
-    }
-
-    comicListProcessed (sender, numComics) {
-        super.comicListProcessed(sender, numComics);
-
-        this.processedComics = 0;
-        this.$retrieveStatusMessage.text('Comic list retrieved');
-    }
-
-    comicProcessed (sender, comic) {
-        super.comicProcessed(sender, comic);
-
-        this.processedComics++;
-        this.$retrieveStatusMessage.text(comic.title);
-
-        if (this.processedComics === this.numComics) {
-            this.$retrieveStatusMessage.text('Storing comics');
-        }
-        else {
-            let percentComplete = (this.processedComics / this.numComics) * 100;
-            this.$progressBarContainer[0].style.width = percentComplete.toString() + '%';
-        }
-    }
-
-    // noinspection JSUnusedLocalSymbols
-    comicsStored(sender, count) {
-        this.$retrieveStatusContainer.addClass('status-hidden');
-        this.$progressBarContainer[0].style.width = '0%';
     }
 
     generateDateString () {

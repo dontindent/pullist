@@ -1,6 +1,10 @@
 const View = require('./view');
 
-const { remote, ipcRenderer, shell } = require('electron');
+const {
+    remote,
+    ipcRenderer,
+    shell
+} = require('electron');
 const userPrefs = remote.getGlobal('userPrefs');
 const Event = require('../misc/event-dispatcher');
 const logger = require('../misc/logger');
@@ -9,7 +13,7 @@ const Utilities = require('../misc/utilities');
 const ipcChannels = require('../misc/ipc-channels');
 
 class ComicContainer {
-    constructor (view, alertService) {
+    constructor(view, alertService) {
         this.view = view;
         this.alertService = alertService;
 
@@ -24,10 +28,10 @@ class ComicContainer {
         this.$detailCodeLink = $('div#distributor-code-div a');
         this.$detailPrice = $('div#price-div p.detail');
         this.$detailDescription = $('div#description-div p.detail');
-        this.$watchButton = $('a#watch-button');
-        this.$unWatchButton = $('a#un-watch-button');
-        this.$pullButton = $('a#pull-button');
-        this.$unPullButton = $('a#un-pull-button');
+        this.$watchButton = $('button#watch-button');
+        this.$unWatchButton = $('button#un-watch-button');
+        this.$pullButton = $('button#pull-button');
+        this.$unPullButton = $('button#un-pull-button');
         this.$lastPulledDiv = $('div#last-pulled-div');
         this.$lastPulledText = $('p.last-pulled-text');
 
@@ -38,25 +42,31 @@ class ComicContainer {
 
         if (typeof userPrefs.includeReprints === typeof true) {
             this.includeReprints = userPrefs.includeReprints;
-        }
-        else {
-            ipcRenderer.send(ipcChannels.prefSet, { key: 'includeReprints', value: this.includeReprints });
+        } else {
+            ipcRenderer.send(ipcChannels.prefSet, {
+                key: 'includeReprints',
+                value: this.includeReprints
+            });
         }
 
-        this._detailBackgroundLoadedHandler = this._onDetailBackgroundLoaded.bind(this);
-        this._detailCoverLoadedHandler = this._onDetailCoverLoaded.bind(this);
+        this._detailBackgroundLoadedHandler = this._onDetailBackgroundLoaded
+            .bind(this);
+        this._detailCoverLoadedHandler = this._onDetailCoverLoaded.bind(
+            this);
         this._openInBrowserHandler = this._openInBrowser.bind(this);
-        this._detailCoverLinkClickHandler = this._onDetailCoverLinkClick.bind(this);
+        this._detailCoverLinkClickHandler = this._onDetailCoverLinkClick.bind(
+            this);
+        this._variantPullClickHandler = this._onVariantPullClick.bind(this);
     }
 
     //#region Private Event Handlers
 
     _onDetailBackgroundLoaded () {
-        this.$detailBackground.removeClass('details-hidden');
+        this.$detailBackground.removeClass('hidden-opacity');
     }
 
     _onDetailCoverLoaded () {
-        this.$detailCover.removeClass('details-hidden');
+        this.$detailCover.removeClass('hidden-opacity');
     }
 
     _openInBrowser (event) {
@@ -65,24 +75,30 @@ class ComicContainer {
 
         shell.openExternal(link.href);
     }
-    
+
     _onDetailCoverLinkClick (event) {
         event.preventDefault();
-        
-        this.alertService.showCoverOverlay(this.view._selectedComicElement.comic);
+
+        this.alertService.showCoverOverlay(this.view._electronHelper, this.view
+            ._selectedComicElement.comic, this._variantPullClickHandler);
+    }
+
+    _onVariantPullClick (newMain) {        
+        newMain.makeMain();
+        newMain.pulled = true;
     }
 
     //#endregion
 
-    select (selectedComicElement) {
+    select(selectedComicElement) {
         let comic = selectedComicElement.comic;
 
         $(selectedComicElement).addClass('selected-comic');
 
-        this.update (comic);
+        this.update(comic);
     }
 
-    update (comic, handlers = true) {
+    update(comic, handlers = true) {
         if (handlers) {
             this.$detailBackground.on('load', this._detailBackgroundLoadedHandler);
             this.$detailCover.on('load', this._detailCoverLoadedHandler);
@@ -94,10 +110,10 @@ class ComicContainer {
             this.$detailCodeLink.on('click', this._openInBrowserHandler);
         }
 
-        this.$detailBackground.addClass('details-hidden');
+        this.$detailBackground.addClass('hidden-opacity');
         this.$detailBackground.attr('src', comic.coverURL);
         this.$detailTitle.text(comic.title);
-        this.$detailCover.addClass('details-hidden');
+        this.$detailCover.addClass('hidden-opacity');
         this.$detailCover.attr('src', comic.coverURL);
         this.$detailWriter.text(comic.writer);
         this.$detailArtist.text(comic.artist);
@@ -108,17 +124,16 @@ class ComicContainer {
         this.$detailDescription.text(comic.description);
 
         if (comic.lastPulled) {
-            this.$lastPulledDiv.removeClass('details-hidden');
+            this.$lastPulledDiv.removeClass('hidden-opacity');
             this.$lastPulledText.text(comic.lastPulled);
-        }
-        else {
-            this.$lastPulledDiv.addClass('details-hidden');
+        } else {
+            this.$lastPulledDiv.addClass('hidden-opacity');
         }
 
         ComicListView.updateHeaderButtons(comic);
     }
 
-    unSelect (selectedComicElement, refresh = false) {
+    unSelect(selectedComicElement, refresh = false) {
         if (!refresh) $(selectedComicElement).removeClass('selected-comic');
 
         this.$detailBackground.off('load', this._detailBackgroundLoadedHandler);
@@ -134,16 +149,17 @@ class ComicContainer {
 }
 
 class ComicListViewState {
-    constructor () {
+    constructor() {
         this.saved = false;
     }
 
-    save (releasesView) {
+    save(releasesView) {
         this.filterString = releasesView.$searchInput[0].value;
         this.filtered = releasesView._filtered;
 
         if (releasesView._selectedComicElement) {
-            this.selectedComicOriginalString = releasesView._selectedComicElement.comic.originalString;
+            this.selectedComicOriginalString = releasesView._selectedComicElement
+                .comic.originalString;
         }
 
         this.scrollPos = releasesView._scrollPos;
@@ -152,23 +168,22 @@ class ComicListViewState {
         this.saved = true;
     }
 
-    restore (releasesView) {
-        if (this.selectedComicOriginalString) this.restoreSelectedComic(releasesView);
+    restore(releasesView) {
+        if (this.selectedComicOriginalString) this.restoreSelectedComic(
+            releasesView);
 
         releasesView.$searchInput[0].value = this.filterString;
 
-        releasesView.searchInputKey(
-            {
-                which: 17,
-                preventDefault: function () { }
-            } );
+        releasesView.searchInputKey({
+            which: 17,
+            preventDefault: function() {}
+        });
 
         if (this.filtered) {
-            releasesView.searchInputKey(
-                {
-                    which: 13,
-                    preventDefault: function () { }
-                } );
+            releasesView.searchInputKey({
+                which: 13,
+                preventDefault: function() {}
+            });
         }
 
         $(releasesView.$comicList[0]).scrollTop(this.scrollPos);
@@ -178,7 +193,7 @@ class ComicListViewState {
         logger.log('Save state restored', releasesView.callerString);
     }
 
-    restoreSelectedComic (releasesView) {
+    restoreSelectedComic(releasesView) {
         let comicElement = findComicElement(releasesView, this.selectedComicOriginalString);
 
         if (comicElement) {
@@ -187,14 +202,15 @@ class ComicListViewState {
     }
 }
 
-class ComicListView extends View  {
-    constructor (comicCollection, storageInterface, alertService) {
+class ComicListView extends View {
+    constructor(comicCollection, storageInterface, alertService, electronHelper) {
         super();
 
         this.callerString = 'ComicListView';
         this._comicCollection = comicCollection;
         this._storageInterface = storageInterface;
         this._alertService = alertService;
+        this._electronHelper = electronHelper;
         this._selectedComicElement = null;
         this._selectedComicContainer = null;
         this._filtered = false;
@@ -206,9 +222,9 @@ class ComicListView extends View  {
         this.needLastComicPulledEvent = new Event(this);
     }
 
-    //#region Setup
+    // #region Setup
 
-    createChildren () {
+    createChildren() {
         this.$searchAndButtons = $('div#search-and-buttons');
         this.$searchButton = $('a#comic-list-search-button');
         this.$cancelSearchButton = $('a#comic-list-clear-search-button');
@@ -221,35 +237,42 @@ class ComicListView extends View  {
         return this;
     }
 
-    setupHandlers () {
-        this.searchInputFocusInHandler = this.searchInputFocusIn.bind(this);
-        this.searchInputFocusOutHandler = this.searchInputFocusOut.bind(this);
-        this.searchInputKeyHandler = this.searchInputKey.bind(this);
-        this.searchButtonHandler = this.search.bind(this);
-        this.searchCancelHandler = this.clearSearch.bind(this);
+    setupHandlers() {
+        this.searchInputFocusInHandler = this._onSearchInputFocusIn.bind(this);
+        this.searchInputFocusOutHandler = this._onSearchInputFocusOut.bind(
+            this);
+        this.searchInputKeyHandler = this._onSearchInputKeyUp.bind(this);
+        this.searchButtonHandler = this._onSearch.bind(this);
+        this.searchCancelHandler = this._omClearSearch.bind(this);
 
-        this.retrievedComicsHandler = this.retrievedComics.bind(this);
-        this.comicListProcessedHandler = this.comicListProcessed.bind(this);
-        this.comicProcessedHandler = this.comicProcessed.bind(this);
-        this.comicsUnstableHandler = this.comicsUnstable.bind(this);
-        this.comicsStableHandler = this.comicsStable.bind(this);
-        this.comicListScrolledHandler = this.comicListScrolled.bind(this);
+        this.retrievedComicsHandler = this._onRetrievedComics.bind(this);
+        this.comicListProcessedHandler = this._onAllComicsProcessed.bind(this);
+        this.comicProcessedHandler = this._onSingleComicProcessed.bind(this);
+        this.comicsUnstableHandler = this._onComicsUnstable.bind(this);
+        this.comicsStableHandler = this._onComicsStable.bind(this);
+        this.comicListScrolledHandler = this._onComicListScrolled.bind(this);
 
-        this.comicElementSelectedHandler = this.comicElementSelected.bind(this);
-        this.modelComicPulledHandler = this.modelComicPulled.bind(this);
-        this.modelComicWatchedHandler = this.modelComicWatched.bind(this);
-        this.comicPullButtonHandler = this.comicPullButton.bind(this);
-        this.modelComicLastPulledUpdateHandler = this.omModelComicLastPulledUpdate.bind(this);
+        this.comicElementSelectedHandler = this._onComicElementSelected.bind(
+            this);
+        this.modelComicPulledHandler = this._onModelComicPulled.bind(this);
+        this.modelComicWatchedHandler = this._onModelComicWatched.bind(this);
+        this.comicPullButtonHandler = this._onComicPullButtonClick.bind(this);
+        this.modelComicLastPulledUpdateHandler = this._omModelComicLastPulledUpdate
+            .bind(this);
 
-        this.watchSelectedModeComicHandler = this.watchSelectedModeComic.bind(this);
-        this.unWatchSelectedModelComicHandler = this.unWatchSelectedModelComic.bind(this);
-        this.pullSelectedModelComicHandler = this.pullSelectedModelComic.bind(this);
-        this.unPullSelectedModelComicHandler = this.unPullSelectedModelComic.bind(this);
+        this.watchSelectedModeComicHandler = this._onWatchSelectedModelComic.bind(
+            this);
+        this.unWatchSelectedModelComicHandler = this._onUnWatchSelectedModelComic
+            .bind(this);
+        this.pullSelectedModelComicHandler = this._onPullSelectedModelComic.bind(
+            this);
+        this.unPullSelectedModelComicHandler = this._onUnPullSelectedModelComic
+            .bind(this);
 
         return this;
     }
 
-    enable () {
+    enable() {
         this.$searchInput.on('focusin', this.searchInputFocusInHandler);
         this.$searchInput.on('focusout', this.searchInputFocusOutHandler);
         this.$searchInput.on('keyup', this.searchInputKeyHandler);
@@ -274,6 +297,228 @@ class ComicListView extends View  {
     }
 
     //#endregion
+
+    // #region Handlers
+    
+    _onAllComicsProcessed (sender, numComics) {
+        // noinspection JSUnusedGlobalSymbols
+        this.numComics = numComics;
+    }
+
+    _omClearSearch (event) {
+        event.preventDefault();
+
+        for (let group of this.$comicList[0].childNodes) {
+            let comicViews = $(group).find('div.publisher-list')[0];
+            for (let comicView of comicViews.childNodes) {
+                $(comicView).removeClass('hidden-display');
+            }
+
+            $(group).removeClass('hidden-display');
+        }
+
+        this.$searchInput[0].value = '';
+        this._filtered = false;
+        this.$cancelSearchButton.addClass('hidden-display');
+    }
+
+    _onComicElementSelected (event) {
+        event.preventDefault();
+
+        // We don't want to select a comic in cases where the target is the pull button
+        if (event.target.classList.contains('comic-list-button') ||
+            event.target.parentNode.classList.contains('comic-list-button')
+        ) {
+            return;
+        }
+
+        let oldSelectedComicElement = this._selectedComicElement;
+        let oldSelectedComicContainer = this._selectedComicContainer;
+
+        this._selectedComicElement = event.delegateTarget;
+        this._selectedComicContainer = new ComicContainer(this, this._alertService);
+
+        if (oldSelectedComicContainer) {
+            oldSelectedComicContainer.unSelect(oldSelectedComicElement);
+        }
+
+        this._selectedComicContainer.select(this._selectedComicElement);
+
+        let comic = this._selectedComicElement.comic;
+        if (Date.compareDates(comic.lastPulledDate, new Date(-
+                8640000000000000))) {
+            this.needLastComicPulledEvent.notify(comic);
+        }
+
+        logger.log(['New element selected for:', comic.title], this.callerString);
+
+        this.$comicDetailsNone.hide();
+    }
+
+    _onComicListScrolled () {
+        this._scrollPos = $(this.$comicList[0]).scrollTop();
+    }
+
+    // This can't be static because the methods that override it may rely on class data
+    _onComicPullButtonClick (event) {
+        event.data.comic.pulled = !event.data.comic.pulled;
+    }
+
+    _onComicsStable () {
+        logger.log('Storage stable', this.callerString);
+
+        this.retrieveActive = true;
+        this.$comicList.removeClass('disabled');
+    }
+
+    _onComicsUnstable () {
+        this.retrieveActive = false;
+    }
+
+    _omModelComicLastPulledUpdate (sender, args) {
+        let comic = args;
+        if (this._selectedComicElement.comic === comic) {
+            this._selectedComicContainer.update(comic, false);
+        }
+    }
+
+    _onModelComicPulled (sender, args) {
+        let comic = sender;
+        let comicElement = findComicElement(this, comic.originalString);
+        let pulledButton = $(comicElement).find('.comic-list-button')[0];
+
+        if (args) {
+            $(pulledButton).addClass('active');
+        } else {
+            $(pulledButton).removeClass('active');
+        }
+
+        if (comicElement === this._selectedComicElement) {
+            ComicListView.updateHeaderButtons(comic);
+        }
+    }
+
+    _onModelComicWatched (sender) {
+        let comic = sender;
+        let comicElement = findComicElement(this, comic.originalString);
+
+        if (comicElement === this._selectedComicElement) {
+            ComicListView.updateHeaderButtons(comic);
+        }
+    }
+
+    _onPullSelectedModelComic (event) {
+        event.preventDefault();
+        this._selectedComicElement.comic.pulled = true;
+    }
+
+    _onRetrievedComics (sender, args) {
+        if (args && args[0].fired) {
+            logger.log('Comic list was already populated', this.callerString);
+        } else {
+            logger.log('Comic list has been loaded/retrieved', this.callerString);
+        }
+
+        this.createList(this._comicCollection.comicsByPublisher);
+        if (this._comicCollection.currentDate) {
+            this.$releasesDate.text(this.generateDateString());
+        } else {
+            this.$releasesDate.text('');
+        }
+
+        this.readyToView = true;
+    }
+
+    _onSearch (event) {
+        event.preventDefault();
+
+        let text = this.$searchInput[0].value;
+        let textFilter = /^\W*$/gmi;
+
+        if (textFilter.exec(text)) {
+            return;
+        }
+
+        for (let group of this.$comicList[0].childNodes) {
+            let comicViews = $(group).find('div.publisher-list')[0];
+            let numComics = comicViews.childNodes.length;
+            let hiddenComics = 0;
+
+            for (let comicView of comicViews.childNodes) {
+                if (!comicView.hasOwnProperty('comic')) continue;
+
+                $(comicView).removeClass('hidden-display');
+
+                let comic = comicView.comic;
+                let lowerText = text.toLowerCase();
+
+                let comicMatch = comic.title.toLowerCase().includes(
+                        lowerText) ||
+                    comic.description.toLowerCase().includes(lowerText) ||
+                    comic.writer.toLowerCase().includes(lowerText) ||
+                    comic.artist.toLowerCase().includes(lowerText) ||
+                    comic.coverArtist.toLowerCase().includes(lowerText);
+
+                if (!comicMatch) {
+                    $(comicView).addClass('hidden-display');
+                    hiddenComics++;
+                }
+            }
+
+            $(group).removeClass('hidden-display');
+
+            if (hiddenComics === numComics) {
+                $(group).addClass('hidden-display');
+            }
+        }
+
+        this._filtered = true;
+    }
+
+    _onSearchInputFocusIn () {
+        this.$searchAndButtons.addClass('focus');
+    }
+
+    _onSearchInputFocusOut () {
+        this.$searchAndButtons.removeClass('focus');
+    }
+
+    _onSearchInputKeyUp (event) {
+        if (event.which === 13) {
+            this._onSearch(event);
+        } else if (event.which === 27) {
+            this._omClearSearch(event);
+        } else if (this.$searchInput[0].value) {
+            this.$cancelSearchButton.removeClass('hidden-display');
+        } else if (!this._filtered) {
+            this.$cancelSearchButton.addClass('hidden-display');
+        }
+    }
+
+    _onSingleComicProcessed (sender, comic) {
+        if (!this._selectedComicContainer) return;
+
+        if (comic === this._selectedComicElement.comic) {
+            this._selectedComicContainer.update(comic);
+        }
+    }
+
+    _onWatchSelectedModelComic (event) {
+        event.preventDefault();
+        this._selectedComicElement.comic.watched = true;
+    }
+
+    _onUnPullSelectedModelComic (event) {
+        event.preventDefault();
+        this._selectedComicElement.comic.pulled = false;
+    }
+
+    _onUnWatchSelectedModelComic (event) {
+        event.preventDefault();
+        this._selectedComicElement.comic.watched = false;
+    }
+
+    // #endregion
 
     navigatedTo () {
         super.navigatedTo();
@@ -312,182 +557,42 @@ class ComicListView extends View  {
     }
 
     disconnectComics () {
-        for (let comicKey in this._comicCollection.comicDict) {
-            if (!this._comicCollection.comicDict.hasOwnProperty(comicKey)) continue;
-
-            let comic = this._comicCollection.comicDict[comicKey];
-
+        for (let comic of this._comicCollection.comicDict.values()) {
             comic.pullStatusChangedEvent.unattach(this.modelComicPulledHandler);
             comic.watchStatusChangedEvent.unattach(this.modelComicWatchedHandler);
         }
     }
 
-    // noinspection JSUnusedLocalSymbols
-    // eslint-disable-next-line no-unused-vars
-    searchInputFocusIn (event) {
-        this.$searchAndButtons.addClass('focus');
-    }
-
-    // noinspection JSUnusedLocalSymbols
-    // eslint-disable-next-line no-unused-vars
-    searchInputFocusOut (event) {
-        this.$searchAndButtons.removeClass('focus');
-    }
-
-    // This can't be static because the methods that override it may rely on class data
-    // noinspection JSMethodCanBeStatic
-    comicPullButton (event) {
-        event.data.comic.pull(!event.data.comic.pulled);
-    }
-
-    searchInputKey (event) {
-        if (event.which === 13) {
-            this.search(event);
-        }
-        else if (event.which === 27) {
-            this.clearSearch(event);
-        }
-        else if (this.$searchInput[0].value) {
-            this.$cancelSearchButton.removeClass('button-hidden');
-        }
-        else if (!this._filtered) {
-            this.$cancelSearchButton.addClass('button-hidden');
-        }
-    }
-
-    search (event) {
-        event.preventDefault();
-
-        let text = this.$searchInput[0].value;
-        let textFilter = /^\W*$/gmi;
-
-        if (textFilter.exec(text)) {
-            return;
-        }
-
-        for (let group of this.$comicList[0].childNodes) {
-            let comicViews = $(group).find('div.publisher-list')[0];
-            let numComics = comicViews.childNodes.length;
-            let hiddenComics = 0;
-
-            for (let comicView of comicViews.childNodes) {
-                if (!comicView.hasOwnProperty('comic')) continue;
-
-                $(comicView).removeClass('hidden');
-
-                let comic = comicView.comic;
-                let lowerText = text.toLowerCase();
-
-                let comicMatch = comic.title.toLowerCase().includes(lowerText) ||
-                    comic.description.toLowerCase().includes(lowerText) ||
-                    comic.writer.toLowerCase().includes(lowerText) ||
-                    comic.artist.toLowerCase().includes(lowerText) ||
-                    comic.coverArtist.toLowerCase().includes(lowerText);
-
-                if (!comicMatch) {
-                    $(comicView).addClass('hidden');
-                    hiddenComics++;
-                }
-            }
-
-            $(group).removeClass('hidden');
-
-            if (hiddenComics === numComics) {
-                $(group).addClass('hidden');
-            }
-        }
-
-        this._filtered = true;
-    }
-
-    clearSearch (event) {
-        event.preventDefault();
-
-        for (let group of this.$comicList[0].childNodes) {
-            let comicViews = $(group).find('div.publisher-list')[0];
-            for (let comicView of comicViews.childNodes) {
-                $(comicView).removeClass('hidden');
-            }
-
-            $(group).removeClass('hidden');
-        }
-
-        this.$searchInput[0].value = '';
-        this._filtered = false;
-        this.$cancelSearchButton.addClass('button-hidden');
-    }
-
-    retrievedComics (sender, args) {
-        if (args && args[0].fired) {
-            logger.log('Comic list was already populated', this.callerString);
-        }
-        else {
-            logger.log('Comic list has been loaded/retrieved', this.callerString);
-        }
-
-        this.createList(this._comicCollection.comicsByPublisher);
-        if (this._comicCollection.currentDate) {
-            this.$releasesDate.text(this.generateDateString());
-        }
-        else {
-            this.$releasesDate.text('');
-        }
-
-        this.readyToView = true;
-    }
-
-    comicListProcessed (sender, numComics) {
-        // noinspection JSUnusedGlobalSymbols
-        this.numComics = numComics;
-    }
-
-    comicProcessed (sender, comic) {
-        if (!this._selectedComicContainer) return;
-
-        if (comic === this._selectedComicElement.comic) {
-            this._selectedComicContainer.update(comic);
-        }
-    }
-
-    // noinspection JSUnusedLocalSymbols
-    // eslint-disable-next-line no-unused-vars
-    comicsUnstable (sender, args) {
-        this.retrieveActive = false;
-    }
-
-    // noinspection JSUnusedLocalSymbols
-    // eslint-disable-next-line no-unused-vars
-    comicsStable (sender, args) {
-        logger.log('Storage stable', this.callerString);
-
-        this.retrieveActive = true;
-        this.$comicList.removeClass('disabled');
-    }
-
     createList (comicsByPublisher) {
         if (!this.shouldCreateList()) return;
-        
+
         let view = this;
         let elementCount = 0;
         let $comicList = $('#comic-list-container');
-        let $publisherTemplate = $($('#publisher-template').prop('content')).find('.publisher-group');
+        let $publisherTemplate = $($('#publisher-template').prop('content'))
+            .find('.publisher-group');
 
         $comicList.empty();
 
-        for (let publisher in comicsByPublisher) {
-            if (!comicsByPublisher.hasOwnProperty(publisher)) continue;
+        for (var publisher of comicsByPublisher.keys()) {
             let $publisherTemplateClone = $publisherTemplate.clone();
 
-            let comicCount = this.createPublisherGroup($publisherTemplateClone, view, publisher, comicsByPublisher);
-            
+            let comicCount = this.createPublisherGroup(
+                $publisherTemplateClone, 
+                view, 
+                publisher,
+                comicsByPublisher
+            );
+
             elementCount += comicCount;
 
             if (comicCount) {
                 $publisherTemplateClone.appendTo($comicList);
-            }        
+            }
         }
 
-        logger.log([ 'Created', elementCount, 'comic elements for list' ], this.callerString);
+        logger.log(['Created', elementCount, 'comic elements for list'],
+            this.callerString);
         this.refreshedListEvent.notify(null);
     }
 
@@ -496,29 +601,37 @@ class ComicListView extends View  {
 
         let $publisherComics = $($publisherTemplate).find('.publisher-list');
         let comicCount = 0;
-        let $comicListTemplate = $($('#comic-list-template').prop('content')).find('.list-comic');
+        let $comicListTemplate = $($('#comic-list-template').prop('content'))
+            .find('.list-comic');
 
-        for (let comic of comicsByPublisher[publisher]) {
-            comicCount += this.createComicElement(view, comic, $comicListTemplate, $publisherComics);
+        for (let comic of comicsByPublisher.get(publisher)) {
+            comicCount += this.createComicElement(view, comic,
+                $comicListTemplate, $publisherComics);
         }
-        
+
         return comicCount;
     }
 
-    createComicElement(view, comic, $comicListTemplate, $publisherComics) {
+    createComicElement (view, comic, $comicListTemplate, $publisherComics) {
         if (view.defaultComicListFilter(comic)) {
             let $comicListTemplateClone = $comicListTemplate.clone();
-            let $pullButton = $($comicListTemplateClone).find('.comic-list-button');
+            let $pullButton = $($comicListTemplateClone).find(
+                '.comic-list-button');
 
-            $($comicListTemplateClone).find('.comic-title-list').text(comic.title);
-            $($comicListTemplateClone).find('.comic-writer-list').text(comic.writer);
-            $($comicListTemplateClone).find('.comic-artist-list').text(comic.artist);
+            $($comicListTemplateClone).find('.comic-title-list').text(comic
+                .title);
+            $($comicListTemplateClone).find('.comic-writer-list').text(
+                comic.writer);
+            $($comicListTemplateClone).find('.comic-artist-list').text(
+                comic.artist);
 
             comic.pullStatusChangedEvent.attach(view.modelComicPulledHandler);
             comic.watchStatusChangedEvent.attach(view.modelComicWatchedHandler);
             $comicListTemplateClone[0].comic = comic;
             $comicListTemplateClone.on('click', view.comicElementSelectedHandler);
-            $pullButton.on('click', { comic: comic }, view.comicPullButtonHandler);
+            $pullButton.on('click', {
+                comic: comic
+            }, view.comicPullButtonHandler);
 
             if (comic.pulled) {
                 $pullButton.addClass('active');
@@ -529,98 +642,6 @@ class ComicListView extends View  {
         }
 
         return 0;
-    }
-
-    comicElementSelected (event) {
-        event.preventDefault();
-
-        // We don't want to select a comic in cases where the target is the pull button
-        if (event.target.classList.contains('comic-list-button') ||
-            event.target.parentNode.classList.contains('comic-list-button')) {
-            return;
-        }
-
-        let oldSelectedComicElement = this._selectedComicElement;
-        let oldSelectedComicContainer = this._selectedComicContainer;
-
-        this._selectedComicElement = event.delegateTarget;
-        this._selectedComicContainer = new ComicContainer(this, this._alertService);
-
-        if (oldSelectedComicContainer) {
-            oldSelectedComicContainer.unSelect(oldSelectedComicElement);
-        }
-
-        this._selectedComicContainer.select(this._selectedComicElement);
-
-        let comic = this._selectedComicElement.comic;
-        if (Date.compareDates(comic.lastPulledDate, new Date(-8640000000000000))) {
-            this.needLastComicPulledEvent.notify(comic);
-        }
-
-        logger.log([ 'New element selected for:', comic.title ], this.callerString);
-
-        this.$comicDetailsNone.hide();
-    }
-
-    modelComicPulled (sender, args) {
-        let comic = sender;
-        let comicElement = findComicElement(this, comic.originalString);
-        let pulledButton = $(comicElement).find('.comic-list-button')[0];
-
-        if (args) {
-            $(pulledButton).addClass('active');
-        }
-        else {
-            $(pulledButton).removeClass('active');
-        }
-
-        if (comicElement === this._selectedComicElement) {
-            ComicListView.updateHeaderButtons(comic);
-        }
-    }
-
-    // noinspection JSUnusedLocalSymbols
-    // eslint-disable-next-line no-unused-vars
-    modelComicWatched (sender, args) {
-        let comic = sender;
-        let comicElement = findComicElement(this, comic.originalString);
-
-        if (comicElement === this._selectedComicElement) {
-            ComicListView.updateHeaderButtons(comic);
-        }
-    }
-
-    omModelComicLastPulledUpdate (sender, args) {
-        let comic = args;
-        if (this._selectedComicElement.comic === comic) {
-            this._selectedComicContainer.update(comic, false);
-        }
-    }
-
-    watchSelectedModeComic (event) {
-        event.preventDefault();
-        this._selectedComicElement.comic.watch(true);
-    }
-
-    unWatchSelectedModelComic (event) {
-        event.preventDefault();
-        this._selectedComicElement.comic.watch(false);
-    }
-
-    pullSelectedModelComic (event) {
-        event.preventDefault();
-        this._selectedComicElement.comic.pull(true);
-    }
-
-    unPullSelectedModelComic (event) {
-        event.preventDefault();
-        this._selectedComicElement.comic.pull(false);
-    }
-
-    // noinspection JSUnusedLocalSymbols
-    // eslint-disable-next-line no-unused-vars
-    comicListScrolled (event) {
-        this._scrollPos = $(this.$comicList[0]).scrollTop();
     }
 
     // This can't be static because the methods that override it may rely on class data
@@ -637,21 +658,21 @@ class ComicListView extends View  {
     }
 
     static updateHeaderButtons (comic) {
-        let $watchButton = $('a#watch-button');
-        let $unWatchButton = $('a#un-watch-button');
-        let $pullButton = $('a#pull-button');
-        let $unPullButton = $('a#un-pull-button');
+        let $watchButton = $('button#watch-button');
+        let $unWatchButton = $('button#un-watch-button');
+        let $pullButton = $('button#pull-button');
+        let $unPullButton = $('button#un-pull-button');
 
-        $watchButton.removeClass('button-hidden');
-        $unWatchButton.removeClass('button-hidden');
-        $pullButton.removeClass('button-hidden');
-        $unPullButton.removeClass('button-hidden');
+        $watchButton.removeClass('hidden-display');
+        $unWatchButton.removeClass('hidden-display');
+        $pullButton.removeClass('hidden-display');
+        $unPullButton.removeClass('hidden-display');
 
-        if (comic.pulled) $pullButton.addClass('button-hidden');
-        else $unPullButton.addClass('button-hidden');
+        if (comic.pulled) $pullButton.addClass('hidden-display');
+        else $unPullButton.addClass('hidden-display');
 
-        if (comic.watched) $watchButton.addClass('button-hidden');
-        else $unWatchButton.addClass('button-hidden');
+        if (comic.watched) $watchButton.addClass('hidden-display');
+        else $unWatchButton.addClass('hidden-display');
     }
 
     readyToRestore () {
@@ -663,7 +684,7 @@ class ComicListView extends View  {
     }
 }
 
-function findComicElement (releasesView, comicOriginalString) {
+function findComicElement(releasesView, comicOriginalString) {
     for (let group of releasesView.$comicList[0].childNodes) {
         let comicViews = $(group).find('div.publisher-list')[0];
 

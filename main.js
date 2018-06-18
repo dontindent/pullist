@@ -124,6 +124,8 @@ function createWindows (width, height) {
     });
 
     mainWindow.on('resize', () => {
+        if (mainWindow.isMaximized()) return;
+        
         let { width, height } = mainWindow.getBounds();
         store.set('windowBounds', { width, height });
     });

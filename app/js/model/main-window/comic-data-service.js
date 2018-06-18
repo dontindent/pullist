@@ -15,12 +15,13 @@ class ComicDataService {
         this._storageService = storageService; 
         this._userPrefs = userPrefs
         this.callerString = 'ComicDataService';
-        this.comicDict = {};
-        this.publishers = [];
+        this.comicCount = 0;
+        this.comicsByOriginal = new Map();
+        this.comicDict = new Map();
         this.comicListProcessedEvent = new Event(this);
         this.comicProcessedEvent = new Event(this);
-        this.comicCount = 0;
         this.processedComics = 0;
+        this.publishers = [];
         this.retrievalDate = new Date(-8640000000000000);
     }
 
@@ -29,7 +30,7 @@ class ComicDataService {
         let deferred = $.Deferred();
         this.comicCount = 0;
         this.processedComics = 0;
-        this.comicDict = {};
+        this.comicDict.clear();
 
         let includeOnlyComics = this._userPrefs.includeOnlyComics;
 
@@ -67,7 +68,7 @@ function processList(comicService, rawList) {
     let date;
     let publisher = '';
     let count = 0;
-    let variantPool = {};
+    let variantPool = new Map();
     let variantKeys = [];
 
     for(let i = 0; i < lines.length; i++) {
@@ -83,8 +84,8 @@ function processList(comicService, rawList) {
 
                 // We need to clear all the comics not related to the current release date
                 if (comicService.retrievalDate !== date) {
-                    comicService.comicsByOriginal = {};
-                    comicService.comicDict = {};
+                    comicService.comicsByOriginal.clear();
+                    comicService.comicDict.clear();
                     comicService.publishers = [];
                 }
 
@@ -143,8 +144,8 @@ function processList(comicService, rawList) {
         comic.originalString = parameters[1];
         comic.variantList = [];
 
-        if (comic.originalString in comicService.comicsByOriginal) {
-            let original = comicService.comicsByOriginal[comic.originalString];
+        if (comicService.comicsByOriginal.has(comic.originalString)) {
+            let original = comicService.comicsByOriginal.get(comic.originalString);
             original.copyDetails(comic);
             original.variantList.length = 0;
             original.variant = false;
@@ -153,27 +154,27 @@ function processList(comicService, rawList) {
             comic = original;
         }
         else {
-            comicService.comicsByOriginal[comic.originalString] = comic;
+            comicService.comicsByOriginal.set(comic.originalString, comic);
         }
 
         count++;
 
-        if(!(key in comicService.comicDict)) {
-            comicService.comicDict[key] = comic;
+        if (!comicService.comicDict.has(key)) {
+            comicService.comicDict.set(key, comic);
         }
         else {
-            if (!(key in variantPool)) {
-                variantPool[key] = [ comic ];
+            if (!variantPool.has(key)) {
+                variantPool.set(key, [ comic ]);
                 variantKeys.push(key);
             }
-            else variantPool[key].push(comic);
+            else variantPool.get(key).push(comic);
         }
     }
 
     for (let variantKey of variantKeys) {
-        variantPool[variantKey].push(comicService.comicDict[variantKey]);
+        variantPool.get(variantKey).push(comicService.comicDict.get(variantKey));
 
-        let variants = variantPool[variantKey].sort(Comic.compareByPrice);
+        let variants = variantPool.get(variantKey).sort(Comic.compareByPrice);
 
         let main = variants[0];
         main.mainComic = null;
@@ -184,7 +185,7 @@ function processList(comicService, rawList) {
             main.addVariant(variants[i]);
         }
 
-        comicService.comicDict[variantKey] = main;
+        comicService.comicDict.set(variantKey, main);
     }
 
     comicService.retrievalDate = date;
@@ -198,10 +199,7 @@ function processDetails(comicService) {
     let i = 0;
     let promises = [];
 
-    for(let key in comicService.comicsByOriginal) {
-        if (!comicService.comicsByOriginal.hasOwnProperty(key)) continue;
-
-        let comic = comicService.comicsByOriginal[key];
+    for (let comic of comicService.comicsByOriginal.values()) {
         promises.push(getComicDetails(comicService, comic));
 
         i++;
@@ -277,14 +275,10 @@ function removeNonComics(comicService) {
     comicService.publishers = [];
     comicService.comicCount = 0;
 
-    for (let key in comicService.comicsByOriginal) {
-        if (!comicService.comicsByOriginal.hasOwnProperty(key)) continue;
-
-        let comic = comicService.comicsByOriginal[key];
-
+    for (let comic of comicService.comicsByOriginal.values()) {
         if (!comic.writer && !comic.artist && !comic.coverArtist) {
-            delete comicService.comicsByOriginal[key];
-            delete comicService.comicDict[comic.key];
+            comicService.comicsByOriginal.delete(comic.originalString);
+            comicService.comicDict.delete(comic.key);
         }
         else {
             if (!comicService.publishers.includes(comic.publisher)) comicService.publishers.push(comic.publisher);

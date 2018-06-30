@@ -27,7 +27,7 @@ class Event {
         }
 
         if (this._postFire && this.fired) {
-            this.notify([ { fired: true}, this._postFireArgs ], { listener: listener });
+            this.notify(this._postFireArgs, { listener: listener });
         }
     }
 
@@ -51,6 +51,13 @@ class Event {
     notify (args, opts = {}) {
         let sender = this._sender;
 
+        if (this._postFire) this._postFireArgs = args;
+
+        if (this.fired) {
+            args = [ { fired: true }, args ];
+        }
+
+
         if (opts.listener) {
             let listener = opts.listener;
             listener(sender, args);
@@ -62,10 +69,6 @@ class Event {
         }
 
         this.fired = true;
-
-        if (this._postFire) {
-            this._postFireArgs = args;
-        }
     }
 
     /** Resets the entire event object, including removing all listeners */

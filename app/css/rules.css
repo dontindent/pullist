@@ -1,0 +1,21 @@
+section#rules {
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+div#rules-wrapper {
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+p.rule-description-list {
+    display: block;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -1,3 +1,5 @@
+require('../../misc/utilities');
+
 const RuleGroupType = Object.freeze({
     any: 0,
     all: 1
@@ -9,7 +11,7 @@ const RuleResultType = Object.freeze({
     pull: 2
 });
 
-class RuleOperators {
+class RuleOperator {
     /** Evalues if two values match
      *
      * @param {*} value - The value being assessed
@@ -89,19 +91,19 @@ class RuleOperators {
         switch (value.toLowerCase()) {
             case 'equal':
             case 'is':
-                return RuleOperators.is;
+                return RuleOperator.is;
             case 'notqeual':
             case 'isnot':
-                return RuleOperators.isNot;
+                return RuleOperator.isNot;
             case 'contains':
-                return RuleOperators.contains;
+                return RuleOperator.contains;
             case 'notcontains':
             case 'doesnotcontain':
-                return RuleOperators.doesNotContain;
+                return RuleOperator.doesNotContain;
             case "lessthan":
-                return RuleOperators.lessThan;
+                return RuleOperator.lessThan;
             case 'greaterthan':
-                return RuleOperators.greaterThan;
+                return RuleOperator.greaterThan;
             default:
                 return null;
         }
@@ -114,17 +116,17 @@ class RuleOperators {
      */
     static toString (value) {
         switch (value) {
-            case RuleOperators.is:
+            case RuleOperator.is:
                 return 'is';
-            case RuleOperators.isNot:
+            case RuleOperator.isNot:
                 return 'is not';
-            case RuleOperators.contains:
+            case RuleOperator.contains:
                 return 'contains';
-            case RuleOperators.doesNotContain:
+            case RuleOperator.doesNotContain:
                 return 'does not contain';
-            case RuleOperators.lessThan:
+            case RuleOperator.lessThan:
                 return 'is less than';
-            case RuleOperators.greaterThan:
+            case RuleOperator.greaterThan:
                 return 'is greater than';
             default:
                 return '';
@@ -152,11 +154,15 @@ class Rule {
     apply (comic) {
         return this.operator(comic[this.targetProperty].toString(), this.targetValue.toString());
     }
+
+    toString () {
+        return this.targetProperty.toTitleCase() + ' ' + RuleOperator.toString(this.operator) + ' ' + this.targetValue;
+    }
 }
 
 class RuleGroup {
     constructor (name = '', allowReprints = false) {
-        this.name = '';
+        this.name = name;
         this.allowReprints = allowReprints;
         this.groupType = RuleGroupType.any;
         this.resultType = RuleResultType.none;
@@ -182,6 +188,28 @@ class RuleGroup {
             markComic(comic, this.resultType);
         }
     }
+
+    toString () {
+        let returnString = '';
+        let groupString = '';
+
+        if (this.groupType === RuleGroupType.any) {
+            groupString = ' or ';
+        }
+        else if (this.groupType === RuleGroupType.all) {
+            groupString = ' and ';
+        }
+
+        for (let i = 0; i < this.rules.length; i++) {
+            returnString += this.rules[i].toString();
+
+            if (i !== this.rules.length - 1) {
+                returnString += groupString;
+            }
+        }
+
+        return returnString;
+    }
 }
 
 function markComic (comic, resultType) {
@@ -195,6 +223,6 @@ function markComic (comic, resultType) {
 
 exports.RuleGroupType = module.exports.RuleGroupType = RuleGroupType;
 exports.RuleResultType = module.exports.RuleResultType = RuleResultType;
-exports.RuleOperators = module.exports.RuleOperators = RuleOperators;
+exports.RuleOperator = module.exports.RuleOperator = RuleOperator;
 exports.Rule = module.exports.Rule = Rule;
 exports.RuleGroup = module.exports.RuleGroup = RuleGroup;

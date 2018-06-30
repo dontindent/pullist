@@ -164,12 +164,18 @@ class ComicCollection {
 
         for (let variant of variantQueue) {
             let mainComic = comicsById.get(variant.mainID);
-            try {
+
+            if (mainComic) {
                 variant.pulled = false;
                 mainComic.addVariant(variant);
-            } 
-            catch (error) {
-                throw error;
+            }
+            else {
+                variant.mainComic = null;
+                variant.mainID = 0;
+                variant.variant = false;
+                comicsById.set(variant.id, variant);
+                collection.comicDict.set(variant.key, variant);
+                variant.mainUpdatedEvent.attach(this._mainUpdatedHandler);
             }
         }
 

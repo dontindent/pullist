@@ -174,13 +174,13 @@ class ComicListViewState {
 
         releasesView.$searchInput[0].value = this.filterString;
 
-        releasesView.searchInputKey({
+        releasesView.searchInputKeyHandler({
             which: 17,
             preventDefault: function() {}
         });
 
         if (this.filtered) {
-            releasesView.searchInputKey({
+            releasesView.searchInputKeyHandler({
                 which: 13,
                 preventDefault: function() {}
             });
@@ -229,9 +229,9 @@ class ComicListView extends View {
         this.$searchButton = $('a#comic-list-search-button');
         this.$cancelSearchButton = $('a#comic-list-clear-search-button');
         this.$searchInput = $('input#comic-list-search');
-        this.$releasesDate = $('div#comic-list-header h1');
-        this.$comicList = $('div#comic-list-container');
-        this.$comicListWrapper = $('div#comic-list-wrapper');
+        this.$releasesDate = $('div.list-header h1');
+        this.$comicList = $('div.list-container');
+        this.$comicListWrapper = $('div.list-wrapper');
         this.$comicDetailsNone = $('div#comic-details-none');
 
         return this;
@@ -290,7 +290,7 @@ class ComicListView extends View {
         return this;
     }
 
-    //#endregion
+    // #endregion
 
     // #region Handlers
     
@@ -565,7 +565,7 @@ class ComicListView extends View {
 
         let view = this;
         let elementCount = 0;
-        let $comicList = $('#comic-list-container');
+        let $comicList = $('div.list-container');
         let $publisherTemplate = $($('#publisher-template').prop('content')).find(
             '.publisher-group'
         );

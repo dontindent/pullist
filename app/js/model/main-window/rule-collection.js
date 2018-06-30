@@ -2,7 +2,9 @@ const electron = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-const { RuleGroupType, RuleResultType, RuleOperators, Rule, RuleGroup } = require('./rule');
+/* eslint-disable-next-line no-unused-vars */
+const { RuleGroupType, RuleResultType, RuleOperator, Rule, RuleGroup } = require('./rule');
+const Event = require('../../misc/event-dispatcher');
 
 const userDataPath = (electron.app || electron.remote.app).getPath('userData');
 const rulesFilePath = path.join(userDataPath, 'rules.json');
@@ -11,6 +13,8 @@ class RuleCollection {
     constructor () {
         this.rootRule = null;
         this.data = null;
+
+        this.rulesLoadedEvent = new Event(this, true);
 
         this.loadRules();
     }
@@ -28,7 +32,7 @@ class RuleCollection {
 function rulesFileRead (ruleCollection, data) {
     ruleCollection.rootRule = reconstructFromJSON(JSON.parse(data));
 
-    console.log(ruleCollection.rootRule);
+    ruleCollection.rulesLoadedEvent.notify(ruleCollection.rootRule);
 }
 
 function reconstructFromJSON (ruleObject) {
@@ -52,7 +56,7 @@ function reconstructFromJSON (ruleObject) {
 
         // rule.operator is going to be a string after being parsed from JSON
         // noinspection JSCheckFunctionSignatures
-        rule.operator = RuleOperators.fromString(rule.operator);
+        rule.operator = RuleOperator.fromString(rule.operator);
 
         return rule;
     }

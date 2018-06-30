@@ -118,6 +118,7 @@ function createWindows (width, height) {
     });
 
     mainWindow.on('close', function () {
+        // TODO https://stackoverflow.com/questions/45677600/electron-prevent-main-window-from-closing
     });
 
     mainWindow.on('closed', () => {

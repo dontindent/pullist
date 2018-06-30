@@ -1,4 +1,94 @@
 <section id="rules">
     <div id="rules-wrapper">
+        <div class="list-wrapper">
+            <div class="list-header">
+                <div class="list-header-action-container">
+                </div>
+                <div class="list-header-container interface">
+                    <h1 class="list-header-text"></h1>
+                </div>
+            </div>
+            <div class="list-container interface"></div>
+        </div>
+        <div id="comic-details">
+            <div id="details-background">
+                <img id="details-background-img" src="">
+            </div>
+            <div id="details-container">
+                <div id="header-container" class="interface">
+                    <button class="app-bar-button row hidden-display" id="un-watch-button" href="#">
+                        <i class="icons8-eye-outline detail-header-icon"></i>
+                        Unwatch
+                    </button>
+                    <button class="app-bar-button row" id="watch-button" href="#">
+                        <i class="icons8-eye detail-header-icon"></i>
+                        Watch
+                    </button>
+                    <button class="app-bar-button row hidden-display" id="un-pull-button" href="#">
+                        <i class="icons8-empty-box detail-header-icon"></i>
+                        Unpull
+                    </button>
+                    <button class="app-bar-button row" id="pull-button" href="#">
+                        <i class="icons8-box detail-header-icon"></i>
+                        Pull
+                    </button>
+                </div>
+                <div id="details-content">
+                    <h1></h1>
+                    <a id="detail-cover-link">
+                        <img id="detail-cover" class="interface" src="">
+                    </a>
+                    <div id="comic-remaining-details">
+                        <div id="writer-div">
+                            <p class="detail-label">WRITER</p>
+                            <p class="detail"></p>
+                        </div>
+                        <div id="artist-div">
+                            <p class="detail-label">ARTIST</p>
+                            <p class="detail"></p>
+                        </div>
+                        <div id="publisher-div">
+                            <p class="detail-label">PUBLISHER</p>
+                            <p class="detail"></p>
+                        </div>
+                        <div id="distributor-code-div">
+                            <p class="detail-label">DISTRIBUTOR CODE</p>
+                            <a href="">
+                                <p class="detail"></p>
+                            </a>
+                        </div>
+                        <div id="price-div">
+                            <p class="detail-label">PRICE</p>
+                            <p class="detail"></p>
+                        </div>
+                        <div id="description-div">
+                            <p class="detail"></p>
+                        </div>
+                        <div id="last-pulled-div">
+                            <p class="last-pulled-text">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="comic-details-none">
+                <i class="icons8-magazine interface"></i>
+                <!--<p>select a comic to see something here</p>-->
+            </div>
+        </div>
     </div>
 </section>
+
+<template id="rule-list-template">
+    <div class="list-element">
+        <div class="list-element-wrapper">
+            <h3 class="element-title-list"></h3>
+            <div class="element-details-list-container">
+                <div class="element-details-list">
+                    <p class="rule-description-list"></p>
+                </div>
+            </div>
+        </div>
+        <div class="list-element-bg"></div>
+    </div>
+</template>

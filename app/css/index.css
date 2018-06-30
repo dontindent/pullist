@@ -1,8 +1,10 @@
-@import url('releases.css');
-@import url('pulled.css');
 @import url('alert.css');
-@import url('modal.css');
 @import url('controls.css');
+@import url('list.css');
+@import url('modal.css');
+@import url('pulled.css');
+@import url('releases.css');
+@import url('rules.css');
 @import url("../font/pullist/css/styles.min.css");
 
 div#electron-titlebar {

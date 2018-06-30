@@ -58,4 +58,12 @@ Map.fromObject = function (object) {
  
 Object.size = Utilities.getObjectLength;
 
+String.prototype.toTitleCase = function () {
+    return this.replace(/[^-'\s]+/g, function (word) {
+        return word.replace(/^./, function (first) {
+          return first.toUpperCase();
+        });
+      });
+}
+
 exports = module.exports = Utilities;

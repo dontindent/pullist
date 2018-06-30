@@ -57,7 +57,6 @@ class Event {
             args = [ { fired: true }, args ];
         }
 
-
         if (opts.listener) {
             let listener = opts.listener;
             listener(sender, args);

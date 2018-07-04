@@ -52,6 +52,13 @@
     --app-image-button-background-color-hover: rgba(0, 0, 0, 0.5);
     --app-image-button-background-color-active: rgba(0, 0, 0, 0.75);
     
+    --app-inline-button-background-color: none;
+    --app-inline-button-foreground-color: var(--app-foreground-color);
+    --app-inline-button-background-color-active: var(--accent-color-light-3);
+    --app-inline-button-foreground-color-active: var(--app-inline-button-foreground-color);
+    --app-inline-button-background-color-hover: #F1F1F1;
+    --app-inline-button-foreground-color-hover: var(--app-inline-button-foreground-color);
+
     --app-list-header-background-color: #F8F8F8;
     --app-list-header-foreground-color: var(--app-foreground-color);
     --app-list-item-background-color: none;

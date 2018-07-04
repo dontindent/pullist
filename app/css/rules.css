@@ -19,3 +19,197 @@ p.rule-description-list {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+div#rule-details {
+    position: relative;
+    flex: 1;
+    background: var(--app-background-color);
+}
+
+div#rule-details-none {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #FFFFFF;
+    z-index: var(--layer-2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+div#rule-details-none i {
+    font-size: 96pt;
+    font-style: normal;
+    color: var(--accent-color-light-3)
+}
+
+div#rule-details-none p {
+    margin: 20px 0 0 0;
+    padding: 0;
+    font-size: 14pt;
+}
+
+div.type-selector-row {
+    display: flex;
+    margin-bottom: 0.5em;
+    min-height: 0;
+    position: relative;
+    padding: 1px 0;
+}
+
+select.group-type-selector {
+    /* margin: 1px 0.5em 1px 0; */
+    margin-right: 0.5em;
+    position: relative;
+}
+
+p.type-selector-label {
+    display: inline-block;
+    margin: 0;
+    padding: 3px;
+    position: relative;
+}
+
+div.group-container {
+    position: relative;
+    margin-bottom: 10px;
+    /* margin-left: 3.5em; */
+}
+
+div#rule-breakdown-container {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 0;
+    flex-shrink: 1;
+    font-size: 10pt;
+    margin: 0;
+    max-height: calc(100% - 56px - 24pt);
+    min-height: 0;
+    padding: 0;
+    overflow-y: auto;
+    position: relative;
+    /* top: 0; */
+    /* bottom: -500px; */
+}
+
+div.group-rules {
+    margin-left: 3.5em;
+    min-height: 0;
+    position: relative;
+}
+
+div.rule-div {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    min-height: 0;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+div.rule-line-buttons {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    justify-content: center;
+    margin: auto;
+    position: relative;
+}
+
+div.rule-line-details {
+    display: flex;
+    flex-direction: row;
+    /* flex: 1; */
+    font-family: var(--app-font) !important;
+    min-height: 0;
+    position: relative;
+}
+
+div.rule-div input {
+    flex: 1;
+    font-family: var(--app-font);
+    margin: 0 10px 0 0;
+    padding: 2px;
+    position: relative;
+}
+
+select.rule-operator-selector {
+    margin: 0 0.5em;
+    position: relative;
+}
+
+div#rule-details div#details-content {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 0;
+    margin: 0;
+    min-height: 0;
+    max-height: calc(100% - 2px);
+    overflow: hidden;
+    position: relative;
+}
+
+div#rule-breakdown-container * {
+    outline: none;
+}
+
+.rule-line-spacer {
+    flex: 1;
+}
+
+button.rule-button {
+    background: none;
+    outline: none;
+    border: 1px solid var(--app-button-foreground-color);
+    border-radius: 50%;
+    position: relative;
+    width: 24px;
+    height: 24px;
+    margin: 0 0.25em;
+}
+
+button.rule-button::before {
+    content: '';
+    display: block;
+    padding-top: 100%;
+}
+
+button.rule-button i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* margin: 0 0.2em; */
+}
+
+button.rule-button:hover {
+    background: var(--app-inline-button-background-color-hover);
+    color: var(--app-inline-button-foreground-color-hover);
+}
+
+button.rule-button:active {
+    background: var(--app-inline-button-background-color-active);
+    color: var(--app-inline-button-foreground-color-active);
+}
+
+div.type-selector-row input,
+div.rule-line-details input {
+    /* font-family: var(--app-font); */
+}
+
+div.type-selector-row select,
+div.rule-div select {
+    font-family: var(--app-font);
+    position: relative;
+}

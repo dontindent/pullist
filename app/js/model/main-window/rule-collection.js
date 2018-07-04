@@ -2,8 +2,16 @@ const electron = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-/* eslint-disable-next-line no-unused-vars */
-const { RuleGroupType, RuleResultType, RuleOperator, Rule, RuleGroup } = require('./rule');
+/* eslint-disable no-unused-vars */
+const { 
+    RuleGroupType,
+    RuleResultType, 
+    RuleOperator, 
+    ObservableRuleArray, 
+    Rule, 
+    RuleGroup 
+} = require('./rule');
+/* eslint-enable no-unused-vars */
 const Event = require('../../misc/event-dispatcher');
 
 const userDataPath = (electron.app || electron.remote.app).getPath('userData');
@@ -27,6 +35,19 @@ class RuleCollection {
             rulesFileRead(ruleCollection, data);
         })
     }
+
+    /**
+     * 
+     * @param {RuleGroup} ruleGroup 
+     */
+    addNewRuleToGroup (ruleGroup) {
+        let rule = new Rule();
+        
+        rule.targetProperty = 'Artist';
+        rule.operator = RuleOperator.contains;
+
+        ruleGroup.rules.push(rule);
+    }
 }
 
 function rulesFileRead (ruleCollection, data) {
@@ -40,8 +61,30 @@ function reconstructFromJSON (ruleObject) {
         let ruleGroup = new RuleGroup();
         Object.assign(ruleGroup, ruleObject);
 
-        for (let i = 0; i < ruleGroup.rules.length; i++) {
-            ruleGroup.rules[i] = reconstructFromJSON(ruleGroup.rules[i]);
+        let rules = ruleGroup.rules;
+        let ruleGroupsTemp = [];
+        let rulesTemp = [];
+        ruleGroup.rules = new ObservableRuleArray();
+
+        // The goal here is to float rule groups to the top of the list, then add the
+        // inidividual rules
+        for (let i = 0; i < rules.length; i++) {
+            let ruleObjectTemp = reconstructFromJSON(rules[i]);
+
+            if (ruleObjectTemp instanceof RuleGroup) {
+                ruleGroupsTemp.push(ruleObjectTemp);
+            }
+            else if (ruleObjectTemp instanceof Rule) {
+                rulesTemp.push(ruleObjectTemp);
+            }
+        }
+
+        for (let ruleGroupTemp of ruleGroupsTemp) {
+            ruleGroup.rules.push(ruleGroupTemp);
+        }
+
+        for (let ruleTemp of rulesTemp) {
+            ruleGroup.rules.push(ruleTemp);
         }
 
         return ruleGroup;
@@ -64,4 +107,4 @@ function reconstructFromJSON (ruleObject) {
     return null;
 }
 
-exports = module.exports = RuleCollection;
+exports = module.exports = RuleCollection;  

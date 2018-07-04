@@ -5,12 +5,12 @@
                 <div class="list-header-action-container">
                 </div>
                 <div class="list-header-container interface">
-                    <h1 class="list-header-text"></h1>
+                    <h1 class="list-header-text">Rules</h1>
                 </div>
             </div>
             <div class="list-container interface"></div>
         </div>
-        <div id="comic-details">
+        <div id="rule-details">
             <div id="details-background">
                 <img id="details-background-img" src="">
             </div>
@@ -35,45 +35,13 @@
                 </div>
                 <div id="details-content">
                     <h1></h1>
-                    <a id="detail-cover-link">
-                        <img id="detail-cover" class="interface" src="">
-                    </a>
-                    <div id="comic-remaining-details">
-                        <div id="writer-div">
-                            <p class="detail-label">WRITER</p>
-                            <p class="detail"></p>
-                        </div>
-                        <div id="artist-div">
-                            <p class="detail-label">ARTIST</p>
-                            <p class="detail"></p>
-                        </div>
-                        <div id="publisher-div">
-                            <p class="detail-label">PUBLISHER</p>
-                            <p class="detail"></p>
-                        </div>
-                        <div id="distributor-code-div">
-                            <p class="detail-label">DISTRIBUTOR CODE</p>
-                            <a href="">
-                                <p class="detail"></p>
-                            </a>
-                        </div>
-                        <div id="price-div">
-                            <p class="detail-label">PRICE</p>
-                            <p class="detail"></p>
-                        </div>
-                        <div id="description-div">
-                            <p class="detail"></p>
-                        </div>
-                        <div id="last-pulled-div">
-                            <p class="last-pulled-text">
-                            </p>
-                        </div>
+                    <div id="rule-breakdown-container">
                     </div>
                 </div>
-            </div>
-            <div id="comic-details-none">
-                <i class="icons8-magazine interface"></i>
-                <!--<p>select a comic to see something here</p>-->
+                <div id="rule-details-none">
+                    <i class="icons8-magazine interface"></i>
+                    <!--<p>select a comic to see something here</p>-->
+                </div>
             </div>
         </div>
     </div>
@@ -91,4 +59,61 @@
         </div>
         <div class="list-element-bg"></div>
     </div>
+</template>
+
+<template id="rule-group-template">
+    <div class="group-container">
+        <div class="type-selector-row">
+            <select class="group-type-selector">
+                <option value="1">all</option>
+                <option value="0">any</option>
+            </select>
+            <p class="type-selector-label interface">of the following match</p>
+            <div class="rule-line-spacer"></div>
+            <div class="rule-line-buttons">
+                <button class="rule-button delete-rule">
+                    <i class="icons8-subtract"></i>
+                </button>
+                <button class="rule-button add-rule">
+                    <i class="icons8-add"></i>
+                </button>
+            </div>
+        </div>
+        <div class="group-rules">
+        </div>
+    </div>
+</template>
+
+<template id="rule-line-template">
+        <div class="rule-div">
+            <div class="rule-line-details">
+                <select class="rule-property-selector">
+                    <option value="artist">artist</option>
+                    <!-- <option value="coverArtist">Cover Artist</option> -->
+                    <option value="description">description</option>
+                    <option value="price">price</option>
+                    <option value="publisher">publisher</option>
+                    <option value="series">series</option>
+                    <option value="writer">writer</option>
+                </select>
+                <select class="rule-operator-selector">
+                    <option value="is">is</option>
+                    <option value="is not">is not</option>
+                    <option value="contains">contains</option>
+                    <option value="does not contain">does not contain</option>
+                    <option value="is less than">is less than</option>
+                    <option value="is greater than">is greater than</option>
+                </select>
+                <input class="rule-value"></input>
+            </div>
+            <div class="rule-line-spacer"></div>
+            <div class="rule-line-buttons">
+                <button class="rule-button delete-rule">
+                    <i class="icons8-subtract"></i>
+                </button>
+                <button class="rule-button convert-rule">
+                    <i class="icons8-more"></i>
+                </button>
+            </div>
+        </div>
 </template>

@@ -90,7 +90,7 @@ class ComicContainer {
 
     //#endregion
 
-    select(selectedComicElement) {
+    select (selectedComicElement) {
         let comic = selectedComicElement.comic;
 
         $(selectedComicElement).addClass('selected-comic');
@@ -98,7 +98,7 @@ class ComicContainer {
         this.update(comic);
     }
 
-    update(comic, handlers = true) {
+    update (comic, handlers = true) {
         if (handlers) {
             this.$detailBackground.on('load', this._detailBackgroundLoadedHandler);
             this.$detailCover.on('load', this._detailCoverLoadedHandler);
@@ -133,7 +133,7 @@ class ComicContainer {
         ComicListView.updateHeaderButtons(comic);
     }
 
-    unSelect(selectedComicElement, refresh = false) {
+    unSelect (selectedComicElement, refresh = false) {
         if (!refresh) $(selectedComicElement).removeClass('selected-comic');
 
         this.$detailBackground.off('load', this._detailBackgroundLoadedHandler);

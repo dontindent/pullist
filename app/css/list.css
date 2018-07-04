@@ -146,8 +146,6 @@ div.selected-element {
     color: var(--app-list-item-foreground-color-selected);
 }
 
-
-
 h3.element-title-list {
     position: relative;
     grid-column: 1;

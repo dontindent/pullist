@@ -211,8 +211,10 @@ class RulesView extends View  {
  * @param {RuleGroup} ruleGroup 
  * @param {JQuery<HTMLElement>} $parent 
  * @param {RulesView} view 
+ * 
+ * @returns {JQuery<HTMLElement>} Rule group representation
  */
-function createRuleGroupDetailElement (ruleGroup, $parent, view) {
+function constructRuleGroupDetailElement (ruleGroup, $parent, view) {
     let $groupTemplate = $($('#rule-group-template').prop('content'))
         .find('.group-container');
     $groupTemplate = $groupTemplate.clone();
@@ -245,7 +247,50 @@ function createRuleGroupDetailElement (ruleGroup, $parent, view) {
         }
     }
 
+    $groupTemplate[0].ruleGroup = ruleGroup;
+
+    ruleGroup.rules.elementAddedEvent.attach(() => {
+        updateRuleGroupDetailElement(ruleGroup, $parent, view);
+    });
+
+    /* IN PROGRESS */
+    ruleGroup.rules.elementRemovedEvent.attach((sender, args) => {
+        let element = args.element;
+        updateRuleGroupDetailElement(element, $parent, view);
+    });
+    
+    return $groupTemplate;
+}
+
+/**
+ * 
+ * @param {RuleGroup} ruleGroup 
+ * @param {JQuery<HTMLElement>} $parent 
+ * @param {RulesView} view 
+ */
+function createRuleGroupDetailElement (ruleGroup, $parent, view) {
+    let $groupTemplate = constructRuleGroupDetailElement(ruleGroup, $parent, view);
+
     $groupTemplate.appendTo($parent);
+}
+
+/**
+ * 
+ * @param {RuleGroup} ruleGroup 
+ * @param {JQuery<HTMLElement>} $parent 
+ * @param {RulesView} view 
+ */
+function updateRuleGroupDetailElement (ruleGroup, $parent, view) {
+    let $groupTemplate = constructRuleGroupDetailElement(ruleGroup, $parent, view);
+
+    for (let element of $parent.children()) {
+        if (!('ruleGroup' in  element)) continue;
+
+        if (element.ruleGroup === ruleGroup) {
+            $groupTemplate.insertBefore(element);
+            $(element).remove();
+        }
+    }
 }
 
 /**

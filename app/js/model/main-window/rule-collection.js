@@ -30,7 +30,7 @@ class RuleCollection {
     loadRules () {
         let ruleCollection = this;
 
-        fs.readFile(rulesFilePath, function(error, data) {
+        fs.readFile(rulesFilePath, 'utf8', function (error, data) {
             if (error) throw error;
             rulesFileRead(ruleCollection, data);
         })
@@ -50,6 +50,11 @@ class RuleCollection {
     }
 }
 
+/**
+ * 
+ * @param {RuleCollection} ruleCollection 
+ * @param {string} data 
+ */
 function rulesFileRead (ruleCollection, data) {
     ruleCollection.rootRule = reconstructFromJSON(JSON.parse(data));
 

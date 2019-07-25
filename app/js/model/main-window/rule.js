@@ -154,6 +154,7 @@ class ObservableRuleArray extends Array {
 
         this.elementUpdatedEvent = new Event(this);
         this.elementAddedEvent = new Event(this);
+        this.elementRemovedEvent = new Event(this);
     }
 
     push (element) {
@@ -207,6 +208,10 @@ class ObservableRuleArray extends Array {
                 element.resultTypeUpdatedEvent.
                     unattach(this._onElementPropertyUpdated.bind(this));
             }
+
+            this.elementRemovedEvent.notify({
+                element: element
+            });
         }
 
         return results;

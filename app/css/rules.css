@@ -165,21 +165,31 @@ div#rule-breakdown-container * {
 }
 
 button.rule-button {
-    background: none;
+    background: var(--app-background-color);
     outline: none;
-    border: 1px solid var(--app-button-foreground-color);
-    border-radius: 50%;
+    border: 1px solid black;
+    display: flex;
+    -webkit-border-radius: 35px;
+    border-radius: 35px;
     position: relative;
     width: 24px;
     height: 24px;
     margin: 0 0.25em;
+    box-shadow: 0 0 1px black;
 }
 
-button.rule-button::before {
+/* button.rule-button::before {
     content: '';
+    background: white;
     display: block;
-    padding-top: 100%;
-}
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    border-radius: 50%;
+    box-shadow: 0 0 1px white;
+} */
 
 button.rule-button i {
     position: absolute;
@@ -189,6 +199,7 @@ button.rule-button i {
     right: 0;
     display: flex;
     justify-content: center;
+    line-height: 1;
     align-items: center;
     /* margin: 0 0.2em; */
 }

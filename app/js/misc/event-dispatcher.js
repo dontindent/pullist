@@ -50,20 +50,19 @@ class Event {
      */
     notify (args, opts = {}) {
         let sender = this._sender;
+        var status = { 
+            fired: this.fired 
+        };
 
         if (this._postFire) this._postFireArgs = args;
 
-        if (this.fired) {
-            args = [ { fired: true }, args ];
-        }
-
         if (opts.listener) {
             let listener = opts.listener;
-            listener(sender, args);
+            listener(sender, args, status);
         }
         else {
             this._listeners.forEach(function(listener) {
-                listener(sender, args);
+                listener(sender, args, status);
             });
         }
 

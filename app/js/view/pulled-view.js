@@ -175,8 +175,8 @@ class PulledView extends ComicListView {
         this.updateDateElements();
     }
 
-    _onRetrievedComics (sender, args) {
-        super._onRetrievedComics (sender, args);
+    _onRetrievedComics (sender, args, status) {
+        super._onRetrievedComics (sender, args, status);
 
         this.assessPullList();
     }

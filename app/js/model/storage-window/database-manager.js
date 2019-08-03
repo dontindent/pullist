@@ -324,7 +324,7 @@ class ComicDatabase {
         }
 
         if (this.db) {
-            let query = 'SELECT *, MAX(`ReleaseDate`) FROM `Comic` WHERE `Series` = ? AND `Number` != ?';
+            let query = 'SELECT *, MAX(`ReleaseDate`) FROM `Comic` WHERE `Series` = ? AND `Number` != ? AND `Pulled` = 1';
             let statement = this.db.prepare(query, [ series, number ]);
             try {
                 let result = null;

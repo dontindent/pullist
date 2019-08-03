@@ -409,8 +409,8 @@ class ComicListView extends View {
         this._selectedComicElement.comic.pulled = true;
     }
 
-    _onRetrievedComics (sender, args) {
-        if (args && args[0].fired) {
+    _onRetrievedComics (sender, args, status) {
+        if (status && status.fired) {
             logger.log('Comic list was already populated', this.callerString);
         } else {
             logger.log('Comic list has been loaded/retrieved', this.callerString);

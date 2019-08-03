@@ -132,8 +132,8 @@ class RulesView extends View  {
         this.$ruleDetailsNone.hide();
     }
 
-    _onRulesLoadedEvent (sender, args) {
-        if (args && args[0].fired) {
+    _onRulesLoadedEvent (sender, args, status) {
+        if (args && status.fired) {
             this.createList(args[1]);
         }
         else {

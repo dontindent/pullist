@@ -71,8 +71,8 @@ class ReleasesView extends ComicListView {
         this.$retrieveButton.addClass('disabled');
     }
 
-    _onRetrievedComics (sender, args) {
-        super._onRetrievedComics(sender, args);
+    _onRetrievedComics (sender, args, status) {
+        super._onRetrievedComics(sender, args, status);
 
         if (!Date.compareDates(
             this._comicCollection.currentDate, 

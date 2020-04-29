@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "electron-titlebar": "0.0.3",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery.scrollto": "^2.1.2",
     "jshint": "^2.10.2",
     "pikaday": "^1.8.0",
